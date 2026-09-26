@@ -51,7 +51,7 @@ class _MyKasAppState extends State<MyKasApp> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  // Mendeteksi perpindahan aplikasi ke background/foreground
+  // Mendeteksi perpindahan aplikasi ke background/foreground (Auto lock)
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
