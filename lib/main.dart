@@ -51,7 +51,7 @@ class _MyKasAppState extends State<MyKasApp> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  // Mendeteksi perpindahan aplikasi ke background/foreground (Aplikasi ditutup/diminimalkan)
+  // Mendeteksi perpindahan aplikasi ke background/foreground
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
@@ -88,6 +88,16 @@ class _MyKasAppState extends State<MyKasApp> with WidgetsBindingObserver {
     });
   }
 
+  /// Memperbarui state PIN secara real-time saat diubah dari menu Profil
+  void _handlePinStateChanged(bool enabled, String newPin) {
+    setState(() {
+      _currentSavedPin = newPin;
+      if (!enabled) {
+        _isLocked = false;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -109,6 +119,7 @@ class _MyKasAppState extends State<MyKasApp> with WidgetsBindingObserver {
               onThemeChanged: _handleThemeChange,
               currentThemeMode: _themeMode,
               onThemeModeChanged: _updateThemeMode,
+              onPinStateChanged: _handlePinStateChanged,
             ),
     );
   }
