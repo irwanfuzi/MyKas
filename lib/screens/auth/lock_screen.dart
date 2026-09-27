@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
@@ -19,7 +18,7 @@ class LockScreen extends StatefulWidget {
   State<LockScreen> createState() => _LockScreenState();
 }
 
-class _LockScreenState extends State<LockScreen> {
+class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
   final LocalAuthentication _auth = LocalAuthentication();
   String _enteredPin = '';
   bool _isBiometricSupported = false;
@@ -28,24 +27,39 @@ class _LockScreenState extends State<LockScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _checkBiometricSupport();
   }
 
-  // 1. Cek Dukungan Biometrik di Device / Browser
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Saat aplikasi dibuka kembali dari background, persiapkan biometrik
+    if (state == AppLifecycleState.resumed && _isBiometricSupported) {
+      _checkBiometricSupport();
+    }
+  }
+
   Future<void> _checkBiometricSupport() async {
     try {
       final bool canAuthenticateWithBiometrics = await _auth.canCheckBiometrics;
       final bool isDeviceSupported = await _auth.isDeviceSupported();
 
-      setState(() {
-        _isBiometricSupported = canAuthenticateWithBiometrics || isDeviceSupported;
-      });
+      if (mounted) {
+        setState(() {
+          _isBiometricSupported = canAuthenticateWithBiometrics || isDeviceSupported;
+        });
+      }
     } catch (e) {
       debugPrint('Error checking biometrics: $e');
     }
   }
 
-  // 2. Panggil Biometrik Native / WebAuthn
   Future<void> _authenticateWithBiometrics() async {
     if (_isAuthenticating) return;
 
@@ -58,7 +72,7 @@ class _LockScreenState extends State<LockScreen> {
         localizedReason: 'Gunakan Sidik Jari / Biometrik untuk masuk ke MyKas',
         options: const AuthenticationOptions(
           stickyAuth: true,
-          biometricOnly: false, // Di Web, ini mengizinkan Passkey / Screen Lock HP
+          biometricOnly: false,
         ),
       );
 
@@ -178,7 +192,7 @@ class _LockScreenState extends State<LockScreen> {
 
             const Spacer(),
 
-            // Tombol Khusus Biometrik PWA
+            // Tombol Biometrik PWA
             if (_isBiometricSupported) ...[
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -225,7 +239,7 @@ class _LockScreenState extends State<LockScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      const SizedBox(width: 70, height: 70), // Spacer kosong
+                      const SizedBox(width: 70, height: 70),
                       _buildKeypadButton('0', colorScheme),
                       SizedBox(
                         width: 70,
