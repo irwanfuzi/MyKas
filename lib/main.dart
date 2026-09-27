@@ -154,11 +154,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   });
                 },
                 labelType: NavigationRailLabelType.all,
-                unselectedIconTheme: const IconThemeData(
-                  color: AppTheme.textMuted,
+                unselectedIconTheme: IconThemeData(
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
-                unselectedLabelTextStyle: const TextStyle(
-                  color: AppTheme.textMuted,
+                unselectedLabelTextStyle: TextStyle(
+                  color: theme.colorScheme.onSurfaceVariant,
                   fontSize: 12,
                 ),
                 selectedIconTheme: IconThemeData(
