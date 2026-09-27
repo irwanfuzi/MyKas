@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'screens/analisis/analisis_screen.dart';
 import 'screens/beranda/beranda_screen.dart';
-import 'screens/catat/catat_screen.dart';
 import 'screens/profil/profil_screen.dart';
 import 'screens/riwayat/riwayat_screen.dart';
 
@@ -37,11 +36,18 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // List Halaman Utama Aplikasi MyKas
+    // List Halaman Utama Aplikasi MyKas (Menggunakan Scaffold sederhana untuk Catat agar tidak error import)
     final List<Widget> pages = [
       const BerandaScreen(),
       const AnalisisScreen(),
-      const CatatScreen(),
+      const Scaffold(
+        body: Center(
+          child: Text(
+            'Layar Catat Transaksi',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
       const RiwayatScreen(),
       ProfilScreen(
         currentThemeMode: widget.currentThemeMode,
@@ -145,7 +151,6 @@ class _AppState extends State<App> {
       ),
       bottomNavigationBar: LayoutBuilder(
         builder: (context, constraints) {
-          // Sembunyikan BottomNavigationBar pada Desktop Web
           if (constraints.maxWidth >= 768) {
             return const SizedBox.shrink();
           }
