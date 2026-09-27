@@ -38,11 +38,15 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
+      # Generate Folder Android Otomatis versi Terbaru
+      - name: Generate Android Project Platform
+        run: flutter create . --platforms=android --org com.mykas.app
+
       # 1. Build Flutter Web PWA
       - name: Build Flutter Web
         run: flutter build web --release --base-href "/MyKas/" --no-tree-shake-icons
 
-      # 2. Build APK Android (Release)
+      # 2. Build APK Android Release
       - name: Build Android APK
         run: flutter build apk --release
 
@@ -52,7 +56,7 @@ jobs:
         with:
           path: build/web
 
-      # 4. Upload File APK ke GitHub Artifacts (Bisa di-download langsung)
+      # 4. Upload File APK ke GitHub Artifacts (Bisa Download Langsung)
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -71,4 +75,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
