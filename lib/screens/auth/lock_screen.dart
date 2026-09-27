@@ -21,14 +21,12 @@ class LockScreen extends StatefulWidget {
 class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
   final LocalAuthentication _auth = LocalAuthentication();
   String _enteredPin = '';
-  bool _isBiometricSupported = false;
   bool _isAuthenticating = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _checkBiometricSupport();
   }
 
   @override
@@ -37,28 +35,7 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _isBiometricSupported) {
-      _checkBiometricSupport();
-    }
-  }
-
-  Future<void> _checkBiometricSupport() async {
-    try {
-      final bool canAuthenticateWithBiometrics = await _auth.canCheckBiometrics;
-      final bool isDeviceSupported = await _auth.isDeviceSupported();
-
-      if (mounted) {
-        setState(() {
-          _isBiometricSupported = canAuthenticateWithBiometrics || isDeviceSupported;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error checking biometrics: $e');
-    }
-  }
-
+  // Panggil autentikasi Biometrik PWA Web / Native
   Future<void> _authenticateWithBiometrics() async {
     if (_isAuthenticating) return;
 
@@ -68,10 +45,10 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
 
     try {
       final bool authenticated = await _auth.authenticate(
-        localizedReason: 'Gunakan Sidik Jari / Biometrik untuk masuk ke MyKas',
+        localizedReason: 'Pindai Sidik Jari / Biometrik untuk masuk ke MyKas',
         options: const AuthenticationOptions(
           stickyAuth: true,
-          biometricOnly: false,
+          biometricOnly: false, // Memungkinkan pemicuan WebAuthn / Passkey / Biometrik HP
         ),
       );
 
@@ -83,7 +60,7 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Autentikasi biometrik gagal. Gunakan PIN MyKas.'),
+            content: Text('Autentikasi biometrik tidak didukung atau gagal. Gunakan PIN.'),
             backgroundColor: AppTheme.expenseRed,
           ),
         );
@@ -98,15 +75,14 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
   }
 
   void _onKeyPress(String value) {
-    // Menyesuaikan dengan PIN 6 Digit (atau sesuai panjang widget.savedPin)
-    final int pinLength = widget.savedPin.length > 0 ? widget.savedPin.length : 6;
-    
-    if (_enteredPin.length < pinLength) {
+    final int targetLength = widget.savedPin.isNotEmpty ? widget.savedPin.length : 6;
+
+    if (_enteredPin.length < targetLength) {
       setState(() {
         _enteredPin += value;
       });
 
-      if (_enteredPin.length == pinLength) {
+      if (_enteredPin.length == targetLength) {
         _verifyPin();
       }
     }
@@ -140,7 +116,7 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final int pinLength = widget.savedPin.length > 0 ? widget.savedPin.length : 6;
+    final int targetLength = widget.savedPin.isNotEmpty ? widget.savedPin.length : 6;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -172,10 +148,10 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
             ),
             const SizedBox(height: 32),
 
-            // Indikator PIN Dinamis (Disesuaikan dengan panjang PIN 6 digit)
+            // Indikator Titik PIN 6 Digit
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(pinLength, (index) {
+              children: List.generate(targetLength, (index) {
                 final bool isFilled = index < _enteredPin.length;
                 return Container(
                   margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -195,34 +171,32 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
 
             const Spacer(),
 
-            // Tombol Biometrik PWA / Native
-            if (_isBiometricSupported) ...[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-                    side: const BorderSide(color: AppTheme.brandPrimary),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+            // Tombol Biometrik (Selalu Ditampilkan)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                  side: const BorderSide(color: AppTheme.brandPrimary),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  onPressed: _authenticateWithBiometrics,
-                  icon: const Icon(Icons.fingerprint, color: AppTheme.brandPrimary, size: 28),
-                  label: Text(
-                    'Buka dengan Biometrik',
-                    style: GoogleFonts.urbanist(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.brandPrimary,
-                    ),
+                ),
+                onPressed: _authenticateWithBiometrics,
+                icon: const Icon(Icons.fingerprint, color: AppTheme.brandPrimary, size: 28),
+                label: Text(
+                  'Buka dengan Biometrik',
+                  style: GoogleFonts.urbanist(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.brandPrimary,
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-            ],
+            ),
+            const SizedBox(height: 24),
 
-            // Keypad Angka Numpad
+            // Keypad Numpad
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Column(
