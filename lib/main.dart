@@ -51,7 +51,6 @@ class _MyKasAppState extends State<MyKasApp> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  // Auto-lock aplikasi saat dipindah ke background / minimize
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
@@ -88,6 +87,15 @@ class _MyKasAppState extends State<MyKasApp> with WidgetsBindingObserver {
     });
   }
 
+  void _handlePinStateChanged(bool enabled, String newPin) {
+    setState(() {
+      _currentSavedPin = newPin;
+      if (!enabled) {
+        _isLocked = false;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -109,6 +117,7 @@ class _MyKasAppState extends State<MyKasApp> with WidgetsBindingObserver {
               onThemeChanged: _handleThemeChange,
               currentThemeMode: _themeMode,
               onThemeModeChanged: _updateThemeMode,
+              onPinStateChanged: _handlePinStateChanged,
             ),
     );
   }
