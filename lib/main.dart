@@ -124,7 +124,6 @@ class _MyKasAppState extends State<MyKasApp> with WidgetsBindingObserver {
   }
 }
 
-// Widget Tampilan Utama jika main.dart juga memuat MainNavigation
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
 
@@ -155,12 +154,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   });
                 },
                 labelType: NavigationRailLabelType.all,
-                // Sinkronisasi warna unselected (Gantikan unselectedItemColor yang invalid)
-                unselectedIconTheme: IconThemeData(
-                  color: AppTheme.textSecondary,
+                unselectedIconTheme: const IconThemeData(
+                  color: AppTheme.textMuted,
                 ),
-                unselectedLabelTextStyle: TextStyle(
-                  color: AppTheme.textSecondary,
+                unselectedLabelTextStyle: const TextStyle(
+                  color: AppTheme.textMuted,
                   fontSize: 12,
                 ),
                 selectedIconTheme: IconThemeData(
@@ -175,7 +173,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   child: Text(
                     'MyKas',
-                    // Sinkronisasi FontWeight.black -> FontWeight.w900 (Identik secara visual)
                     style: GoogleFonts.urbanist(
                       fontSize: 20,
                       fontWeight: FontWeight.w900,
@@ -219,7 +216,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               child: Center(
                 child: Text(
                   'MyKas Dashboard',
-                  // Sinkronisasi FontWeight.extrabold -> FontWeight.w800 (Identik secara visual)
                   style: GoogleFonts.urbanist(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
