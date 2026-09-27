@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'screens/analisis/analisis_screen.dart';
 import 'screens/beranda/beranda_screen.dart';
+import 'screens/catat/catat_screen.dart';
 import 'screens/profil/profil_screen.dart';
 import 'screens/riwayat/riwayat_screen.dart';
 
@@ -39,14 +40,7 @@ class _AppState extends State<App> {
     final List<Widget> pages = [
       const BerandaScreen(),
       const AnalisisScreen(),
-      const Scaffold(
-        body: Center(
-          child: Text(
-            'Layar Catat Transaksi',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
+      const CatatScreen(),
       const RiwayatScreen(),
       ProfilScreen(
         currentThemeMode: widget.currentThemeMode,
@@ -58,6 +52,7 @@ class _AppState extends State<App> {
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, constraints) {
+          // Tampilan Desktop / Web Dashboard (Layar Lebar >= 768px)
           if (constraints.maxWidth >= 768) {
             return Row(
               children: [
@@ -140,6 +135,7 @@ class _AppState extends State<App> {
             );
           }
 
+          // Tampilan Mobile App / PWA Mobile
           return IndexedStack(
             index: _currentIndex,
             children: pages,
