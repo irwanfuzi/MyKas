@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
@@ -23,10 +24,20 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
   String _enteredPin = '';
   bool _isAuthenticating = false;
 
+  // Deteksi apakah aplikasi berjalan sebagai Native Mobile (bukan PWA / Web)
+  bool get _isNativeMobile => !kIsWeb;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    // Jika di Android/iOS Native, jalankan pemicu Biometrik Otomatis saat layar muncul
+    if (_isNativeMobile) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _authenticateWithBiometrics();
+      });
+    }
   }
 
   @override
@@ -35,7 +46,15 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  // Panggil autentikasi Biometrik PWA Web / Native
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Saat aplikasi resume dari background di Native Mobile, otomatis panggil biometrik lagi
+    if (state == AppLifecycleState.resumed && _isNativeMobile) {
+      _authenticateWithBiometrics();
+    }
+  }
+
+  // Fungsi Panggil Biometrik Native
   Future<void> _authenticateWithBiometrics() async {
     if (_isAuthenticating) return;
 
@@ -44,27 +63,23 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
     });
 
     try {
-      final bool authenticated = await _auth.authenticate(
-        localizedReason: 'Pindai Sidik Jari / Biometrik untuk masuk ke MyKas',
-        options: const AuthenticationOptions(
-          stickyAuth: true,
-          biometricOnly: false, // Memungkinkan pemicuan WebAuthn / Passkey / Biometrik HP
-        ),
-      );
+      final bool canCheck = await _auth.canCheckBiometrics || await _auth.isDeviceSupported();
 
-      if (authenticated) {
-        widget.onUnlocked();
-      }
-    } catch (e) {
-      debugPrint('Biometric Error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Autentikasi biometrik tidak didukung atau gagal. Gunakan PIN.'),
-            backgroundColor: AppTheme.expenseRed,
+      if (canCheck) {
+        final bool authenticated = await _auth.authenticate(
+          localizedReason: 'Pindai Sidik Jari / Face ID untuk membuka MyKas',
+          options: const AuthenticationOptions(
+            stickyAuth: true,
+            biometricOnly: true,
           ),
         );
+
+        if (authenticated) {
+          widget.onUnlocked();
+        }
       }
+    } catch (e) {
+      debugPrint('Biometric error: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -140,7 +155,9 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
             ),
             const SizedBox(height: 8),
             Text(
-              'Aplikasi Terkunci untuk Keamanan',
+              _isNativeMobile
+                  ? 'Gunakan Biometrik atau PIN Keamanan'
+                  : 'Aplikasi Terkunci untuk Keamanan',
               style: TextStyle(
                 fontSize: 14,
                 color: colorScheme.onSurfaceVariant,
@@ -171,30 +188,32 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
 
             const Spacer(),
 
-            // Tombol Biometrik (Selalu Ditampilkan)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-                  side: const BorderSide(color: AppTheme.brandPrimary),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+            // Tombol Manual Biometrik HANYA DITAMPILKAN pada APK Native
+            if (_isNativeMobile) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                    side: const BorderSide(color: AppTheme.brandPrimary),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                ),
-                onPressed: _authenticateWithBiometrics,
-                icon: const Icon(Icons.fingerprint, color: AppTheme.brandPrimary, size: 28),
-                label: Text(
-                  'Buka dengan Biometrik',
-                  style: GoogleFonts.urbanist(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.brandPrimary,
+                  onPressed: _authenticateWithBiometrics,
+                  icon: const Icon(Icons.fingerprint, color: AppTheme.brandPrimary, size: 28),
+                  label: Text(
+                    'Pindai Biometrik',
+                    style: GoogleFonts.urbanist(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.brandPrimary,
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 24),
+            ],
 
             // Keypad Numpad
             Container(
