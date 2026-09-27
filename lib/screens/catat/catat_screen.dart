@@ -15,7 +15,6 @@ class _CatatScreenState extends State<CatatScreen> {
   final _nominalController = TextEditingController();
   final _catatanController = TextEditingController();
   String _selectedKategori = 'Makanan & Minuman';
-  DateTime _selectedDate = DateTime.now();
 
   final List<String> _kategoriPengeluaran = [
     'Makanan & Minuman',
@@ -70,7 +69,6 @@ class _CatatScreenState extends State<CatatScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
 
     final listKategori = _isPengeluaran ? _kategoriPengeluaran : _kategoriPemasukan;
 
@@ -250,3 +248,4 @@ class _CatatScreenState extends State<CatatScreen> {
     );
   }
 }
+
