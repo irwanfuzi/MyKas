@@ -36,7 +36,7 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // List Halaman Utama Aplikasi MyKas (Menggunakan Scaffold sederhana untuk Catat agar tidak error import)
+    // List Halaman Utama Aplikasi MyKas (Catat Menggunakan Placeholder Agar Tidak Error Import)
     final List<Widget> pages = [
       const BerandaScreen(),
       const AnalisisScreen(),
