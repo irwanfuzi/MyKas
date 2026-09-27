@@ -1,11 +1,9 @@
-import 'dart:async';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-// Untuk biometrik di Web/PWA
-import 'dart:html' as html;
+import '../../theme/app_theme.dart';
 
 class LockScreen extends StatefulWidget {
   final String savedPin;
@@ -22,77 +20,77 @@ class LockScreen extends StatefulWidget {
 }
 
 class _LockScreenState extends State<LockScreen> {
-  final LocalAuthentication _localAuth = LocalAuthentication();
+  final LocalAuthentication _auth = LocalAuthentication();
   String _enteredPin = '';
-  bool _isError = false;
-  bool _isBiometricEnabled = false;
+  bool _isBiometricSupported = false;
+  bool _isAuthenticating = false;
 
   @override
   void initState() {
     super.initState();
-    // Panggil biometrik saat tampilan sudah siap
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndPromptBiometrics();
-    });
+    _checkBiometricSupport();
   }
 
-  Future<void> _checkAndPromptBiometrics() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isEnabled = prefs.getBool('fingerprint_enabled') ?? false;
+  // 1. Cek Dukungan Biometrik di Device / Browser
+  Future<void> _checkBiometricSupport() async {
+    try {
+      final bool canAuthenticateWithBiometrics = await _auth.canCheckBiometrics;
+      final bool isDeviceSupported = await _auth.isDeviceSupported();
 
-    if (mounted) {
       setState(() {
-        _isBiometricEnabled = isEnabled;
+        _isBiometricSupported = canAuthenticateWithBiometrics || isDeviceSupported;
       });
-    }
-
-    if (isEnabled) {
-      _authenticateWithBiometrics();
+    } catch (e) {
+      debugPrint('Error checking biometrics: $e');
     }
   }
 
+  // 2. Panggil Biometrik Native / WebAuthn
   Future<void> _authenticateWithBiometrics() async {
-    if (kIsWeb) {
-      // --- LOGIKA BIOMETRIK FLUTTER WEB / PWA ---
-      try {
-        final credentials = html.window.navigator.credentials;
-        if (credentials != null) {
-          widget.onUnlocked();
-          return;
-        }
-      } catch (_) {}
-    } else {
-      // --- LOGIKA BIOMETRIK NATIVE ANDROID / IOS ---
-      try {
-        final canCheck = await _localAuth.canCheckBiometrics;
-        final isSupported = await _localAuth.isDeviceSupported();
+    if (_isAuthenticating) return;
 
-        if (canCheck || isSupported) {
-          final authenticated = await _localAuth.authenticate(
-            localizedReason: 'Pindai sidik jari Anda untuk membuka MyKas',
-            options: const AuthenticationOptions(
-              stickyAuth: true,
-              biometricOnly: true,
-            ),
-          );
+    setState(() {
+      _isAuthenticating = true;
+    });
 
-          if (authenticated && mounted) {
-            widget.onUnlocked();
-            return;
-          }
-        }
-      } catch (_) {}
+    try {
+      final bool authenticated = await _auth.authenticate(
+        localizedReason: 'Gunakan Sidik Jari / Biometrik untuk masuk ke MyKas',
+        options: const AuthenticationOptions(
+          stickyAuth: true,
+          biometricOnly: false, // Di Web, ini mengizinkan Passkey / Screen Lock HP
+        ),
+      );
+
+      if (authenticated) {
+        widget.onUnlocked();
+      }
+    } catch (e) {
+      debugPrint('Biometric Error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Autentikasi biometrik gagal. Gunakan PIN MyKas.'),
+            backgroundColor: AppTheme.expenseRed,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isAuthenticating = false;
+        });
+      }
     }
   }
 
-  void _onKeyPress(String val) {
-    if (_enteredPin.length < 6) {
+  void _onKeyPress(String value) {
+    if (_enteredPin.length < 4) {
       setState(() {
-        _isError = false;
-        _enteredPin += val;
+        _enteredPin += value;
       });
 
-      if (_enteredPin.length == 6) {
+      if (_enteredPin.length == 4) {
         _verifyPin();
       }
     }
@@ -101,7 +99,6 @@ class _LockScreenState extends State<LockScreen> {
   void _onDelete() {
     if (_enteredPin.isNotEmpty) {
       setState(() {
-        _isError = false;
         _enteredPin = _enteredPin.substring(0, _enteredPin.length - 1);
       });
     }
@@ -111,161 +108,168 @@ class _LockScreenState extends State<LockScreen> {
     if (_enteredPin == widget.savedPin) {
       widget.onUnlocked();
     } else {
-      setState(() {
-        _isError = true;
-        _enteredPin = '';
-      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('PIN Salah! Silakan coba lagi.'),
-          backgroundColor: Color(0xFFEF4444),
-          duration: Duration(seconds: 1),
+          backgroundColor: AppTheme.expenseRed,
         ),
       );
+      setState(() {
+        _enteredPin = '';
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
-    final textColor = isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isDesktopWeb = constraints.maxWidth > 768;
+        child: Column(
+          children: [
+            const Spacer(),
+            Icon(
+              Icons.lock_outline_rounded,
+              size: 48,
+              color: AppTheme.brandPrimary,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Masukkan PIN MyKas',
+              style: GoogleFonts.urbanist(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Aplikasi Terkunci untuk Keamanan',
+              style: TextStyle(
+                fontSize: 14,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 32),
 
-            return Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: isDesktopWeb ? 400 : double.infinity),
-                child: Column(
-                  children: [
-                    const Spacer(),
-                    const Icon(Icons.lock_rounded, size: 56, color: Color(0xFF0052FF)),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Masukkan PIN MyKas',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
-                      ),
+            // Indikator PIN (4 Titik)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(4, (index) {
+                final bool isFilled = index < _enteredPin.length;
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 10),
+                  width: 16,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isFilled ? AppTheme.brandPrimary : Colors.transparent,
+                    border: Border.all(
+                      color: isFilled ? AppTheme.brandPrimary : colorScheme.outline,
+                      width: 2,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Aplikasi dikunci untuk keamanan data Anda',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
+                  ),
+                );
+              }),
+            ),
 
-                    // Indikator PIN
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(6, (index) {
-                        final isFilled = index < _enteredPin.length;
-                        return Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _isError
-                                ? const Color(0xFFEF4444)
-                                : (isFilled ? const Color(0xFF0052FF) : Colors.transparent),
-                            border: Border.all(
-                              color: _isError
-                                  ? const Color(0xFFEF4444)
-                                  : (isFilled ? const Color(0xFF0052FF) : const Color(0xFF64748B)),
-                              width: 2,
-                            ),
-                          ),
-                        );
-                      }),
-                    ),
-                    const Spacer(),
+            const Spacer(),
 
-                    // Keypad NumPad
-                    Container(
-                      constraints: const BoxConstraints(maxWidth: 320),
-                      padding: const EdgeInsets.only(bottom: 24),
-                      child: Column(
-                        children: [
-                          for (var row in [
-                            ['1', '2', '3'],
-                            ['4', '5', '6'],
-                            ['7', '8', '9'],
-                          ])
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: row.map((num) => _buildKeypadBtn(num, textColor)).toList(),
-                              ),
-                            ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                SizedBox(
-                                  width: 64,
-                                  height: 64,
-                                  child: IconButton(
-                                    onPressed: _authenticateWithBiometrics,
-                                    icon: Icon(
-                                      Icons.fingerprint_rounded,
-                                      size: 32,
-                                      color: _isBiometricEnabled
-                                          ? const Color(0xFF0052FF)
-                                          : textColor.withOpacity(0.3),
-                                    ),
-                                    tooltip: 'Buka dengan Biometrik',
-                                  ),
-                                ),
-                                _buildKeypadBtn('0', textColor),
-                                SizedBox(
-                                  width: 64,
-                                  height: 64,
-                                  child: IconButton(
-                                    onPressed: _onDelete,
-                                    icon: Icon(Icons.backspace_outlined, color: textColor),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+            // Tombol Khusus Biometrik PWA
+            if (_isBiometricSupported) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                    side: const BorderSide(color: AppTheme.brandPrimary),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                  ],
+                  ),
+                  onPressed: _authenticateWithBiometrics,
+                  icon: const Icon(Icons.fingerprint, color: AppTheme.brandPrimary, size: 28),
+                  label: Text(
+                    'Buka dengan Biometrik',
+                    style: GoogleFonts.urbanist(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.brandPrimary,
+                    ),
+                  ),
                 ),
               ),
-            );
-          },
+              const SizedBox(height: 24),
+            ],
+
+            // Keypad Angka Numpad (1-9, Delete, 0)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Column(
+                children: [
+                  for (var row in [
+                    ['1', '2', '3'],
+                    ['4', '5', '6'],
+                    ['7', '8', '9'],
+                  ])
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: row.map((num) => _buildKeypadButton(num, colorScheme)).toList(),
+                      ),
+                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      const SizedBox(width: 70, height: 70), // Spacer kosong
+                      _buildKeypadButton('0', colorScheme),
+                      SizedBox(
+                        width: 70,
+                        height: 70,
+                        child: IconButton(
+                          onPressed: _onDelete,
+                          icon: Icon(Icons.backspace_outlined, color: colorScheme.onSurface),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildKeypadBtn(String val, Color textColor) {
+  Widget _buildKeypadButton(String label, ColorScheme colorScheme) {
     return SizedBox(
-      width: 64,
-      height: 64,
-      child: OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          shape: const CircleBorder(),
-          side: BorderSide(color: textColor.withOpacity(0.2)),
-        ),
-        onPressed: () => _onKeyPress(val),
-        child: Text(
-          val,
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: textColor),
+      width: 70,
+      height: 70,
+      child: InkWell(
+        onTap: () => _onKeyPress(label),
+        borderRadius: BorderRadius.circular(35),
+        child: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: colorScheme.surface,
+            border: Border.all(color: colorScheme.outline.withOpacity(0.5)),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: GoogleFonts.urbanist(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
+            ),
+          ),
         ),
       ),
     );
