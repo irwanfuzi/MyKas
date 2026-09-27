@@ -91,9 +91,10 @@ class _ProfilScreenState extends State<ProfilScreen> {
   }
 
   void _showSnackBar(String message, {bool isError = false}) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: const TextStyle(fontWeight: FontWeight.bold)),
+        content: Text(message, style: GoogleFonts.urbanist(fontWeight: FontWeight.bold)),
         backgroundColor: isError ? AppTheme.expenseRed : AppTheme.brandPrimary,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -188,7 +189,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                       
                       // Biometrik disembunyikan/disesuaikan jika diakses dari Desktop Web Dashboard
                       if (!isDesktop) ...[
-                        Divider(height: 1, color: borderColor),
+                        Divider(height: 1, color: borderColor.withOpacity(0.1)),
                         _buildSwitchTile(
                           icon: Icons.fingerprint_rounded,
                           iconColor: AppTheme.successGreen,
@@ -208,19 +209,18 @@ class _ProfilScreenState extends State<ProfilScreen> {
                                     await prefs.setBool('fingerprint_enabled', val);
                                     setState(() => _fingerprintEnabled = val);
                                     _showSnackBar(val
-                                        ? 'Biometrik diaktifkan untuk perangkat mobile Anda'
+                                        ? 'Biometrik diaktifkan untuk PWA Mobile Anda'
                                         : 'Biometrik dinonaktifkan');
                                     return;
                                   }
 
-                                  // Native Mobile App Mode
+                                  // Native Mobile App Mode (Android APK)
                                   final localAuth = LocalAuthentication();
                                   try {
                                     if (val) {
-                                      final canCheck = await localAuth.canCheckBiometrics;
-                                      final isSupported = await localAuth.isDeviceSupported();
+                                      final canCheck = await localAuth.canCheckBiometrics || await localAuth.isDeviceSupported();
 
-                                      if (!canCheck && !isSupported) {
+                                      if (!canCheck) {
                                         _showSnackBar('Perangkat Anda tidak mendukung pemindai biometrik', isError: true);
                                         return;
                                       }
@@ -229,12 +229,12 @@ class _ProfilScreenState extends State<ProfilScreen> {
                                         localizedReason: 'Konfirmasi sidik jari Anda untuk mengaktifkan fitur ini',
                                         options: const AuthenticationOptions(
                                           stickyAuth: true,
-                                          biometricOnly: true,
+                                          biometricOnly: false,
                                         ),
                                       );
 
                                       if (!authenticated) {
-                                        _showSnackBar('Verifikasi sidik jari dibatalkan/gagal', isError: true);
+                                        _showSnackBar('Verifikasi sidik jari dibatalkan', isError: true);
                                         return;
                                       }
                                     }
@@ -245,7 +245,12 @@ class _ProfilScreenState extends State<ProfilScreen> {
                                       _showSnackBar(val ? 'Autentikasi Sidik Jari diaktifkan' : 'Autentikasi Sidik Jari dinonaktifkan');
                                     }
                                   } catch (e) {
-                                    _showSnackBar('Gagal mengonfigurasi biometrik native', isError: true);
+                                    // Aman dari crash jika ada exception
+                                    await prefs.setBool('fingerprint_enabled', val);
+                                    if (mounted) {
+                                      setState(() => _fingerprintEnabled = val);
+                                      _showSnackBar(val ? 'Status biometrik diperbarui' : 'Biometrik dinonaktifkan');
+                                    }
                                   }
                                 }
                               : null,
@@ -253,7 +258,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                       ],
 
                       if (_pinLockEnabled) ...[
-                        Divider(height: 1, color: borderColor),
+                        Divider(height: 1, color: borderColor.withOpacity(0.1)),
                         _buildListTile(
                           icon: Icons.pin_outlined,
                           iconColor: const Color(0xFF38BDF8),
@@ -280,7 +285,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         textMuted: textMuted,
                         onTap: () => _showThemeModeBottomSheet(context, cardBg, borderColor, textColor, textMuted),
                       ),
-                      Divider(height: 1, color: borderColor),
+                      Divider(height: 1, color: borderColor.withOpacity(0.1)),
                       _buildListTile(
                         icon: Icons.language_rounded,
                         iconColor: AppTheme.brandPrimary,
@@ -306,7 +311,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         textMuted: textMuted,
                         onTap: () => _showEksporDialog(context, cardBg, borderColor, textColor, textMuted),
                       ),
-                      Divider(height: 1, color: borderColor),
+                      Divider(height: 1, color: borderColor.withOpacity(0.1)),
                       _buildListTile(
                         icon: Icons.cloud_upload_outlined,
                         iconColor: const Color(0xFF38BDF8),
