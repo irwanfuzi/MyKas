@@ -38,25 +38,35 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      # Fix: Tambahkan --project-name mykas agar tidak menggunakan nama folder MyKas
-      - name: Generate Android Project Platform
-        run: flutter create . --platforms=android --org com.mykas.app --project-name mykas
+      # 1. Generate Folder Android & Timpa MainActivity.kt dengan FlutterFragmentActivity
+      - name: Generate Android Project & Fix FragmentActivity
+        run: |
+          flutter create . --platforms=android --org com.mykas.app --project-name mykas
+          mkdir -p android/app/src/main/kotlin/com/mykas/app/mykas
+          cat << 'EOF' > android/app/src/main/kotlin/com/mykas/app/mykas/MainActivity.kt
+          package com.mykas.app.mykas
 
-      # 1. Build Flutter Web PWA
+          import io.flutter.embedding.android.FlutterFragmentActivity
+
+          class MainActivity: FlutterFragmentActivity() {
+          }
+          EOF
+
+      # 2. Build Flutter Web PWA
       - name: Build Flutter Web
         run: flutter build web --release --base-href "/MyKas/" --no-tree-shake-icons
 
-      # 2. Build APK Android Release
+      # 3. Build APK Android Release
       - name: Build Android APK
         run: flutter build apk --release
 
-      # 3. Upload Web Artifact untuk GitHub Pages
+      # 4. Upload Web Artifact untuk GitHub Pages
       - name: Upload Web Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
 
-      # 4. Upload File APK ke GitHub Artifacts
+      # 5. Upload File APK ke GitHub Artifacts
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
