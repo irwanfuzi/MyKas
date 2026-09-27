@@ -39,7 +39,6 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Saat aplikasi dibuka kembali dari background, persiapkan biometrik
     if (state == AppLifecycleState.resumed && _isBiometricSupported) {
       _checkBiometricSupport();
     }
@@ -99,12 +98,15 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
   }
 
   void _onKeyPress(String value) {
-    if (_enteredPin.length < 4) {
+    // Menyesuaikan dengan PIN 6 Digit (atau sesuai panjang widget.savedPin)
+    final int pinLength = widget.savedPin.length > 0 ? widget.savedPin.length : 6;
+    
+    if (_enteredPin.length < pinLength) {
       setState(() {
         _enteredPin += value;
       });
 
-      if (_enteredPin.length == 4) {
+      if (_enteredPin.length == pinLength) {
         _verifyPin();
       }
     }
@@ -138,6 +140,7 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final int pinLength = widget.savedPin.length > 0 ? widget.savedPin.length : 6;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -169,15 +172,15 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
             ),
             const SizedBox(height: 32),
 
-            // Indikator PIN (4 Titik)
+            // Indikator PIN Dinamis (Disesuaikan dengan panjang PIN 6 digit)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(4, (index) {
+              children: List.generate(pinLength, (index) {
                 final bool isFilled = index < _enteredPin.length;
                 return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 10),
-                  width: 16,
-                  height: 16,
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  width: 14,
+                  height: 14,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: isFilled ? AppTheme.brandPrimary : Colors.transparent,
@@ -192,7 +195,7 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
 
             const Spacer(),
 
-            // Tombol Biometrik PWA
+            // Tombol Biometrik PWA / Native
             if (_isBiometricSupported) ...[
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -219,7 +222,7 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
               const SizedBox(height: 24),
             ],
 
-            // Keypad Angka Numpad (1-9, Delete, 0)
+            // Keypad Angka Numpad
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Column(
