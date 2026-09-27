@@ -38,11 +38,13 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      # 1. Generate Folder Android & Timpa MainActivity.kt dengan FlutterFragmentActivity
-      - name: Generate Android Project & Fix FragmentActivity
+      # 1. Generate Folder Android & Konfigurasi Keystore Konsisten
+      - name: Generate Android Project & Consitent Signing
         run: |
           flutter create . --platforms=android --org com.mykas.app --project-name mykas
           mkdir -p android/app/src/main/kotlin/com/mykas/app/mykas
+          
+          # Fix FragmentActivity untuk Biometrik Native
           cat << 'EOF' > android/app/src/main/kotlin/com/mykas/app/mykas/MainActivity.kt
           package com.mykas.app.mykas
 
@@ -50,6 +52,17 @@ jobs:
 
           class MainActivity: FlutterFragmentActivity() {
           }
+          EOF
+
+          # Buat Keystore Konsisten agar APK Bisa Ditimpa/Diupdate Tanpa Uninstall
+          keytool -genkeypair -v -keystore android/app/upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias mykas_key -storepass mykaspassword -keypass mykaspassword -dname "CN=MyKas, OU=Dev, O=MyKas, L=ID, ST=ID, C=ID"
+
+          # Buat key.properties
+          cat << 'EOF' > android/key.properties
+          storePassword=mykaspassword
+          keyPassword=mykaspassword
+          keyAlias=mykas_key
+          storeFile=upload-keystore.jks
           EOF
 
       # 2. Build Flutter Web PWA
