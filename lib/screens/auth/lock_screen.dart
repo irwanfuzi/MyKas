@@ -24,7 +24,6 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
   String _enteredPin = '';
   bool _isAuthenticating = false;
 
-  // Deteksi apakah aplikasi berjalan sebagai Native Mobile (bukan PWA / Web)
   bool get _isNativeMobile => !kIsWeb;
 
   @override
@@ -32,7 +31,6 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    // Jika di Android/iOS Native, jalankan pemicu Biometrik Otomatis saat layar muncul
     if (_isNativeMobile) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _authenticateWithBiometrics();
@@ -48,13 +46,11 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Saat aplikasi resume dari background di Native Mobile, otomatis panggil biometrik lagi
     if (state == AppLifecycleState.resumed && _isNativeMobile) {
       _authenticateWithBiometrics();
     }
   }
 
-  // Fungsi Panggil Biometrik Native
   Future<void> _authenticateWithBiometrics() async {
     if (_isAuthenticating) return;
 
@@ -116,9 +112,14 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
       widget.onUnlocked();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('PIN Salah! Silakan coba lagi.'),
+        SnackBar(
+          content: Text(
+            'PIN Salah! Silakan coba lagi.',
+            style: GoogleFonts.urbanist(fontWeight: FontWeight.w600),
+          ),
           backgroundColor: AppTheme.expenseRed,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       setState(() {
@@ -138,39 +139,87 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
       body: SafeArea(
         child: Column(
           children: [
-            const Spacer(),
-            Icon(
-              Icons.lock_outline_rounded,
-              size: 48,
-              color: AppTheme.brandPrimary,
+            const SizedBox(height: 20),
+
+            // Flat Branding Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: const BoxDecoration(
+                    color: AppTheme.brandPrimary,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'MYKAS',
+                  style: GoogleFonts.urbanist(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2.0,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
+
+            const Spacer(flex: 2),
+
+            // Flat Security Icon Box
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: colorScheme.outline.withOpacity(0.15),
+                  width: 1,
+                ),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.lock_outline_rounded,
+                  size: 28,
+                  color: AppTheme.brandPrimary,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
             Text(
               'Masukkan PIN MyKas',
               style: GoogleFonts.urbanist(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
                 color: colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               _isNativeMobile
                   ? 'Gunakan Biometrik atau PIN Keamanan'
-                  : 'Aplikasi Terkunci untuk Keamanan',
-              style: TextStyle(
-                fontSize: 14,
+                  : 'Aplikasi Terkunci demi Keamanan Data',
+              style: GoogleFonts.urbanist(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
                 color: colorScheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 32),
 
-            // Indikator Titik PIN 6 Digit
+            const SizedBox(height: 36),
+
+            // Flat PIN Dots Indicator
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(targetLength, (index) {
                 final bool isFilled = index < _enteredPin.length;
-                return Container(
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
                   margin: const EdgeInsets.symmetric(horizontal: 8),
                   width: 14,
                   height: 14,
@@ -178,7 +227,9 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
                     shape: BoxShape.circle,
                     color: isFilled ? AppTheme.brandPrimary : Colors.transparent,
                     border: Border.all(
-                      color: isFilled ? AppTheme.brandPrimary : colorScheme.outline,
+                      color: isFilled
+                          ? AppTheme.brandPrimary
+                          : colorScheme.outline.withOpacity(0.3),
                       width: 2,
                     ),
                   ),
@@ -186,38 +237,49 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
               }),
             ),
 
-            const Spacer(),
+            const Spacer(flex: 3),
 
-            // Tombol Manual Biometrik HANYA DITAMPILKAN pada APK Native
+            // Flat Biometric Button (Khusus Native Mobile)
             if (_isNativeMobile) ...[
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-                    side: const BorderSide(color: AppTheme.brandPrimary),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                padding: const EdgeInsets.symmetric(horizontal: 44),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: TextButton.icon(
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      backgroundColor: colorScheme.surface,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(
+                          color: colorScheme.outline.withOpacity(0.15),
+                          width: 1,
+                        ),
+                      ),
                     ),
-                  ),
-                  onPressed: _authenticateWithBiometrics,
-                  icon: const Icon(Icons.fingerprint, color: AppTheme.brandPrimary, size: 28),
-                  label: Text(
-                    'Pindai Biometrik',
-                    style: GoogleFonts.urbanist(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
+                    onPressed: _authenticateWithBiometrics,
+                    icon: const Icon(
+                      Icons.fingerprint_rounded,
                       color: AppTheme.brandPrimary,
+                      size: 22,
+                    ),
+                    label: Text(
+                      'Pindai Biometrik',
+                      style: GoogleFonts.urbanist(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
             ],
 
-            // Keypad Numpad
+            // Flat Numpad Keypad
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
+              padding: const EdgeInsets.symmetric(horizontal: 44),
               child: Column(
                 children: [
                   for (var row in [
@@ -226,23 +288,32 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
                     ['7', '8', '9'],
                   ])
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.only(bottom: 14),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: row.map((num) => _buildKeypadButton(num, colorScheme)).toList(),
+                        children: row
+                            .map((num) => _buildKeypadButton(num, colorScheme))
+                            .toList(),
                       ),
                     ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      const SizedBox(width: 70, height: 70),
+                      const SizedBox(width: 68, height: 68),
                       _buildKeypadButton('0', colorScheme),
                       SizedBox(
-                        width: 70,
-                        height: 70,
-                        child: IconButton(
-                          onPressed: _onDelete,
-                          icon: Icon(Icons.backspace_outlined, color: colorScheme.onSurface),
+                        width: 68,
+                        height: 68,
+                        child: InkWell(
+                          onTap: _onDelete,
+                          borderRadius: BorderRadius.circular(34),
+                          child: Center(
+                            child: Icon(
+                              Icons.backspace_outlined,
+                              color: colorScheme.onSurface,
+                              size: 20,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -250,7 +321,8 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+
+            const SizedBox(height: 28),
           ],
         ),
       ),
@@ -259,24 +331,31 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
 
   Widget _buildKeypadButton(String label, ColorScheme colorScheme) {
     return SizedBox(
-      width: 70,
-      height: 70,
-      child: InkWell(
-        onTap: () => _onKeyPress(label),
-        borderRadius: BorderRadius.circular(35),
-        child: Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: colorScheme.surface,
-            border: Border.all(color: colorScheme.outline.withOpacity(0.5)),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: GoogleFonts.urbanist(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
+      width: 68,
+      height: 68,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _onKeyPress(label),
+          borderRadius: BorderRadius.circular(34),
+          highlightColor: colorScheme.outline.withOpacity(0.05),
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: colorScheme.surface,
+              border: Border.all(
+                color: colorScheme.outline.withOpacity(0.08),
+                width: 1,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                label,
+                style: GoogleFonts.urbanist(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
               ),
             ),
           ),
