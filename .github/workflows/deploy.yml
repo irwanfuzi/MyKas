@@ -1,4 +1,4 @@
-name: Build & Deploy Flutter PWA Web
+name: Build & Deploy MyKas (PWA Web & Android APK)
 
 on:
   push:
@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -38,16 +38,29 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
+      # 1. Build Flutter Web PWA
       - name: Build Flutter Web
         run: flutter build web --release --base-href "/MyKas/" --no-tree-shake-icons
 
+      # 2. Build APK Android (Release)
+      - name: Build Android APK
+        run: flutter build apk --release
+
+      # 3. Upload Web Artifact untuk GitHub Pages
       - name: Upload Web Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
 
+      # 4. Upload File APK ke GitHub Artifacts (Bisa di-download langsung)
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MyKas-Android-APK
+          path: build/app/outputs/flutter-apk/app-release.apk
+
   deploy-web:
-    needs: build
+    needs: build-and-deploy
     runs-on: ubuntu-latest
 
     environment:
