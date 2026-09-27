@@ -38,8 +38,8 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      # 1. Generate Folder Android & Konfigurasi Keystore Konsisten
-      - name: Generate Android Project & Consitent Signing
+      # 1. Generate Folder Android & Konfigurasi Signature Tetap (Debug Signing Config for Releases)
+      - name: Generate Android Project & Fix Activity & Fixed Signing
         run: |
           flutter create . --platforms=android --org com.mykas.app --project-name mykas
           mkdir -p android/app/src/main/kotlin/com/mykas/app/mykas
@@ -54,16 +54,8 @@ jobs:
           }
           EOF
 
-          # Buat Keystore Konsisten agar APK Bisa Ditimpa/Diupdate Tanpa Uninstall
-          keytool -genkeypair -v -keystore android/app/upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias mykas_key -storepass mykaspassword -keypass mykaspassword -dname "CN=MyKas, OU=Dev, O=MyKas, L=ID, ST=ID, C=ID"
-
-          # Buat key.properties
-          cat << 'EOF' > android/key.properties
-          storePassword=mykaspassword
-          keyPassword=mykaspassword
-          keyAlias=mykas_key
-          storeFile=upload-keystore.jks
-          EOF
+          # Paksa Android Gradle menggunakan debug signingConfig yang konsisten untuk build release
+          sed -i 's/signingConfig signingConfigs.release/signingConfig signingConfigs.debug/g' android/app/build.gradle || true
 
       # 2. Build Flutter Web PWA
       - name: Build Flutter Web
