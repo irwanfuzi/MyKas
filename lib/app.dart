@@ -52,7 +52,6 @@ class _AppState extends State<App> {
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, constraints) {
-          // Tampilan Desktop / Web Dashboard (Layar Lebar >= 768px)
           if (constraints.maxWidth >= 768) {
             return Row(
               children: [
@@ -135,7 +134,6 @@ class _AppState extends State<App> {
             );
           }
 
-          // Tampilan Mobile App / PWA Mobile
           return IndexedStack(
             index: _currentIndex,
             children: pages,
