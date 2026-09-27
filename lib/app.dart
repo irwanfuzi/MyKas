@@ -36,7 +36,6 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // List Halaman Utama Aplikasi MyKas (Catat Menggunakan Placeholder Agar Tidak Error Import)
     final List<Widget> pages = [
       const BerandaScreen(),
       const AnalisisScreen(),
@@ -59,7 +58,6 @@ class _AppState extends State<App> {
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, constraints) {
-          // Jika Tampilan Layar Lebar (Desktop Web / Dashboard) >= 768px
           if (constraints.maxWidth >= 768) {
             return Row(
               children: [
@@ -142,7 +140,6 @@ class _AppState extends State<App> {
             );
           }
 
-          // Jika Tampilan Layar HP (Mobile App / PWA Mobile)
           return IndexedStack(
             index: _currentIndex,
             children: pages,
