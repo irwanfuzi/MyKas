@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
@@ -52,13 +51,12 @@ class _MyKasAppState extends State<MyKasApp> with WidgetsBindingObserver {
     super.dispose();
   }
 
+  // Mendeteksi saat PWA ditutup, di-minimize, atau pindah tab/aplikasi
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive ||
         state == AppLifecycleState.hidden) {
-      _lockAppIfEnabled();
-    } else if (state == AppLifecycleState.resumed) {
       _lockAppIfEnabled();
     }
   }
@@ -68,6 +66,7 @@ class _MyKasAppState extends State<MyKasApp> with WidgetsBindingObserver {
     final savedPin = prefs.getString('user_pin') ?? '';
     final isPinEnabled = prefs.getBool('pin_enabled') ?? false;
 
+    // Kunci ulang aplikasi jika PIN / Biometrik diaktifkan
     if (isPinEnabled && savedPin.isNotEmpty) {
       setState(() {
         _currentSavedPin = savedPin;
@@ -120,113 +119,6 @@ class _MyKasAppState extends State<MyKasApp> with WidgetsBindingObserver {
               onThemeModeChanged: _updateThemeMode,
               onPinStateChanged: _handlePinStateChanged,
             ),
-    );
-  }
-}
-
-class MainNavigationScreen extends StatefulWidget {
-  const MainNavigationScreen({super.key});
-
-  @override
-  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
-}
-
-class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  int _selectedIndex = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      body: Row(
-        children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              if (MediaQuery.of(context).size.width < 600) {
-                return const SizedBox.shrink();
-              }
-              return NavigationRail(
-                selectedIndex: _selectedIndex,
-                onDestinationSelected: (int index) {
-                  setState(() {
-                    _selectedIndex = index;
-                  });
-                },
-                labelType: NavigationRailLabelType.all,
-                unselectedIconTheme: IconThemeData(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-                unselectedLabelTextStyle: TextStyle(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontSize: 12,
-                ),
-                selectedIconTheme: IconThemeData(
-                  color: theme.colorScheme.primary,
-                ),
-                selectedLabelTextStyle: TextStyle(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-                leading: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: Text(
-                    'MyKas',
-                    style: GoogleFonts.urbanist(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                destinations: const [
-                  NavigationRailDestination(
-                    icon: Icon(Icons.dashboard_outlined),
-                    selectedIcon: Icon(Icons.dashboard),
-                    label: Text('Beranda'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.analytics_outlined),
-                    selectedIcon: Icon(Icons.analytics),
-                    label: Text('Analisis'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.add_circle_outline),
-                    selectedIcon: Icon(Icons.add_circle),
-                    label: Text('Catat'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.history_outlined),
-                    selectedIcon: Icon(Icons.history),
-                    label: Text('Riwayat'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.person_outline),
-                    selectedIcon: Icon(Icons.person),
-                    label: Text('Profil'),
-                  ),
-                ],
-              );
-            },
-          ),
-          Expanded(
-            child: Container(
-              color: theme.scaffoldBackgroundColor,
-              child: Center(
-                child: Text(
-                  'MyKas Dashboard',
-                  style: GoogleFonts.urbanist(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
