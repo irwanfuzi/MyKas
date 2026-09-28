@@ -38,8 +38,8 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      # Setup Android Platform, Set App Name, Generate Icons & Restore Permanent Key
-      - name: Setup Android Platform & Generate Launcher Icons
+      # Setup Android Platform, App Name, Fixed Keystore & Icons
+      - name: Setup Android Platform & Configure Signing
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
@@ -63,26 +63,30 @@ jobs:
           }
           EOF
 
-          # 4. Dekode Keystore Permanen
+          # 4. Pasang Keystore Abadi ke Folder Android & Konfigurasi Gradle Release Signing
           mkdir -p ~/.android
           echo "$KEYSTORE_BASE64" | base64 -d > ~/.android/debug.keystore
           cp ~/.android/debug.keystore android/app/debug.keystore
 
-      # 3. Build Flutter Web PWA
+          # Paksa Gradle Release menggunakan Keystore Abadi
+          sed -i 's/signingConfigs {/signingConfigs {\n        release {\n            storeFile file("debug.keystore")\n            storePassword "android"\n            keyAlias "androiddebugkey"\n            keyPassword "android"\n        }/g' android/app/build.gradle
+          sed -i 's/buildTypes {/buildTypes {\n        release {\n            signingConfig signingConfigs.release\n        }/g' android/app/build.gradle
+
+      # 5. Build Flutter Web PWA
       - name: Build Flutter Web
         run: flutter build web --release --base-href "/MyKas/" --no-tree-shake-icons
 
-      # 4. Build APK Android Release
+      # 6. Build APK Android Release dengan Kunci Abadi
       - name: Build Android APK
         run: flutter build apk --release
 
-      # 5. Upload Web Artifact
+      # 7. Upload Web Artifact
       - name: Upload Web Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
 
-      # 6. Upload File APK ke Artifacts
+      # 8. Upload File APK ke Artifacts
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
