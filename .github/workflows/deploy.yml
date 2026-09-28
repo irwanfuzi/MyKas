@@ -38,7 +38,7 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      # Setup Android Platform, Generate Icons & Restore Permanent Key
+      # Setup Android Platform, Set App Name, Generate Icons & Restore Permanent Key
       - name: Setup Android Platform & Generate Launcher Icons
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -46,10 +46,13 @@ jobs:
           rm -rf android
           flutter create . --platforms=android --org com.mykas.app --project-name mykas
           
-          # 1. Generate Ikon Khusus Android
+          # 1. Ubah Nama Tampilan Aplikasi di Android menjadi MyKas
+          sed -i 's/android:label="mykas"/android:label="MyKas"/g' android/app/src/main/AndroidManifest.xml
+          
+          # 2. Generate Ikon Khusus Android
           dart run flutter_launcher_icons
           
-          # 2. Biometrik FragmentActivity Fix
+          # 3. Biometrik FragmentActivity Fix
           mkdir -p android/app/src/main/kotlin/com/mykas/app/mykas
           cat << 'EOF' > android/app/src/main/kotlin/com/mykas/app/mykas/MainActivity.kt
           package com.mykas.app.mykas
@@ -60,7 +63,7 @@ jobs:
           }
           EOF
 
-          # 3. Dekode Keystore Permanen
+          # 4. Dekode Keystore Permanen
           mkdir -p ~/.android
           echo "$KEYSTORE_BASE64" | base64 -d > ~/.android/debug.keystore
           cp ~/.android/debug.keystore android/app/debug.keystore
