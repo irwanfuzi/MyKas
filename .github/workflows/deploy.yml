@@ -38,8 +38,8 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      # Setup Android Platform, App Name, Fixed Keystore & Icons
-      - name: Setup Android Platform & Configure Signing
+      # Setup Android Platform, Set App Name, Generate Icons & Restore Fixed Keystore
+      - name: Setup Android Platform & Configure App
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
@@ -63,22 +63,19 @@ jobs:
           }
           EOF
 
-          # 4. Pasang Keystore Abadi ke Folder Android & Konfigurasi Gradle Release Signing
+          # 4. Timpa Keystore Sistem Runner dengan Kunci Abadi dari Secrets
           mkdir -p ~/.android
           echo "$KEYSTORE_BASE64" | base64 -d > ~/.android/debug.keystore
+          mkdir -p android/app
           cp ~/.android/debug.keystore android/app/debug.keystore
-
-          # Paksa Gradle Release menggunakan Keystore Abadi
-          sed -i 's/signingConfigs {/signingConfigs {\n        release {\n            storeFile file("debug.keystore")\n            storePassword "android"\n            keyAlias "androiddebugkey"\n            keyPassword "android"\n        }/g' android/app/build.gradle
-          sed -i 's/buildTypes {/buildTypes {\n        release {\n            signingConfig signingConfigs.release\n        }/g' android/app/build.gradle
 
       # 5. Build Flutter Web PWA
       - name: Build Flutter Web
         run: flutter build web --release --base-href "/MyKas/" --no-tree-shake-icons
 
-      # 6. Build APK Android Release dengan Kunci Abadi
+      # 6. Build APK Android dengan Kunci Debug Abadi
       - name: Build Android APK
-        run: flutter build apk --release
+        run: flutter build apk --debug
 
       # 7. Upload Web Artifact
       - name: Upload Web Artifact
@@ -91,17 +88,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: MyKas-Android-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
-
-  deploy-web:
-    needs: build-and-deploy
-    runs-on: ubuntu-latest
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          path: build/app/outputs/flutter-apk/app-debug.apk
