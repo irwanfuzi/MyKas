@@ -38,40 +38,21 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      # 1. Generate Folder Android & Konfigurasi Signature Tetap (Debug Signing Config for Releases)
-      - name: Generate Android Project & Fix Activity & Fixed Signing
-        run: |
-          flutter create . --platforms=android --org com.mykas.app --project-name mykas
-          mkdir -p android/app/src/main/kotlin/com/mykas/app/mykas
-          
-          # Fix FragmentActivity untuk Biometrik Native
-          cat << 'EOF' > android/app/src/main/kotlin/com/mykas/app/mykas/MainActivity.kt
-          package com.mykas.app.mykas
-
-          import io.flutter.embedding.android.FlutterFragmentActivity
-
-          class MainActivity: FlutterFragmentActivity() {
-          }
-          EOF
-
-          # Paksa Android Gradle menggunakan debug signingConfig yang konsisten untuk build release
-          sed -i 's/signingConfig signingConfigs.release/signingConfig signingConfigs.debug/g' android/app/build.gradle || true
-
-      # 2. Build Flutter Web PWA
+      # 1. Build Flutter Web PWA
       - name: Build Flutter Web
         run: flutter build web --release --base-href "/MyKas/" --no-tree-shake-icons
 
-      # 3. Build APK Android Release
+      # 2. Build APK Android Release
       - name: Build Android APK
         run: flutter build apk --release
 
-      # 4. Upload Web Artifact untuk GitHub Pages
+      # 3. Upload Web Artifact untuk GitHub Pages
       - name: Upload Web Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
 
-      # 5. Upload File APK ke GitHub Artifacts
+      # 4. Upload File APK ke GitHub Artifacts
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
