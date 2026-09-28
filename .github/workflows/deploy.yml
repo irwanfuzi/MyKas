@@ -38,10 +38,8 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      # Setup Android & Pulihkan Fixed Key dari GitHub Secret
-      - name: Setup Android Platform & Restore Fixed Key
-        env:
-          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      # Setup Android Platform & Buat Keystore Tanpa Base64
+      - name: Setup Android Platform & Fixed Keystore
         run: |
           rm -rf android
           flutter create . --platforms=android --org com.mykas.app --project-name mykas
@@ -57,14 +55,9 @@ jobs:
           }
           EOF
 
-          # 2. Paksa Pakai Keystore Tetap dari Secrets
+          # 2. Buat Fixed Debug Keystore
           mkdir -p ~/.android
-          if [ -n "$KEYSTORE_BASE64" ]; then
-            echo "$KEYSTORE_BASE64" | base64 -d > ~/.android/debug.keystore
-          else
-            # Fallback jika secret belum diisi
-            keytool -genkeypair -alias androiddebugkey -keypass android -keystore ~/.android/debug.keystore -storepass android -dname "CN=Android Debug,O=Android,C=US" -validity 10000 -keyalg RSA
-          fi
+          keytool -genkeypair -alias androiddebugkey -keypass android -keystore ~/.android/debug.keystore -storepass android -dname "CN=Android Debug,O=Android,C=US" -validity 10000 -keyalg RSA
           cp ~/.android/debug.keystore android/app/debug.keystore
 
       # 3. Build Flutter Web PWA
