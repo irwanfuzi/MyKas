@@ -14,6 +14,7 @@ void main() async {
 
   runApp(MyKasApp(
     initialSavedPin: savedPin,
+    // Aplikasi HANYA terkunci saat fresh start (buka dari kondisi closed/killed)
     initialIsPinLocked: isPinEnabled && savedPin.isNotEmpty,
   ));
 }
@@ -32,7 +33,7 @@ class MyKasApp extends StatefulWidget {
   State<MyKasApp> createState() => _MyKasAppState();
 }
 
-class _MyKasAppState extends State<MyKasApp> with WidgetsBindingObserver {
+class _MyKasAppState extends State<MyKasApp> {
   ThemeMode _themeMode = ThemeMode.dark;
   late bool _isLocked;
   String _currentSavedPin = '';
@@ -40,39 +41,8 @@ class _MyKasAppState extends State<MyKasApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     _isLocked = widget.initialIsPinLocked;
     _currentSavedPin = widget.initialSavedPin;
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  // Mendeteksi saat PWA ditutup, di-minimize, atau pindah tab/aplikasi
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.hidden) {
-      _lockAppIfEnabled();
-    }
-  }
-
-  Future<void> _lockAppIfEnabled() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedPin = prefs.getString('user_pin') ?? '';
-    final isPinEnabled = prefs.getBool('pin_enabled') ?? false;
-
-    // Kunci ulang aplikasi jika PIN / Biometrik diaktifkan
-    if (isPinEnabled && savedPin.isNotEmpty) {
-      setState(() {
-        _currentSavedPin = savedPin;
-        _isLocked = true;
-      });
-    }
   }
 
   void _updateThemeMode(ThemeMode newMode) {
