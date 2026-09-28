@@ -19,39 +19,29 @@ class LockScreen extends StatefulWidget {
   State<LockScreen> createState() => _LockScreenState();
 }
 
-class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
+class _LockScreenState extends State<LockScreen> {
   final LocalAuthentication _auth = LocalAuthentication();
   String _enteredPin = '';
   bool _isAuthenticating = false;
+  bool _showPinPad = false;
 
   bool get _isNativeMobile => !kIsWeb;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
 
     if (_isNativeMobile) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _authenticateWithBiometrics();
+        _authenticateWithFingerprint();
       });
+    } else {
+      _showPinPad = true;
     }
   }
 
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _isNativeMobile) {
-      _authenticateWithBiometrics();
-    }
-  }
-
-  Future<void> _authenticateWithBiometrics() async {
+  // Panggil Khusus Pemindai Sidik Jari (Fingerprint)
+  Future<void> _authenticateWithFingerprint() async {
     if (_isAuthenticating) return;
 
     setState(() {
@@ -63,10 +53,10 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
 
       if (canCheck) {
         final bool authenticated = await _auth.authenticate(
-          localizedReason: 'Pindai Sidik Jari / Face ID untuk membuka MyKas',
+          localizedReason: 'Tempelkan Sidik Jari untuk membuka MyKas',
           options: const AuthenticationOptions(
             stickyAuth: true,
-            biometricOnly: true,
+            biometricOnly: true, // Murni Sidik Jari
           ),
         );
 
@@ -75,7 +65,10 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
         }
       }
     } catch (e) {
-      debugPrint('Biometric error: $e');
+      debugPrint('Fingerprint error: $e');
+      setState(() {
+        _showPinPad = true;
+      });
     } finally {
       if (mounted) {
         setState(() {
@@ -141,13 +134,13 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
           children: [
             const SizedBox(height: 20),
 
-            // Flat Branding Header
+            // Header Logo MyKas
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 10,
-                  height: 10,
+                  width: 8,
+                  height: 8,
                   decoration: const BoxDecoration(
                     color: AppTheme.brandPrimary,
                     shape: BoxShape.circle,
@@ -166,163 +159,162 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
               ],
             ),
 
-            const Spacer(flex: 2),
+            const Spacer(),
 
-            // Flat Security Icon Box
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: colorScheme.surface,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: colorScheme.outline.withOpacity(0.15),
-                  width: 1,
-                ),
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.lock_outline_rounded,
-                  size: 28,
-                  color: AppTheme.brandPrimary,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            Text(
-              'Masukkan PIN MyKas',
-              style: GoogleFonts.urbanist(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              _isNativeMobile
-                  ? 'Gunakan Biometrik atau PIN Keamanan'
-                  : 'Aplikasi Terkunci demi Keamanan Data',
-              style: GoogleFonts.urbanist(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-
-            const SizedBox(height: 36),
-
-            // Flat PIN Dots Indicator
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(targetLength, (index) {
-                final bool isFilled = index < _enteredPin.length;
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  margin: const EdgeInsets.symmetric(horizontal: 8),
-                  width: 14,
-                  height: 14,
+            // METODE UTAMA SIDIK JARI (NATIVE MOBILE)
+            if (_isNativeMobile && !_showPinPad) ...[
+              GestureDetector(
+                onTap: _authenticateWithFingerprint,
+                child: Container(
+                  width: 100,
+                  height: 100,
                   decoration: BoxDecoration(
+                    color: AppTheme.brandPrimary.withOpacity(0.12),
                     shape: BoxShape.circle,
-                    color: isFilled ? AppTheme.brandPrimary : Colors.transparent,
                     border: Border.all(
-                      color: isFilled
-                          ? AppTheme.brandPrimary
-                          : colorScheme.outline.withOpacity(0.3),
+                      color: AppTheme.brandPrimary,
                       width: 2,
                     ),
                   ),
-                );
-              }),
-            ),
-
-            const Spacer(flex: 3),
-
-            // Flat Biometric Button (Khusus Native Mobile)
-            if (_isNativeMobile) ...[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 44),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: TextButton.icon(
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      backgroundColor: colorScheme.surface,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(
-                          color: colorScheme.outline.withOpacity(0.15),
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                    onPressed: _authenticateWithBiometrics,
-                    icon: const Icon(
+                  child: const Center(
+                    child: Icon(
                       Icons.fingerprint_rounded,
+                      size: 56,
                       color: AppTheme.brandPrimary,
-                      size: 22,
-                    ),
-                    label: Text(
-                      'Pindai Biometrik',
-                      style: GoogleFonts.urbanist(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                      ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-            ],
+              const SizedBox(height: 24),
+              Text(
+                'Tempelkan Sidik Jari Anda',
+                style: GoogleFonts.urbanist(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Sentuh pemindai sidik jari untuk masuk',
+                style: GoogleFonts.urbanist(
+                  fontSize: 13,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const Spacer(),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _showPinPad = true;
+                  });
+                },
+                child: Text(
+                  'Gunakan PIN 6-Digit',
+                  style: GoogleFonts.urbanist(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.brandPrimary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+            ]
 
-            // Flat Numpad Keypad
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 44),
-              child: Column(
-                children: [
-                  for (var row in [
-                    ['1', '2', '3'],
-                    ['4', '5', '6'],
-                    ['7', '8', '9'],
-                  ])
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 14),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: row
-                            .map((num) => _buildKeypadButton(num, colorScheme))
-                            .toList(),
+            // METODE FALLBACK PIN KEYPAD
+            else ...[
+              Text(
+                'Masukkan PIN MyKas',
+                style: GoogleFonts.urbanist(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(targetLength, (index) {
+                  final bool isFilled = index < _enteredPin.length;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    margin: const EdgeInsets.symmetric(horizontal: 8),
+                    width: 14,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isFilled ? AppTheme.brandPrimary : Colors.transparent,
+                      border: Border.all(
+                        color: isFilled
+                            ? AppTheme.brandPrimary
+                            : colorScheme.outline.withOpacity(0.3),
+                        width: 2,
                       ),
                     ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      const SizedBox(width: 68, height: 68),
-                      _buildKeypadButton('0', colorScheme),
-                      SizedBox(
-                        width: 68,
-                        height: 68,
-                        child: InkWell(
-                          onTap: _onDelete,
-                          borderRadius: BorderRadius.circular(34),
-                          child: Center(
-                            child: Icon(
-                              Icons.backspace_outlined,
-                              color: colorScheme.onSurface,
-                              size: 20,
+                  );
+                }),
+              ),
+
+              const Spacer(),
+
+              if (_isNativeMobile) ...[
+                IconButton(
+                  onPressed: _authenticateWithFingerprint,
+                  icon: const Icon(
+                    Icons.fingerprint_rounded,
+                    color: AppTheme.brandPrimary,
+                    size: 32,
+                  ),
+                  tooltip: 'Gunakan Sidik Jari',
+                ),
+                const SizedBox(height: 12),
+              ],
+
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 44),
+                child: Column(
+                  children: [
+                    for (var row in [
+                      ['1', '2', '3'],
+                      ['4', '5', '6'],
+                      ['7', '8', '9'],
+                    ])
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: row
+                              .map((num) => _buildKeypadButton(num, colorScheme))
+                              .toList(),
+                        ),
+                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        const SizedBox(width: 68, height: 68),
+                        _buildKeypadButton('0', colorScheme),
+                        SizedBox(
+                          width: 68,
+                          height: 68,
+                          child: InkWell(
+                            onTap: _onDelete,
+                            borderRadius: BorderRadius.circular(34),
+                            child: Center(
+                              child: Icon(
+                                Icons.backspace_outlined,
+                                color: colorScheme.onSurface,
+                                size: 20,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-
-            const SizedBox(height: 28),
+              const SizedBox(height: 24),
+            ],
           ],
         ),
       ),
