@@ -90,7 +90,7 @@
     }
   </style>
 
-  <script src="flutter_bootstrap.js" async></script>
+  <script src="flutter.js" defer></script>
 </head>
 <body>
   <div class="loading-container" id="app-loading">
@@ -99,14 +99,30 @@
   </div>
 
   <script>
-    // Penanganan Service Worker agar Caches tidak mengunci tampilan Blank
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for (let registration of registrations) {
-          registration.unregister();
+    window.addEventListener('load', function(ev) {
+      // Hapus Service Worker lama untuk mencegah caching halaman blank
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for (let registration of registrations) {
+            registration.unregister();
+          }
+        });
+      }
+
+      // Load Flutter Engine dengan HTML Renderer secara eksplisit
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
+        onEntrypointLoaded: function(engineInitializer) {
+          engineInitializer.initializeEngine({
+            renderer: "html"
+          }).then(function(appRunner) {
+            appRunner.runApp();
+          });
         }
       });
-    }
+    });
 
     // Menghilangkan Spinner Loading setelah Flutter Frame pertama selesai dirender
     window.addEventListener('flutter-first-frame', function () {
