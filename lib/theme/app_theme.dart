@@ -31,6 +31,18 @@ class AppTheme {
   static const Color darkTextPrimary = Color(0xFFF8FAFC);
   static const Color darkTextSecondary = Color(0xFF94A3B8);
 
+  // --- ALIAS UNTUK KOMPATIBILITAS KODE LAMA ---
+  static const Color bgLight = lightBg;
+  static const Color bgDark = darkBg;
+  static const Color cardLight = lightCard;
+  static const Color cardDark = darkCard;
+  static const Color borderLight = lightBorder;
+  static const Color borderDark = darkBorder;
+  static const Color textPrimaryLight = lightTextPrimary;
+  static const Color textPrimaryDark = darkTextPrimary;
+  static const Color textSecondaryLight = lightTextSecondary;
+  static const Color textSecondaryDark = darkTextSecondary;
+
   // Corner Radius Standard (8px - 12px)
   static final BorderRadius radiusSmall = BorderRadius.circular(8.0);
   static final BorderRadius radiusMedium = BorderRadius.circular(10.0);
@@ -56,16 +68,14 @@ class AppTheme {
         error: expenseRed,
       ),
 
-      // Tipografi Urbanist
       textTheme: GoogleFonts.urbanistTextTheme(ThemeData.light().textTheme).copyWith(
-        displayLarge: TextStyle(color: lightTextPrimary, fontWeight: FontWeight.bold),
-        titleLarge: TextStyle(color: lightTextPrimary, fontWeight: FontWeight.bold, fontSize: 18),
-        titleMedium: TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w600, fontSize: 16),
-        bodyLarge: TextStyle(color: lightTextPrimary, fontSize: 14),
-        bodyMedium: TextStyle(color: lightTextSecondary, fontSize: 12),
+        displayLarge: const TextStyle(color: lightTextPrimary, fontWeight: FontWeight.bold),
+        titleLarge: const TextStyle(color: lightTextPrimary, fontWeight: FontWeight.bold, fontSize: 18),
+        titleMedium: const TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w600, fontSize: 16),
+        bodyLarge: const TextStyle(color: lightTextPrimary, fontSize: 14),
+        bodyMedium: const TextStyle(color: lightTextSecondary, fontSize: 12),
       ),
 
-      // Card Style
       cardTheme: CardTheme(
         color: lightCard,
         elevation: 0,
@@ -76,7 +86,6 @@ class AppTheme {
         margin: EdgeInsets.zero,
       ),
 
-      // App Bar Style
       appBarTheme: AppBarTheme(
         backgroundColor: lightBg,
         elevation: 0,
@@ -90,7 +99,6 @@ class AppTheme {
         ),
       ),
 
-      // Elevated Button Style
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: brandPrimary,
@@ -105,7 +113,6 @@ class AppTheme {
         ),
       ),
 
-      // Input Decoration Style (TextField)
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: lightSurface,
@@ -124,7 +131,6 @@ class AppTheme {
         ),
       ),
 
-      // Bottom Navigation Bar Style
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: lightSurface,
         selectedItemColor: brandPrimary,
@@ -155,16 +161,14 @@ class AppTheme {
         error: expenseRed,
       ),
 
-      // Tipografi Urbanist
       textTheme: GoogleFonts.urbanistTextTheme(ThemeData.dark().textTheme).copyWith(
-        displayLarge: TextStyle(color: darkTextPrimary, fontWeight: FontWeight.bold),
-        titleLarge: TextStyle(color: darkTextPrimary, fontWeight: FontWeight.bold, fontSize: 18),
-        titleMedium: TextStyle(color: darkTextPrimary, fontWeight: FontWeight.w600, fontSize: 16),
-        bodyLarge: TextStyle(color: darkTextPrimary, fontSize: 14),
-        bodyMedium: TextStyle(color: darkTextSecondary, fontSize: 12),
+        displayLarge: const TextStyle(color: darkTextPrimary, fontWeight: FontWeight.bold),
+        titleLarge: const TextStyle(color: darkTextPrimary, fontWeight: FontWeight.bold, fontSize: 18),
+        titleMedium: const TextStyle(color: darkTextPrimary, fontWeight: FontWeight.w600, fontSize: 16),
+        bodyLarge: const TextStyle(color: darkTextPrimary, fontSize: 14),
+        bodyMedium: const TextStyle(color: darkTextSecondary, fontSize: 12),
       ),
 
-      // Card Style
       cardTheme: CardTheme(
         color: darkCard,
         elevation: 0,
@@ -175,7 +179,6 @@ class AppTheme {
         margin: EdgeInsets.zero,
       ),
 
-      // App Bar Style
       appBarTheme: AppBarTheme(
         backgroundColor: darkBg,
         elevation: 0,
@@ -189,7 +192,6 @@ class AppTheme {
         ),
       ),
 
-      // Elevated Button Style
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: brandPrimary,
@@ -204,7 +206,6 @@ class AppTheme {
         ),
       ),
 
-      // Input Decoration Style (TextField)
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: darkSurface,
@@ -223,7 +224,6 @@ class AppTheme {
         ),
       ),
 
-      // Bottom Navigation Bar Style
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: darkSurface,
         selectedItemColor: brandPrimaryLight,
