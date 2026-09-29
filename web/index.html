@@ -83,7 +83,8 @@
     }
   </style>
 
-  <script src="flutter.js" defer></script>
+  <!-- Menggunakan Loader Resmi Flutter 3.24+ -->
+  <script src="flutter_bootstrap.js" async></script>
 </head>
 <body>
   <div class="loading-container" id="app-loading">
@@ -104,7 +105,7 @@
       }
     }
 
-    // Unregister Service Worker lama yang menyimpan cache crash CanvasKit
+    // Unregister Service Worker lama
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function(registrations) {
         for (let registration of registrations) {
@@ -113,26 +114,11 @@
       });
     }
 
-    window.addEventListener('load', function(ev) {
-      // Inisialisasi Flutter Engine secara aman untuk HP (Mobile & Desktop Mode)
-      _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        },
-        onEntrypointLoaded: function(engineInitializer) {
-          engineInitializer.initializeEngine({
-            // Paksa penggunaan HTML/skwasm renderer agar tidak crash CanvasKit WebGL di HP
-            renderer: "html",
-            useColorEmoji: true
-          }).then(function(appRunner) {
-            appRunner.runApp();
-          });
-        }
-      });
-    });
-
+    // Hilangkan Spinner begitu Flutter selesai menggambar layar
     window.addEventListener('flutter-first-frame', removeLoading);
-    setTimeout(removeLoading, 3500);
+    
+    // Safety Fallback: hilangkan spinner setelah 5 detik jika event tertahan
+    setTimeout(removeLoading, 5000);
   </script>
 </body>
 </html>
