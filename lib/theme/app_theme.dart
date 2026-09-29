@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // --- PALET WARNA UTAMA ---
+  // --- CORE FINTECH PALETTE ---
   static const Color brandPrimary = Color(0xFF2563EB); // Soft Royal Blue
   static const Color brandAccent = Color(0xFFF59E0B);  // Honey Gold
 
@@ -10,21 +10,21 @@ class AppTheme {
   static const Color incomeGreen = Color(0xFF10B981);
   static const Color expenseRed = Color(0xFFEF4444);
 
-  // --- LIGHT MODE (SOFT OFF-WHITE SLATE) ---
-  static const Color lightBg = Color(0xFFF8FAFC);        // Adem di mata, anti-silau
-  static const Color lightSurface = Color(0xFFFFFFFF);   // Card White
+  // --- LIGHT MODE (SOFT SLATE FINTECH) ---
+  static const Color lightBg = Color(0xFFF8FAFC);        // Soft Off-White Surface
+  static const Color lightSurface = Color(0xFFFFFFFF);   // Pure White Card
   static const Color lightCard = Color(0xFFFFFFFF);
-  static const Color lightBorder = Color(0xFFE2E8F0);   // Border mikro tipis
+  static const Color lightBorder = Color(0xFFE2E8F0);   // Micro Divider
   static const Color lightTextPrimary = Color(0xFF0F172A); // High Contrast Slate
-  static const Color lightTextSecondary = Color(0xFF64748B); // Soft Grey
+  static const Color lightTextSecondary = Color(0xFF64748B); // Muted Eye-Soothing Slate
 
-  // --- DARK MODE (CHARCOAL OLED NEUTRAL) ---
-  static const Color darkBg = Color(0xFF121212);        // True Dark Neutral (Stockbit/Telegram style)
-  static const Color darkSurface = Color(0xFF1E1E1E);   // Soft Floating Container
+  // --- DARK MODE (TRUE CHARCOAL OLED - ANTI SILAU) ---
+  static const Color darkBg = Color(0xFF121212);        // True Neutral Dark
+  static const Color darkSurface = Color(0xFF1E1E1E);   // Soft Floating Card
   static const Color darkCard = Color(0xFF1E1E1E);
-  static const Color darkBorder = Color(0xFF2C2C2C);   // Micro Divider
-  static const Color darkTextPrimary = Color(0xFFF5F5F5); // Crisp Off-White
-  static const Color darkTextSecondary = Color(0xFF9E9E9E); // Eye-Soothing Grey
+  static const Color darkBorder = Color(0xFF2C2C2C);   // Subtle Divider
+  static const Color darkTextPrimary = Color(0xFFF5F5F5); // Clean Off-White
+  static const Color darkTextSecondary = Color(0xFF9E9E9E); // Soft Slate
 
   // Alias Kompatibilitas Kode Lama
   static const Color successGreen = incomeGreen;
@@ -44,7 +44,7 @@ class AppTheme {
   static final BorderRadius radiusMedium = BorderRadius.circular(10.0);
   static final BorderRadius radiusLarge = BorderRadius.circular(12.0);
 
-  // --- LIGHT THEME ---
+  // --- LIGHT THEME DEFINITION ---
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
@@ -52,6 +52,10 @@ class AppTheme {
       primaryColor: brandPrimary,
       scaffoldBackgroundColor: lightBg,
       
+      // MICRO-POLISH 1: Smooth Touch Feedback (Riak Sentuhan Mulus)
+      splashColor: brandPrimary.withOpacity(0.08),
+      highlightColor: brandPrimary.withOpacity(0.04),
+
       colorScheme: ColorScheme.fromSeed(
         seedColor: brandPrimary,
         brightness: Brightness.light,
@@ -64,22 +68,24 @@ class AppTheme {
         error: expenseRed,
       ),
 
-      // Menggunakan Font Inter
+      // MICRO-POLISH 2: Micro-Typography Scaling & Negative Letter Spacing
       textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme).copyWith(
-        displayLarge: const TextStyle(color: lightTextPrimary, fontWeight: FontWeight.bold, letterSpacing: -0.5),
-        titleLarge: const TextStyle(color: lightTextPrimary, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: -0.3),
-        titleMedium: const TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w600, fontSize: 15),
-        bodyLarge: const TextStyle(color: lightTextPrimary, fontSize: 14),
-        bodyMedium: const TextStyle(color: lightTextSecondary, fontSize: 12),
+        displayLarge: const TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w800, letterSpacing: -1.0, height: 1.2),
+        titleLarge: const TextStyle(color: lightTextPrimary, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: -0.4),
+        titleMedium: const TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w600, fontSize: 15, letterSpacing: -0.2),
+        bodyLarge: const TextStyle(color: lightTextPrimary, fontSize: 14, letterSpacing: -0.1),
+        bodyMedium: const TextStyle(color: lightTextSecondary, fontSize: 12, letterSpacing: 0.0),
+        labelSmall: const TextStyle(color: lightTextSecondary, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.8),
       ),
 
+      // MICRO-POLISH 3: Ambient Soft Shadow & Floating Card
       cardTheme: CardTheme(
         color: lightCard,
-        elevation: 0.5,
-        shadowColor: const Color(0xFF0F172A).withOpacity(0.04),
+        elevation: 0,
+        shadowColor: const Color(0xFF0F172A).withOpacity(0.03),
         shape: RoundedRectangleBorder(
           borderRadius: radiusLarge,
-          side: const BorderSide(color: lightBorder, width: 1),
+          side: BorderSide(color: lightBorder.withOpacity(0.8), width: 1),
         ),
         margin: EdgeInsets.zero,
       ),
@@ -94,6 +100,7 @@ class AppTheme {
           color: lightTextPrimary,
           fontSize: 18,
           fontWeight: FontWeight.w700,
+          letterSpacing: -0.3,
         ),
       ),
 
@@ -107,10 +114,12 @@ class AppTheme {
           textStyle: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.w700,
+            letterSpacing: -0.2,
           ),
         ),
       ),
 
+      // MICRO-POLISH 4: Soft Seamless TextFields
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: lightSurface,
@@ -139,13 +148,17 @@ class AppTheme {
     );
   }
 
-  // --- DARK THEME ---
+  // --- DARK THEME DEFINITION ---
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       primaryColor: brandPrimary,
       scaffoldBackgroundColor: darkBg,
+
+      // MICRO-POLISH 1: Smooth Touch Feedback Dark Mode
+      splashColor: brandPrimary.withOpacity(0.12),
+      highlightColor: brandPrimary.withOpacity(0.06),
 
       colorScheme: ColorScheme.fromSeed(
         seedColor: brandPrimary,
@@ -159,21 +172,23 @@ class AppTheme {
         error: expenseRed,
       ),
 
-      // Menggunakan Font Inter
+      // MICRO-POLISH 2: Micro-Typography Scaling Dark Mode
       textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).copyWith(
-        displayLarge: const TextStyle(color: darkTextPrimary, fontWeight: FontWeight.bold, letterSpacing: -0.5),
-        titleLarge: const TextStyle(color: darkTextPrimary, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: -0.3),
-        titleMedium: const TextStyle(color: darkTextPrimary, fontWeight: FontWeight.w600, fontSize: 15),
-        bodyLarge: const TextStyle(color: darkTextPrimary, fontSize: 14),
-        bodyMedium: const TextStyle(color: darkTextSecondary, fontSize: 12),
+        displayLarge: const TextStyle(color: darkTextPrimary, fontWeight: FontWeight.w800, letterSpacing: -1.0, height: 1.2),
+        titleLarge: const TextStyle(color: darkTextPrimary, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: -0.4),
+        titleMedium: const TextStyle(color: darkTextPrimary, fontWeight: FontWeight.w600, fontSize: 15, letterSpacing: -0.2),
+        bodyLarge: const TextStyle(color: darkTextPrimary, fontSize: 14, letterSpacing: -0.1),
+        bodyMedium: const TextStyle(color: darkTextSecondary, fontSize: 12, letterSpacing: 0.0),
+        labelSmall: const TextStyle(color: darkTextSecondary, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.8),
       ),
 
+      // MICRO-POLISH 3: Seamless Charcoal Card
       cardTheme: CardTheme(
         color: darkCard,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: radiusLarge,
-          side: const BorderSide(color: darkBorder, width: 1),
+          side: BorderSide(color: darkBorder.withOpacity(0.7), width: 1),
         ),
         margin: EdgeInsets.zero,
       ),
@@ -188,6 +203,7 @@ class AppTheme {
           color: darkTextPrimary,
           fontSize: 18,
           fontWeight: FontWeight.w700,
+          letterSpacing: -0.3,
         ),
       ),
 
@@ -201,6 +217,7 @@ class AppTheme {
           textStyle: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.w700,
+            letterSpacing: -0.2,
           ),
         ),
       ),
