@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'screens/auth/lock_screen.dart';
+import 'splash_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
@@ -65,6 +66,16 @@ class _MyKasAppState extends State<MyKasApp> {
     });
   }
 
+  // Helper Widget Halaman Utama
+  Widget _buildMainApp() {
+    return App(
+      onThemeChanged: _handleThemeChange,
+      currentThemeMode: _themeMode,
+      onThemeModeChanged: _updateThemeMode,
+      onPinStateChanged: _handlePinStateChanged,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -73,22 +84,20 @@ class _MyKasAppState extends State<MyKasApp> {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: _themeMode,
-      // Jika _isLocked = true -> Tampilkan LockScreen langsung
-      // Begitu _isLocked = false -> Otomatis berubah ke App() (Halaman Utama)
+      // SPLASH SCREEN KEMBALI DIPASANG SEBAGAI HOME
       home: _isLocked
-          ? LockScreen(
-              savedPin: _currentSavedPin,
-              onUnlocked: () {
-                setState(() {
-                  _isLocked = false;
-                });
-              },
+          ? SplashScreen(
+              nextScreen: LockScreen(
+                savedPin: _currentSavedPin,
+                onUnlocked: () {
+                  setState(() {
+                    _isLocked = false;
+                  });
+                },
+              ),
             )
-          : App(
-              onThemeChanged: _handleThemeChange,
-              currentThemeMode: _themeMode,
-              onThemeModeChanged: _updateThemeMode,
-              onPinStateChanged: _handlePinStateChanged,
+          : SplashScreen(
+              nextScreen: _buildMainApp(),
             ),
     );
   }
