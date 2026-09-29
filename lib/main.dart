@@ -45,8 +45,8 @@ class _MyKasAppState extends State<MyKasApp> {
     _isLocked = widget.initialIsPinLocked;
     _currentSavedPin = widget.initialSavedPin;
 
-    // Splash screen tampil selama 2 detik, lalu otomatis pindah state
-    Future.delayed(const Duration(seconds: 2), () {
+    // Timer disesuaikan dengan durasi animasi SplashScreen asli (2.5 detik)
+    Future.delayed(const Duration(milliseconds: 2500), () {
       if (mounted) {
         setState(() {
           _showSplash = false;
@@ -84,8 +84,9 @@ class _MyKasAppState extends State<MyKasApp> {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: _themeMode,
+      // Menggunakan SplashScreen asli tanpa _SimpleSplashScreen
       home: _showSplash
-          ? const _SimpleSplashScreen()
+          ? const SplashScreen()
           : (_isLocked
               ? LockScreen(
                   savedPin: _currentSavedPin,
@@ -101,51 +102,6 @@ class _MyKasAppState extends State<MyKasApp> {
                   onThemeModeChanged: _updateThemeMode,
                   onPinStateChanged: _handlePinStateChanged,
                 )),
-    );
-  }
-}
-
-// Widget Splash Sederhana Tanpa Navigator Push/Pop (Anti Stuck)
-class _SimpleSplashScreen extends StatelessWidget {
-  const _SimpleSplashScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: const Color(0xFF0052FF).withOpacity(0.15),
-                shape: BoxShape.circle,
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.account_balance_wallet_rounded,
-                  size: 38,
-                  color: Color(0xFF0052FF),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'MYKAS',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 3.0,
-                color: colorScheme.onSurface,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
