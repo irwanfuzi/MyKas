@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // --- PALET WARNA UTAMA ---
+  // --- PALET WARNA UTAMA (FINTECH STANDARD) ---
   static const Color brandPrimary = Color(0xFF2563EB); // Soft Royal Blue
   static const Color brandPrimaryLight = Color(0xFF3B82F6);
   static const Color brandPrimaryDark = Color(0xFF1D4ED8);
@@ -10,7 +10,7 @@ class AppTheme {
   static const Color brandAccent = Color(0xFFF59E0B); // Honey Gold
   static const Color brandAccentLight = Color(0xFFFBBF24);
 
-  // Status Colors (Fintech Standard)
+  // Status Colors
   static const Color incomeGreen = Color(0xFF10B981);
   static const Color expenseRed = Color(0xFFEF4444);
   static const Color warningOrange = Color(0xFFF97316);
@@ -31,7 +31,8 @@ class AppTheme {
   static const Color darkTextPrimary = Color(0xFFF8FAFC);
   static const Color darkTextSecondary = Color(0xFF94A3B8);
 
-  // --- ALIAS UNTUK KOMPATIBILITAS KODE LAMA ---
+  // --- ALIAS KOMPATIBILITAS (MENCEGAH ERROR MEMBER MISSING) ---
+  static const Color successGreen = incomeGreen; // Fix untuk Catat & Profil Screen
   static const Color bgLight = lightBg;
   static const Color bgDark = darkBg;
   static const Color cardLight = lightCard;
