@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'screens/auth/lock_screen.dart';
-import 'splash_screen.dart'; // Import file splash_screen
+import 'splash_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
@@ -66,23 +66,29 @@ class _MyKasAppState extends State<MyKasApp> {
     });
   }
 
-  // Helper untuk menentukan target halaman setelah Splash Screen
+  // Helper Widget untuk Halaman Utama App
+  Widget _buildAppWidget() {
+    return App(
+      onThemeChanged: _handleThemeChange,
+      currentThemeMode: _themeMode,
+      onThemeModeChanged: _updateThemeMode,
+      onPinStateChanged: _handlePinStateChanged,
+    );
+  }
+
+  // Helper Widget untuk Menentukan Rute Awal Setelah Splash
   Widget _getTargetScreen() {
-    return _isLocked
-        ? LockScreen(
-            savedPin: _currentSavedPin,
-            onUnlocked: () {
-              setState(() {
-                _isLocked = false;
-              });
-            },
-          )
-        : App(
-            onThemeChanged: _handleThemeChange,
-            currentThemeMode: _themeMode,
-            onThemeModeChanged: _updateThemeMode,
-            onPinStateChanged: _handlePinStateChanged,
-          );
+    if (_isLocked) {
+      return LockScreen(
+        savedPin: _currentSavedPin,
+        onUnlocked: () {
+          setState(() {
+            _isLocked = false;
+          });
+        },
+      );
+    }
+    return _buildAppWidget();
   }
 
   @override
@@ -93,10 +99,19 @@ class _MyKasAppState extends State<MyKasApp> {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: _themeMode,
-      // Menjalankan SplashScreen pertama kali saat aplikasi dibuka
-      home: SplashScreen(
-        nextScreen: _getTargetScreen(),
-      ),
+      // Jika _isLocked sudah false, render langsung App(), jika masih terkunci render Splash -> LockScreen
+      home: _isLocked
+          ? SplashScreen(
+              nextScreen: LockScreen(
+                savedPin: _currentSavedPin,
+                onUnlocked: () {
+                  setState(() {
+                    _isLocked = false;
+                  });
+                },
+              ),
+            )
+          : _buildAppWidget(),
     );
   }
 }
