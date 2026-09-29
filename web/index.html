@@ -20,7 +20,6 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   
-  <!-- Viewport Fleksibel untuk Mobile & Desktop Mode Browser HP -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <meta name="description" content="MyKas - Own Your Money">
 
@@ -33,21 +32,13 @@
   <meta name="apple-mobile-web-app-title" content="MyKas">
   <meta name="theme-color" content="#0052FF">
 
-  <!-- ==================== FAVICON & PWA ICONS ==================== -->
-  <!-- Favicon Vektor HD (Browser Modern) -->
+  <!-- Favicons & Manifest -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-
-  <!-- Favicon PNG HD & Fallback Tab Browser -->
   <link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="shortcut icon" href="favicon.ico">
-
-  <!-- Apple iOS Touch Icon -->
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-
-  <!-- Web App Manifest for PWA -->
   <link rel="manifest" href="manifest.json">
-  <!-- ============================================================== -->
 
   <title>MyKas - Own Your Money</title>
 
@@ -90,7 +81,7 @@
     }
   </style>
 
-  <script src="flutter.js" defer></script>
+  <script src="flutter_bootstrap.js" async></script>
 </head>
 <body>
   <div class="loading-container" id="app-loading">
@@ -99,33 +90,7 @@
   </div>
 
   <script>
-    window.addEventListener('load', function(ev) {
-      // Hapus Service Worker lama untuk mencegah caching halaman blank
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for (let registration of registrations) {
-            registration.unregister();
-          }
-        });
-      }
-
-      // Load Flutter Engine dengan HTML Renderer secara eksplisit
-      _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        },
-        onEntrypointLoaded: function(engineInitializer) {
-          engineInitializer.initializeEngine({
-            renderer: "html"
-          }).then(function(appRunner) {
-            appRunner.runApp();
-          });
-        }
-      });
-    });
-
-    // Menghilangkan Spinner Loading setelah Flutter Frame pertama selesai dirender
-    window.addEventListener('flutter-first-frame', function () {
+    function removeLoading() {
       var el = document.getElementById('app-loading');
       if (el) {
         el.style.opacity = '0';
@@ -135,7 +100,22 @@
           }
         }, 300);
       }
-    });
+    }
+
+    // Unregister Service Worker lama yang terkunci di cache
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+
+    // Panggil penghapusan loading saat frame pertama siap
+    window.addEventListener('flutter-first-frame', removeLoading);
+
+    // Fallback: hapus loading otomatis jika frame tidak terdeteksi setelah 4 detik
+    setTimeout(removeLoading, 4000);
   </script>
 </body>
 </html>
