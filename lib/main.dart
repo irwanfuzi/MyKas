@@ -46,7 +46,7 @@ class _MyKasAppState extends State<MyKasApp> {
     _currentSavedPin = widget.initialSavedPin;
 
     // Timer disesuaikan dengan durasi animasi SplashScreen asli (2.5 detik)
-    Future.delayed(const Duration(milliseconds: 2500), () {
+    Future.delayed(const Duration(milliseconds: 1400), () {
       if (mounted) {
         setState(() {
           _showSplash = false;
