@@ -4,6 +4,7 @@
   <base href="$FLUTTER_BASE_HREF">
 
   <script>
+    // Deteksi Base Href Otomatis (Support Vercel & GitHub Pages)
     (function() {
       var path = window.location.pathname;
       var baseHref = '/';
@@ -20,6 +21,7 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   
+  <!-- Viewport Fleksibel untuk Mobile & Desktop Site Mode HP -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <meta name="description" content="MyKas - Own Your Money">
 
@@ -81,7 +83,7 @@
     }
   </style>
 
-  <script src="flutter_bootstrap.js" async></script>
+  <script src="flutter.js" defer></script>
 </head>
 <body>
   <div class="loading-container" id="app-loading">
@@ -102,7 +104,7 @@
       }
     }
 
-    // Unregister Service Worker lama yang terkunci di cache
+    // Unregister Service Worker lama yang menyimpan cache crash CanvasKit
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function(registrations) {
         for (let registration of registrations) {
@@ -111,11 +113,26 @@
       });
     }
 
-    // Panggil penghapusan loading saat frame pertama siap
-    window.addEventListener('flutter-first-frame', removeLoading);
+    window.addEventListener('load', function(ev) {
+      // Inisialisasi Flutter Engine secara aman untuk HP (Mobile & Desktop Mode)
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
+        onEntrypointLoaded: function(engineInitializer) {
+          engineInitializer.initializeEngine({
+            // Paksa penggunaan HTML/skwasm renderer agar tidak crash CanvasKit WebGL di HP
+            renderer: "html",
+            useColorEmoji: true
+          }).then(function(appRunner) {
+            appRunner.runApp();
+          });
+        }
+      });
+    });
 
-    // Fallback: hapus loading otomatis jika frame tidak terdeteksi setelah 4 detik
-    setTimeout(removeLoading, 4000);
+    window.addEventListener('flutter-first-frame', removeLoading);
+    setTimeout(removeLoading, 3500);
   </script>
 </body>
 </html>
