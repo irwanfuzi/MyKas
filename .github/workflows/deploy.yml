@@ -38,18 +38,18 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      # Setup Android Platform, Set App Name, Generate Icons & Restore Fixed Keystore
-      - name: Setup Android Platform & Configure App
+      # Setup Android Platform, App Name, Fixed Package ID & Keystore
+      - name: Setup Android Platform & Fixed Config
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
           rm -rf android
           flutter create . --platforms=android --org com.mykas.app --project-name mykas
           
-          # 1. Ubah Nama Tampilan Aplikasi di Android menjadi MyKas
+          # 1. Set Label Nama Aplikasi di Android menjadi MyKas
           sed -i 's/android:label="mykas"/android:label="MyKas"/g' android/app/src/main/AndroidManifest.xml
           
-          # 2. Generate Ikon Khusus Android
+          # 2. Generate Ikon Android
           dart run flutter_launcher_icons
           
           # 3. Biometrik FragmentActivity Fix
@@ -63,29 +63,45 @@ jobs:
           }
           EOF
 
-          # 4. Timpa Keystore Sistem Runner dengan Kunci Abadi dari Secrets
+          # 4. Inject Keystore Abadi ke Keystore Bawaan Gradle
           mkdir -p ~/.android
           echo "$KEYSTORE_BASE64" | base64 -d > ~/.android/debug.keystore
-          mkdir -p android/app
           cp ~/.android/debug.keystore android/app/debug.keystore
 
       # 5. Build Flutter Web PWA
       - name: Build Flutter Web
-        run: flutter build web --release --base-href "/MyKas/" --no-tree-shake-icons
+        run: flutter build web --release --base-href "/MyKas/" --web-renderer auto --no-tree-shake-icons
 
-      # 6. Build APK Android dengan Kunci Debug Abadi
+      # 6. Build APK Android Release
       - name: Build Android APK
-        run: flutter build apk --debug
+        run: flutter build apk --release
 
-      # 7. Upload Web Artifact
+      # 7. Ubah Nama Output APK menjadi MyKas.apk
+      - name: Rename APK Output
+        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/MyKas.apk
+
+      # 8. Upload Web Artifact
       - name: Upload Web Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
 
-      # 8. Upload File APK ke Artifacts
+      # 9. Upload File APK dengan Nama MyKas.apk
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: MyKas-Android-APK
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          path: build/app/outputs/flutter-apk/MyKas.apk
+
+  deploy-web:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
