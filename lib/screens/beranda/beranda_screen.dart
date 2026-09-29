@@ -74,12 +74,13 @@ class _BerandaScreenState extends State<BerandaScreen> {
   }
 
   void _openPengaturanKantongBottomSheet(BuildContext context, String namaKantong) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? AppTheme.cardDark : AppTheme.cardLight;
-    final textColor = isDark ? AppTheme.textPrimaryDark : AppTheme.textPrimaryLight;
-    final subtitleColor = isDark ? AppTheme.textSecondaryDark : AppTheme.textSecondaryLight;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final bgColor = theme.colorScheme.surface;
+    final textColor = theme.colorScheme.onSurface;
+    final subtitleColor = theme.colorScheme.onSurfaceVariant;
     final tileBg = isDark ? const Color(0xFF1E222D) : const Color(0xFFF8FAFC);
-    final borderColor = isDark ? AppTheme.borderDark : AppTheme.borderLight;
+    final borderColor = theme.colorScheme.outline.withOpacity(0.5);
 
     showModalBottomSheet(
       context: context,
@@ -101,7 +102,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                   width: 38,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: isDark ? AppTheme.borderDark : const Color(0xFFCBD5E1),
+                    color: subtitleColor.withOpacity(0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -115,19 +116,14 @@ class _BerandaScreenState extends State<BerandaScreen> {
                     children: [
                       Text(
                         'Pengaturan Kantong',
-                        style: TextStyle(
-                          fontSize: 16,
+                        style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w800,
-                          color: textColor,
-                          fontFamily: 'sans-serif',
                         ),
                       ),
                       Text(
                         namaKantong,
-                        style: TextStyle(
-                          fontSize: 12,
+                        style: theme.textTheme.bodyMedium?.copyWith(
                           color: subtitleColor,
-                          fontFamily: 'sans-serif',
                         ),
                       ),
                     ],
@@ -140,6 +136,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
               ),
               const SizedBox(height: 16),
               _buildSettingTileItem(
+                context: context,
                 icon: AppIcons.pencil,
                 title: 'Ubah Nama & Kategori',
                 subtitle: 'Ganti nama, jenis, atau ikon kantong',
@@ -150,6 +147,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                 onTap: () => Navigator.pop(context),
               ),
               _buildSettingTileItem(
+                context: context,
                 icon: AppIcons.sliders,
                 title: 'Atur Limit Pengeluaran',
                 subtitle: 'Pasang batas budget bulanan kantong ini',
@@ -160,6 +158,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                 onTap: () => Navigator.pop(context),
               ),
               _buildSettingTileItem(
+                context: context,
                 icon: AppIcons.checkCircle2,
                 title: 'Jadikan Kantong Utama',
                 subtitle: 'Gunakan sebagai sumber dana default',
@@ -170,6 +169,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                 onTap: () => Navigator.pop(context),
               ),
               _buildSettingTileItem(
+                context: context,
                 icon: AppIcons.trash2,
                 title: 'Hapus Kantong',
                 subtitle: 'Keluarkan kantong ini dari daftar MyKas',
@@ -189,6 +189,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
   }
 
   Widget _buildSettingTileItem({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -222,15 +223,13 @@ class _BerandaScreenState extends State<BerandaScreen> {
             fontSize: 13,
             fontWeight: FontWeight.bold,
             color: textColor,
-            fontFamily: 'sans-serif',
           ),
         ),
         subtitle: Text(
           subtitle,
           style: TextStyle(
-            fontSize: 10,
+            fontSize: 11,
             color: subtitleColor,
-            fontFamily: 'sans-serif',
           ),
         ),
         trailing: Icon(AppIcons.chevronRight, size: 16, color: subtitleColor),
@@ -296,11 +295,11 @@ class _BerandaScreenState extends State<BerandaScreen> {
 
     final recentTransactions = riwayat.take(5).toList();
 
-    final surfaceColor = isDark ? AppTheme.bgDark : AppTheme.bgLight;
-    final cardBg = isDark ? AppTheme.cardDark : AppTheme.cardLight;
-    final borderColor = isDark ? AppTheme.borderDark : AppTheme.borderLight;
-    final textColor = isDark ? AppTheme.textPrimaryDark : AppTheme.textPrimaryLight;
-    final textMuted = isDark ? AppTheme.textSecondaryDark : AppTheme.textSecondaryLight;
+    final surfaceColor = theme.scaffoldBackgroundColor;
+    final cardBg = theme.colorScheme.surface;
+    final borderColor = theme.colorScheme.outline.withOpacity(0.5);
+    final textColor = theme.colorScheme.onSurface;
+    final textMuted = theme.colorScheme.onSurfaceVariant;
 
     return PopScope(
       canPop: !_showAllKantongSubPage,
@@ -310,7 +309,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
         }
       },
       child: Container(
-        color: const Color(0xFF0052FF),
+        color: AppTheme.brandPrimary,
         child: SafeArea(
           bottom: false,
           child: ScrollConfiguration(
@@ -378,21 +377,20 @@ class _BerandaScreenState extends State<BerandaScreen> {
                 ),
                 SliverToBoxAdapter(
                   child: Container(
-                    color: const Color(0xFF0052FF),
-                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
+                    color: AppTheme.brandPrimary,
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Row(
                           children: [
-                            const Text(
+                            Text(
                               'Total Saldo',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white70,
-                                fontFamily: 'sans-serif',
+                                color: Colors.white.withOpacity(0.8),
                               ),
                             ),
                             const SizedBox(width: 6),
@@ -407,14 +405,14 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                 padding: const EdgeInsets.all(4.0),
                                 child: Icon(
                                   _isSaldoVisible ? AppIcons.eye : AppIcons.eyeOff,
-                                  color: Colors.white70,
+                                  color: Colors.white.withOpacity(0.8),
                                   size: 15,
                                 ),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
                         AnimatedSwitcher(
                           duration: const Duration(milliseconds: 220),
                           transitionBuilder: (Widget child, Animation<double> animation) {
@@ -424,26 +422,24 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             _isSaldoVisible ? rawSaldo : '••••••••••••',
                             key: ValueKey<bool>(_isSaldoVisible),
                             style: const TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w900,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w800,
                               color: Colors.white,
-                              letterSpacing: -0.5,
-                              fontFamily: 'sans-serif',
+                              letterSpacing: -1.0, // Micro polish: Angka lebih solid
                             ),
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        const Row(
+                        const SizedBox(height: 4),
+                        Row(
                           children: [
-                            Icon(AppIcons.clock, color: Colors.white60, size: 11),
-                            SizedBox(width: 4),
+                            Icon(AppIcons.clock, color: Colors.white.withOpacity(0.7), size: 11),
+                            const SizedBox(width: 4),
                             Text(
                               'Updated 2m ago',
                               style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.white60,
+                                fontSize: 11,
+                                color: Colors.white.withOpacity(0.7),
                                 fontWeight: FontWeight.w500,
-                                fontFamily: 'sans-serif',
                               ),
                             ),
                           ],
@@ -460,7 +456,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.18),
+                          color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
                           blurRadius: 16,
                           offset: const Offset(0, -4),
                         ),
@@ -475,12 +471,12 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             width: 38,
                             height: 4,
                             decoration: BoxDecoration(
-                              color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                              color: borderColor,
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 20),
 
                         if (isDesktop) ...[
                           Row(
@@ -515,9 +511,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
                           _buildKantongKeuanganSection(textColor, textMuted, cardBg, borderColor, isDark, false),
                           const SizedBox(height: 24),
                           _buildQuickActionsSection(textColor, isDark, false),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
                           _buildMyInsightCard(textColor, textMuted, isDark),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
                           _buildOverviewKeuanganSection(textColor, textMuted, cardBg, borderColor, isDark, false),
                           const SizedBox(height: 24),
                           _buildRecentTransactionsSection(recentTransactions, textColor, textMuted, cardBg, borderColor, isDark),
@@ -559,18 +555,21 @@ class _BerandaScreenState extends State<BerandaScreen> {
                 fontSize: 15,
                 fontWeight: FontWeight.w800,
                 color: textColor,
-                fontFamily: 'sans-serif',
+                letterSpacing: -0.2,
               ),
             ),
             InkWell(
               onTap: widget.onNavigateToAnalisis,
-              child: const Text(
-                'Lihat Detail >',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.brandPrimary,
-                  fontFamily: 'sans-serif',
+              borderRadius: BorderRadius.circular(6),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                child: Text(
+                  'Lihat Detail >',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.brandPrimary,
+                  ),
                 ),
               ),
             ),
@@ -595,18 +594,17 @@ class _BerandaScreenState extends State<BerandaScreen> {
                         Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withOpacity(0.12),
+                            color: AppTheme.incomeGreen.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(AppIcons.arrowDownLeft, size: 14, color: Color(0xFF10B981)),
+                          child: const Icon(AppIcons.arrowDownLeft, size: 14, color: AppTheme.incomeGreen),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           'Pemasukan',
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 12,
                             color: textMuted,
-                            fontFamily: 'sans-serif',
                           ),
                         ),
                       ],
@@ -616,9 +614,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
                       _isSaldoVisible ? rawPemasukan : '••••••••',
                       style: TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w800,
                         color: textColor,
-                        fontFamily: 'sans-serif',
+                        letterSpacing: -0.3,
                       ),
                     ),
                   ],
@@ -642,18 +640,17 @@ class _BerandaScreenState extends State<BerandaScreen> {
                         Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFEF4444).withOpacity(0.12),
+                            color: AppTheme.expenseRed.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(AppIcons.arrowUpRight, size: 14, color: Color(0xFFEF4444)),
+                          child: const Icon(AppIcons.arrowUpRight, size: 14, color: AppTheme.expenseRed),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           'Pengeluaran',
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 12,
                             color: textMuted,
-                            fontFamily: 'sans-serif',
                           ),
                         ),
                       ],
@@ -663,9 +660,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
                       _isSaldoVisible ? rawPengeluaran : '••••••••',
                       style: TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w800,
                         color: textColor,
-                        fontFamily: 'sans-serif',
+                        letterSpacing: -0.3,
                       ),
                     ),
                   ],
@@ -697,10 +694,10 @@ class _BerandaScreenState extends State<BerandaScreen> {
                 Text(
                   'Kantong Keuangan',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.w800,
                     color: textColor,
-                    fontFamily: 'sans-serif',
+                    letterSpacing: -0.2,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -716,7 +713,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                       color: AppTheme.brandPrimary,
-                      fontFamily: 'sans-serif',
                     ),
                   ),
                 ),
@@ -737,7 +733,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.brandPrimary,
-                    fontFamily: 'sans-serif',
                   ),
                 ),
               ),
@@ -777,7 +772,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: cardBg,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: borderColor),
       ),
       child: Column(
@@ -796,7 +791,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
                     color: Colors.white,
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
-                    fontFamily: 'sans-serif',
                   ),
                 ),
               ),
@@ -816,9 +810,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
               Text(
                 title,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 12,
                   color: textMuted,
-                  fontFamily: 'sans-serif',
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -826,10 +819,10 @@ class _BerandaScreenState extends State<BerandaScreen> {
               Text(
                 _isSaldoVisible ? amount : '••••••••',
                 style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
                   color: textColor,
-                  fontFamily: 'sans-serif',
+                  letterSpacing: -0.3,
                 ),
               ),
             ],
@@ -842,10 +835,10 @@ class _BerandaScreenState extends State<BerandaScreen> {
   Widget _buildAddAccountCard(bool isDark, Color textMuted) {
     return InkWell(
       onTap: () => _openTambahAkunModal(context),
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
             width: 1.5,
@@ -867,10 +860,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
               Text(
                 '+ Tambah Akun',
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                   color: textMuted,
-                  fontFamily: 'sans-serif',
                 ),
               ),
             ],
@@ -895,7 +887,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                 fontSize: 15,
                 fontWeight: FontWeight.w800,
                 color: textColor,
-                fontFamily: 'sans-serif',
+                letterSpacing: -0.2,
               ),
             ),
             InkWell(
@@ -919,7 +911,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.brandPrimary,
-                    fontFamily: 'sans-serif',
                   ),
                 ),
               ),
@@ -934,9 +925,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
                   child: Text(
                     'Belum ada aksi cepat dipilih. Klik Edit untuk menambah.',
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 12,
                       color: textColor.withOpacity(0.6),
-                      fontFamily: 'sans-serif',
                     ),
                   ),
                 )
@@ -973,7 +963,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                               color: textColor,
-                              fontFamily: 'sans-serif',
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -1018,18 +1007,16 @@ class _BerandaScreenState extends State<BerandaScreen> {
                   'My Insight',
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w800,
                     color: textColor,
-                    fontFamily: 'sans-serif',
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'Pengeluaran menurun 12%! Hemat Rp1.450.000 pada pos non-primer dibanding minggu lalu.',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 12,
                     color: textMuted,
-                    fontFamily: 'sans-serif',
                   ),
                 ),
               ],
@@ -1060,19 +1047,22 @@ class _BerandaScreenState extends State<BerandaScreen> {
                 fontSize: 15,
                 fontWeight: FontWeight.w800,
                 color: textColor,
-                fontFamily: 'sans-serif',
+                letterSpacing: -0.2,
               ),
             ),
             if (widget.onNavigateToAnalisis != null)
               InkWell(
                 onTap: widget.onNavigateToAnalisis,
-                child: const Text(
-                  'Lihat Semua >',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.brandPrimary,
-                    fontFamily: 'sans-serif',
+                borderRadius: BorderRadius.circular(6),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  child: Text(
+                    'Lihat Semua >',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.brandPrimary,
+                    ),
                   ),
                 ),
               ),
@@ -1094,7 +1084,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
                       style: TextStyle(
                         color: textMuted,
                         fontSize: 12,
-                        fontFamily: 'sans-serif',
                       ),
                     ),
                   ),
@@ -1129,7 +1118,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                           color: textColor,
-                          fontFamily: 'sans-serif',
                         ),
                       ),
                       subtitle: Text(
@@ -1137,16 +1125,15 @@ class _BerandaScreenState extends State<BerandaScreen> {
                         style: TextStyle(
                           fontSize: 11,
                           color: textMuted,
-                          fontFamily: 'sans-serif',
                         ),
                       ),
                       trailing: Text(
                         '${isPemasukan ? '+' : '-'}$formattedNominal',
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                          color: isPemasukan ? const Color(0xFF10B981) : textColor,
-                          fontFamily: 'sans-serif',
+                          fontWeight: FontWeight.w800,
+                          color: isPemasukan ? AppTheme.incomeGreen : textColor,
+                          letterSpacing: -0.2,
                         ),
                       ),
                     );
@@ -1171,7 +1158,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
       child: Column(
         children: [
           Container(
-            color: const Color(0xFF0052FF),
+            color: AppTheme.brandPrimary,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
@@ -1186,7 +1173,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
-                    fontFamily: 'sans-serif',
                   ),
                 ),
               ],
@@ -1211,7 +1197,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: AppTheme.brandPrimary,
-                        fontFamily: 'sans-serif',
                       ),
                     ),
                     style: OutlinedButton.styleFrom(
@@ -1257,7 +1242,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
                 color: Colors.white,
                 fontSize: 11,
                 fontWeight: FontWeight.w900,
-                fontFamily: 'sans-serif',
               ),
             ),
           ),
@@ -1271,7 +1255,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
                   style: TextStyle(
                     fontSize: 12,
                     color: textMuted,
-                    fontFamily: 'sans-serif',
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -1279,9 +1262,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
                   _isSaldoVisible ? amount : '••••••••',
                   style: TextStyle(
                     fontSize: 15,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w800,
                     color: textColor,
-                    fontFamily: 'sans-serif',
+                    letterSpacing: -0.3,
                   ),
                 ),
               ],
@@ -1318,9 +1301,10 @@ class _TambahAkunFormContentState extends State<TambahAkunFormContent> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? AppTheme.cardDark : AppTheme.cardLight;
-    final textColor = isDark ? AppTheme.textPrimaryDark : AppTheme.textPrimaryLight;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final bgColor = theme.colorScheme.surface;
+    final textColor = theme.colorScheme.onSurface;
     final fillColor = isDark ? const Color(0xFF1E222D) : const Color(0xFFF1F5F9);
 
     return Container(
@@ -1338,7 +1322,7 @@ class _TambahAkunFormContentState extends State<TambahAkunFormContent> {
               width: 38,
               height: 4,
               decoration: BoxDecoration(
-                color: isDark ? AppTheme.borderDark : const Color(0xFFCBD5E1),
+                color: theme.colorScheme.onSurfaceVariant.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -1353,7 +1337,6 @@ class _TambahAkunFormContentState extends State<TambahAkunFormContent> {
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: textColor,
-                  fontFamily: 'sans-serif',
                 ),
               ),
               IconButton(
@@ -1420,7 +1403,7 @@ class _TambahAkunFormContentState extends State<TambahAkunFormContent> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('✅ Kantong berhasil ditambahkan!'),
-                    backgroundColor: Color(0xFF10B981),
+                    backgroundColor: AppTheme.incomeGreen,
                   ),
                 );
               },
@@ -1435,7 +1418,6 @@ class _TambahAkunFormContentState extends State<TambahAkunFormContent> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
-                  fontFamily: 'sans-serif',
                 ),
               ),
             ),
@@ -1456,7 +1438,7 @@ class _OvoStyleTopBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: const Color(0xFF0052FF),
+      color: AppTheme.brandPrimary,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -1476,10 +1458,9 @@ class _OvoStyleTopBarDelegate extends SliverPersistentHeaderDelegate {
                 'MyKas',
                 style: TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w800,
                   color: Colors.white,
                   letterSpacing: -0.5,
-                  fontFamily: 'sans-serif',
                 ),
               ),
             ),
