@@ -35,6 +35,7 @@ class MyKasApp extends StatefulWidget {
 
 class _MyKasAppState extends State<MyKasApp> {
   ThemeMode _themeMode = ThemeMode.dark;
+  bool _showSplash = true;
   late bool _isLocked;
   late String _currentSavedPin;
 
@@ -43,6 +44,15 @@ class _MyKasAppState extends State<MyKasApp> {
     super.initState();
     _isLocked = widget.initialIsPinLocked;
     _currentSavedPin = widget.initialSavedPin;
+
+    // Splash screen tampil selama 2 detik, lalu otomatis pindah state
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _showSplash = false;
+        });
+      }
+    });
   }
 
   void _updateThemeMode(ThemeMode newMode) {
@@ -66,16 +76,6 @@ class _MyKasAppState extends State<MyKasApp> {
     });
   }
 
-  // Helper Widget Halaman Utama
-  Widget _buildMainApp() {
-    return App(
-      onThemeChanged: _handleThemeChange,
-      currentThemeMode: _themeMode,
-      onThemeModeChanged: _updateThemeMode,
-      onPinStateChanged: _handlePinStateChanged,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -84,21 +84,68 @@ class _MyKasAppState extends State<MyKasApp> {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: _themeMode,
-      // SPLASH SCREEN KEMBALI DIPASANG SEBAGAI HOME
-      home: _isLocked
-          ? SplashScreen(
-              nextScreen: LockScreen(
-                savedPin: _currentSavedPin,
-                onUnlocked: () {
-                  setState(() {
-                    _isLocked = false;
-                  });
-                },
+      home: _showSplash
+          ? const _SimpleSplashScreen()
+          : (_isLocked
+              ? LockScreen(
+                  savedPin: _currentSavedPin,
+                  onUnlocked: () {
+                    setState(() {
+                      _isLocked = false;
+                    });
+                  },
+                )
+              : App(
+                  onThemeChanged: _handleThemeChange,
+                  currentThemeMode: _themeMode,
+                  onThemeModeChanged: _updateThemeMode,
+                  onPinStateChanged: _handlePinStateChanged,
+                )),
+    );
+  }
+}
+
+// Widget Splash Sederhana Tanpa Navigator Push/Pop (Anti Stuck)
+class _SimpleSplashScreen extends StatelessWidget {
+  const _SimpleSplashScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F172A),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: const Color(0xFF0052FF).withOpacity(0.15),
+                shape: BoxShape.circle,
               ),
-            )
-          : SplashScreen(
-              nextScreen: _buildMainApp(),
+              child: const Center(
+                child: Icon(
+                  Icons.account_balance_wallet_rounded,
+                  size: 38,
+                  color: Color(0xFF0052FF),
+                ),
+              ),
             ),
+            const SizedBox(height: 20),
+            Text(
+              'MYKAS',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 3.0,
+                color: colorScheme.onSurface,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
