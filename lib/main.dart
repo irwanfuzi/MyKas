@@ -66,29 +66,14 @@ class _MyKasAppState extends State<MyKasApp> {
     });
   }
 
-  // Helper Widget untuk Halaman Utama App
-  Widget _buildAppWidget() {
+  // Builder untuk Widget App Utama
+  Widget _buildMainApp(BuildContext context) {
     return App(
       onThemeChanged: _handleThemeChange,
       currentThemeMode: _themeMode,
       onThemeModeChanged: _updateThemeMode,
       onPinStateChanged: _handlePinStateChanged,
     );
-  }
-
-  // Helper Widget untuk Menentukan Rute Awal Setelah Splash
-  Widget _getTargetScreen() {
-    if (_isLocked) {
-      return LockScreen(
-        savedPin: _currentSavedPin,
-        onUnlocked: () {
-          setState(() {
-            _isLocked = false;
-          });
-        },
-      );
-    }
-    return _buildAppWidget();
   }
 
   @override
@@ -99,19 +84,29 @@ class _MyKasAppState extends State<MyKasApp> {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: _themeMode,
-      // Jika _isLocked sudah false, render langsung App(), jika masih terkunci render Splash -> LockScreen
-      home: _isLocked
-          ? SplashScreen(
+      home: Builder(
+        builder: (context) {
+          // Jika aplikasi terkunci, buka SplashScreen -> LockScreen
+          if (_isLocked) {
+            return SplashScreen(
               nextScreen: LockScreen(
                 savedPin: _currentSavedPin,
                 onUnlocked: () {
-                  setState(() {
-                    _isLocked = false;
-                  });
+                  // KUNCI PERBAIKAN: Ganti seluruh tumpukan halaman dengan App()
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => _buildMainApp(context),
+                    ),
+                    (route) => false,
+                  );
                 },
               ),
-            )
-          : _buildAppWidget(),
+            );
+          }
+          // Jika tidak terkunci, langsung buka halaman App
+          return _buildMainApp(context);
+        },
+      ),
     );
   }
 }
