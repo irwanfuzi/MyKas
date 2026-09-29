@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // --- PALET WARNA UTAMA (FINTECH STANDARD) ---
+  // --- PALET WARNA FINTECH MODERN ---
   static const Color brandPrimary = Color(0xFF2563EB); // Soft Royal Blue
   static const Color brandPrimaryLight = Color(0xFF3B82F6);
   static const Color brandPrimaryDark = Color(0xFF1D4ED8);
@@ -10,29 +10,29 @@ class AppTheme {
   static const Color brandAccent = Color(0xFFF59E0B); // Honey Gold
   static const Color brandAccentLight = Color(0xFFFBBF24);
 
-  // Status Colors
+  // Status Colors (Vibrant Clean)
   static const Color incomeGreen = Color(0xFF10B981);
   static const Color expenseRed = Color(0xFFEF4444);
   static const Color warningOrange = Color(0xFFF97316);
 
-  // Surface Neutral Light
-  static const Color lightBg = Color(0xFFF8FAFC);
-  static const Color lightSurface = Color(0xFFFFFFFF);
+  // --- SURFACE NEUTRAL LIGHT (WARM SOFT FINTECH WHITE) ---
+  static const Color lightBg = Color(0xFFF1F5F9);        // Slate-tinted BG (Gak silau/mentah)
+  static const Color lightSurface = Color(0xFFFFFFFF);   // Pure Card White
   static const Color lightCard = Color(0xFFFFFFFF);
-  static const Color lightBorder = Color(0xFFE2E8F0);
-  static const Color lightTextPrimary = Color(0xFF0F172A);
-  static const Color lightTextSecondary = Color(0xFF64748B);
+  static const Color lightBorder = Color(0xFFE2E8F0);   // Micro Subtle Border
+  static const Color lightTextPrimary = Color(0xFF0F172A); // High Contrast Slate
+  static const Color lightTextSecondary = Color(0xFF64748B); // Soft Readable Grey
 
-  // Surface Neutral Dark
-  static const Color darkBg = Color(0xFF0F172A);
-  static const Color darkSurface = Color(0xFF1E293B);
-  static const Color darkCard = Color(0xFF1E293B);
-  static const Color darkBorder = Color(0xFF334155);
-  static const Color darkTextPrimary = Color(0xFFF8FAFC);
-  static const Color darkTextSecondary = Color(0xFF94A3B8);
+  // --- SURFACE NEUTRAL DARK (SLEEK CHARCOAL OLED) ---
+  static const Color darkBg = Color(0xFF0B0E14);        // OLED Charcoal Base
+  static const Color darkSurface = Color(0xFF151921);   // Subtle Card BG
+  static const Color darkCard = Color(0xFF151921);
+  static const Color darkBorder = Color(0xFF222732);   // Micro Border
+  static const Color darkTextPrimary = Color(0xFFF1F5F9); // Crisp White
+  static const Color darkTextSecondary = Color(0xFF94A3B8); // Soft Slate
 
-  // --- ALIAS KOMPATIBILITAS (MENCEGAH ERROR MEMBER MISSING) ---
-  static const Color successGreen = incomeGreen; // Fix untuk Catat & Profil Screen
+  // Alias Kompatibilitas Kode Lama (Cegah Build Error)
+  static const Color successGreen = incomeGreen;
   static const Color bgLight = lightBg;
   static const Color bgDark = darkBg;
   static const Color cardLight = lightCard;
@@ -44,7 +44,7 @@ class AppTheme {
   static const Color textSecondaryLight = lightTextSecondary;
   static const Color textSecondaryDark = darkTextSecondary;
 
-  // Corner Radius Standard (8px - 12px)
+  // Corner Radius Standard (8px - 12px Restrained)
   static final BorderRadius radiusSmall = BorderRadius.circular(8.0);
   static final BorderRadius radiusMedium = BorderRadius.circular(10.0);
   static final BorderRadius radiusLarge = BorderRadius.circular(12.0);
@@ -70,16 +70,17 @@ class AppTheme {
       ),
 
       textTheme: GoogleFonts.urbanistTextTheme(ThemeData.light().textTheme).copyWith(
-        displayLarge: const TextStyle(color: lightTextPrimary, fontWeight: FontWeight.bold),
-        titleLarge: const TextStyle(color: lightTextPrimary, fontWeight: FontWeight.bold, fontSize: 18),
-        titleMedium: const TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w600, fontSize: 16),
+        displayLarge: const TextStyle(color: lightTextPrimary, fontWeight: FontWeight.bold, letterSpacing: -0.5),
+        titleLarge: const TextStyle(color: lightTextPrimary, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: -0.3),
+        titleMedium: const TextStyle(color: lightTextPrimary, fontWeight: FontWeight.w600, fontSize: 15),
         bodyLarge: const TextStyle(color: lightTextPrimary, fontSize: 14),
         bodyMedium: const TextStyle(color: lightTextSecondary, fontSize: 12),
       ),
 
       cardTheme: CardTheme(
         color: lightCard,
-        elevation: 0,
+        elevation: 0.5, // Soft subtle depth
+        shadowColor: const Color(0xFF0F172A).withOpacity(0.04),
         shape: RoundedRectangleBorder(
           borderRadius: radiusLarge,
           side: const BorderSide(color: lightBorder, width: 1),
@@ -90,7 +91,7 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         backgroundColor: lightBg,
         elevation: 0,
-        scrolledUnderElevation: 0.5,
+        scrolledUnderElevation: 0,
         centerTitle: false,
         iconTheme: const IconThemeData(color: lightTextPrimary),
         titleTextStyle: GoogleFonts.urbanist(
@@ -137,7 +138,7 @@ class AppTheme {
         selectedItemColor: brandPrimary,
         unselectedItemColor: lightTextSecondary,
         type: BottomNavigationBarType.fixed,
-        elevation: 8,
+        elevation: 6,
       ),
     );
   }
@@ -163,9 +164,9 @@ class AppTheme {
       ),
 
       textTheme: GoogleFonts.urbanistTextTheme(ThemeData.dark().textTheme).copyWith(
-        displayLarge: const TextStyle(color: darkTextPrimary, fontWeight: FontWeight.bold),
-        titleLarge: const TextStyle(color: darkTextPrimary, fontWeight: FontWeight.bold, fontSize: 18),
-        titleMedium: const TextStyle(color: darkTextPrimary, fontWeight: FontWeight.w600, fontSize: 16),
+        displayLarge: const TextStyle(color: darkTextPrimary, fontWeight: FontWeight.bold, letterSpacing: -0.5),
+        titleLarge: const TextStyle(color: darkTextPrimary, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: -0.3),
+        titleMedium: const TextStyle(color: darkTextPrimary, fontWeight: FontWeight.w600, fontSize: 15),
         bodyLarge: const TextStyle(color: darkTextPrimary, fontSize: 14),
         bodyMedium: const TextStyle(color: darkTextSecondary, fontSize: 12),
       ),
@@ -183,7 +184,7 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         backgroundColor: darkBg,
         elevation: 0,
-        scrolledUnderElevation: 0.5,
+        scrolledUnderElevation: 0,
         centerTitle: false,
         iconTheme: const IconThemeData(color: darkTextPrimary),
         titleTextStyle: GoogleFonts.urbanist(
@@ -230,7 +231,7 @@ class AppTheme {
         selectedItemColor: brandPrimaryLight,
         unselectedItemColor: darkTextSecondary,
         type: BottomNavigationBarType.fixed,
-        elevation: 8,
+        elevation: 0,
       ),
     );
   }
