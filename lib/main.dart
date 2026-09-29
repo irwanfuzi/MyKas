@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'screens/auth/lock_screen.dart';
-import 'splash_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
@@ -36,7 +35,7 @@ class MyKasApp extends StatefulWidget {
 class _MyKasAppState extends State<MyKasApp> {
   ThemeMode _themeMode = ThemeMode.dark;
   late bool _isLocked;
-  String _currentSavedPin = '';
+  late String _currentSavedPin;
 
   @override
   void initState() {
@@ -66,16 +65,6 @@ class _MyKasAppState extends State<MyKasApp> {
     });
   }
 
-  // Builder untuk Widget App Utama
-  Widget _buildMainApp(BuildContext context) {
-    return App(
-      onThemeChanged: _handleThemeChange,
-      currentThemeMode: _themeMode,
-      onThemeModeChanged: _updateThemeMode,
-      onPinStateChanged: _handlePinStateChanged,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -84,29 +73,23 @@ class _MyKasAppState extends State<MyKasApp> {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: _themeMode,
-      home: Builder(
-        builder: (context) {
-          // Jika aplikasi terkunci, buka SplashScreen -> LockScreen
-          if (_isLocked) {
-            return SplashScreen(
-              nextScreen: LockScreen(
-                savedPin: _currentSavedPin,
-                onUnlocked: () {
-                  // KUNCI PERBAIKAN: Ganti seluruh tumpukan halaman dengan App()
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => _buildMainApp(context),
-                    ),
-                    (route) => false,
-                  );
-                },
-              ),
-            );
-          }
-          // Jika tidak terkunci, langsung buka halaman App
-          return _buildMainApp(context);
-        },
-      ),
+      // Jika _isLocked = true -> Tampilkan LockScreen langsung
+      // Begitu _isLocked = false -> Otomatis berubah ke App() (Halaman Utama)
+      home: _isLocked
+          ? LockScreen(
+              savedPin: _currentSavedPin,
+              onUnlocked: () {
+                setState(() {
+                  _isLocked = false;
+                });
+              },
+            )
+          : App(
+              onThemeChanged: _handleThemeChange,
+              currentThemeMode: _themeMode,
+              onThemeModeChanged: _updateThemeMode,
+              onPinStateChanged: _handlePinStateChanged,
+            ),
     );
   }
 }
