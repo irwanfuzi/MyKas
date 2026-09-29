@@ -68,9 +68,9 @@ jobs:
           echo "$KEYSTORE_BASE64" | base64 -d > ~/.android/debug.keystore
           cp ~/.android/debug.keystore android/app/debug.keystore
 
-      # 5. BUILD WEB MURNI JS (ANTI BLANK DI DESKTOP SITE HP)
+      # 5. Build Flutter Web PWA HTML Renderer (FIXED)
       - name: Build Flutter Web
-        run: flutter build web --release --base-href "/MyKas/" --web-renderer html --no-wasm --no-tree-shake-icons
+        run: flutter build web --release --base-href "/MyKas/" --web-renderer html --no-tree-shake-icons
 
       # 6. Build APK Android Release
       - name: Build Android APK
