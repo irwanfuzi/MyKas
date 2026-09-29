@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import 'main.dart'; // Sesuaikan lokasi HomeScreen aplikasi kamu
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final Widget nextScreen;
+
+  const SplashScreen({
+    super.key,
+    required this.nextScreen,
+  });
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -19,18 +23,15 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
-    // Controller Durasi Animasi
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1800),
     );
 
-    // Animasi Scale (Spring Effect Bawaan Fintech Modern)
     _scaleAnimation = Tween<double>(begin: 0.6, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
     );
 
-    // Animasi Opacity/Fade-In Logo & Teks
     _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
@@ -38,7 +39,6 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    // Animasi Pulse Glowing Efek Cahaya Fintek
     _glowAnimation = Tween<double>(begin: 15.0, end: 35.0).animate(
       CurvedAnimation(
         parent: _controller,
@@ -48,13 +48,13 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    // Pindah Otomatis ke Halaman Utama Setelah Animasi Selesai (2.8 Detik)
-    Future.delayed(const Duration(milliseconds: 2800), () {
+    // Pindah ke Halaman Berikutnya setelah animasi selesai (2.5 detik)
+    Future.delayed(const Duration(milliseconds: 2500), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
-                const HomeScreen(), // Ganti dengan Widget Halaman Utama kamu
+                widget.nextScreen,
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
@@ -76,20 +76,19 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        // Latar Belakang Gradient Premium khas Fintech Dark Mode
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF0F172A), // Slate 900
-              Color(0xFF020617), // Slate 950
+              Color(0xFF0F172A),
+              Color(0xFF020617),
             ],
           ),
         ),
         child: Stack(
           children: [
-            // Ambient Background Glow Ring (Lingkaran Cahaya Halus di Belakang)
+            // Ambient Background Glow Ring
             Center(
               child: AnimatedBuilder(
                 animation: _glowAnimation,
@@ -113,12 +112,11 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
 
-            // Konten Utama Splash Screen
+            // Logo & Teks Branding
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo MyKas dengan Animasi Scale & Glow
                   AnimatedBuilder(
                     animation: _controller,
                     builder: (context, child) {
@@ -153,8 +151,6 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   ),
                   const SizedBox(height: 32),
-
-                  // Teks Branding Fintek
                   FadeTransition(
                     opacity: _opacityAnimation,
                     child: Column(
@@ -195,7 +191,7 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
 
-            // Indikator Loading Fintech Minim
+            // Loading Bar Halus
             Positioned(
               bottom: 60,
               left: 0,
