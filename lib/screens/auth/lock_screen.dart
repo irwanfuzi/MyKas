@@ -49,14 +49,15 @@ class _LockScreenState extends State<LockScreen> {
     });
 
     try {
-      final bool canCheck = await _auth.canCheckBiometrics || await _auth.isDeviceSupported();
+      final bool canCheck =
+          await _auth.canCheckBiometrics || await _auth.isDeviceSupported();
 
       if (canCheck) {
         final bool authenticated = await _auth.authenticate(
           localizedReason: 'Tempelkan Sidik Jari untuk membuka MyKas',
           options: const AuthenticationOptions(
             stickyAuth: true,
-            biometricOnly: true, // Murni Sidik Jari
+            biometricOnly: true,
           ),
         );
 
@@ -79,7 +80,8 @@ class _LockScreenState extends State<LockScreen> {
   }
 
   void _onKeyPress(String value) {
-    final int targetLength = widget.savedPin.isNotEmpty ? widget.savedPin.length : 6;
+    final int targetLength =
+        widget.savedPin.isNotEmpty ? widget.savedPin.length : 6;
 
     if (_enteredPin.length < targetLength) {
       setState(() {
@@ -101,7 +103,10 @@ class _LockScreenState extends State<LockScreen> {
   }
 
   void _verifyPin() {
-    if (_enteredPin == widget.savedPin) {
+    // FIX: Jika savedPin kosong (belum pernah diset), atau jika input PIN cocok
+    final bool isPinCorrect = widget.savedPin.isEmpty || _enteredPin == widget.savedPin;
+
+    if (isPinCorrect) {
       widget.onUnlocked();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -112,7 +117,9 @@ class _LockScreenState extends State<LockScreen> {
           ),
           backgroundColor: AppTheme.expenseRed,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
       setState(() {
@@ -125,7 +132,8 @@ class _LockScreenState extends State<LockScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final int targetLength = widget.savedPin.isNotEmpty ? widget.savedPin.length : 6;
+    final int targetLength =
+        widget.savedPin.isNotEmpty ? widget.savedPin.length : 6;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -243,7 +251,8 @@ class _LockScreenState extends State<LockScreen> {
                     height: 14,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isFilled ? AppTheme.brandPrimary : Colors.transparent,
+                      color:
+                          isFilled ? AppTheme.brandPrimary : Colors.transparent,
                       border: Border.all(
                         color: isFilled
                             ? AppTheme.brandPrimary
@@ -284,7 +293,10 @@ class _LockScreenState extends State<LockScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: row
-                              .map((num) => _buildKeypadButton(num, colorScheme))
+                              .map(
+                                (num) =>
+                                    _buildKeypadButton(num, colorScheme),
+                              )
                               .toList(),
                         ),
                       ),
