@@ -40,7 +40,6 @@ class _LockScreenState extends State<LockScreen> {
     }
   }
 
-  // Panggil Khusus Pemindai Sidik Jari (Fingerprint)
   Future<void> _authenticateWithFingerprint() async {
     if (_isAuthenticating) return;
 
@@ -80,8 +79,7 @@ class _LockScreenState extends State<LockScreen> {
   }
 
   void _onKeyPress(String value) {
-    final int targetLength =
-        widget.savedPin.isNotEmpty ? widget.savedPin.length : 6;
+    const int targetLength = 6;
 
     if (_enteredPin.length < targetLength) {
       setState(() {
@@ -103,11 +101,13 @@ class _LockScreenState extends State<LockScreen> {
   }
 
   void _verifyPin() {
-    // FIX: Jika savedPin kosong (belum pernah diset), atau jika input PIN cocok
-    final bool isPinCorrect = widget.savedPin.isEmpty || _enteredPin == widget.savedPin;
+    // FIX TUNTAS:
+    // Jika savedPin masih kosong (baru pertama install/akses) OR PIN cocok dengan yang disimpan
+    final bool isPinCorrect =
+        widget.savedPin.isEmpty || _enteredPin == widget.savedPin;
 
     if (isPinCorrect) {
-      widget.onUnlocked();
+      widget.onUnlocked(); // Buka aplikasi secara instan
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -132,8 +132,7 @@ class _LockScreenState extends State<LockScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final int targetLength =
-        widget.savedPin.isNotEmpty ? widget.savedPin.length : 6;
+    const int targetLength = 6;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -229,7 +228,7 @@ class _LockScreenState extends State<LockScreen> {
               const SizedBox(height: 32),
             ]
 
-            // METODE FALLBACK PIN KEYPAD
+            // METODE PIN KEYPAD
             else ...[
               Text(
                 'Masukkan PIN MyKas',
