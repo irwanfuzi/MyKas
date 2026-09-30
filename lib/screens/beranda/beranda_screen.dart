@@ -1,21 +1,10 @@
+
 import 'package:flutter/material.dart';
 
 import '../../models/quick_action_item.dart';
+import '../../theme/app_theme.dart';
 import '../../utils/app_icons.dart';
 import '../../widgets/customize_quick_actions_sheet.dart';
-
-class AppTheme {
-  // Warna Utama: Soft Royal Blue & Honey Gold
-  static const Color brandPrimary = Color(0xFF2563EB); // Soft Royal Blue
-  static const Color brandPrimaryLight = Color(0xFF3B82F6);
-  static const Color honeyGold = Color(0xFFF59E0B); // Honey Gold Accent
-  static const Color honeyGoldDark = Color(0xFFD97706);
-  static const Color incomeGreen = Color(0xFF10B981);
-  static const Color expenseRed = Color(0xFFEF4444);
-  static const Color cardDark = Color(0xFF1E293B);
-  static const Color borderDark = Color(0xFF334155);
-  static const Color borderLight = Color(0xFFE2E8F0);
-}
 
 class BerandaScreen extends StatefulWidget {
   final Map<String, dynamic>? summaryData;
@@ -131,6 +120,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w800,
                           fontSize: 16,
+                          color: textColor,
                         ),
                       ),
                       Text(
@@ -189,9 +179,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
                 subtitle: 'Keluarkan kantong ini dari daftar MyKas',
                 tileBg: tileBg,
                 borderColor: borderColor,
-                textColor: AppTheme.expenseRed,
+                textColor: const Color(0xFFEF4444),
                 subtitleColor: subtitleColor,
-                iconColor: AppTheme.expenseRed,
+                iconColor: const Color(0xFFEF4444),
                 onTap: () => Navigator.pop(context),
               ),
               const SizedBox(height: 12),
@@ -211,7 +201,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
     required Color borderColor,
     required Color textColor,
     required Color subtitleColor,
-    Color iconColor = AppTheme.brandPrimary,
+    Color iconColor = const Color(0xFF2563EB),
     required VoidCallback onTap,
   }) {
     return Container(
@@ -313,11 +303,13 @@ class _BerandaScreenState extends State<BerandaScreen> {
 
     final recentTransactions = riwayat.take(5).toList();
 
+    // Dinamis membaca theme mode aplikasi
     final surfaceColor = theme.scaffoldBackgroundColor;
     final cardBg = theme.colorScheme.surface;
-    final borderColor = theme.colorScheme.outline.withOpacity(0.35);
+    final borderColor = theme.colorScheme.outline.withOpacity(isDark ? 0.35 : 0.2);
     final textColor = theme.colorScheme.onSurface;
     final textMuted = theme.colorScheme.onSurfaceVariant;
+    const brandBlue = Color(0xFF2563EB); // Soft Royal Blue
 
     return PopScope(
       canPop: !_showAllKantongSubPage,
@@ -326,9 +318,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
           _handleBackPress();
         }
       },
-      // Root latar memakai Soft Royal Blue utuh agar sudut tidak berjarak / tidak beda warna
       child: Container(
-        color: AppTheme.brandPrimary,
+        color: brandBlue,
         child: SafeArea(
           bottom: false,
           child: ScrollConfiguration(
@@ -383,6 +374,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
       key: const ValueKey('MainBerandaView'),
       builder: (context, constraints) {
         final isDesktop = constraints.maxWidth >= 1024;
+        const brandBlue = Color(0xFF2563EB);
 
         return Center(
           child: ConstrainedBox(
@@ -390,16 +382,16 @@ class _BerandaScreenState extends State<BerandaScreen> {
             child: CustomScrollView(
               physics: const ClampingScrollPhysics(),
               slivers: [
-                // TopBar Pinned Soft Royal Blue
+                // TopBar Pinned
                 SliverPersistentHeader(
                   pinned: true,
                   delegate: _OvoStyleTopBarDelegate(),
                 ),
 
-                // Card Saldo Soft Royal Blue dengan aksen bulatan transparan
+                // Card Saldo
                 SliverToBoxAdapter(
                   child: Container(
-                    color: AppTheme.brandPrimary,
+                    color: brandBlue,
                     child: Stack(
                       children: [
                         Positioned(
@@ -492,7 +484,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                   ),
                 ),
 
-                // Main Content Body (Dark Surface dengan lekukan top melengkung mulus)
+                // Main Content Body (Dinamis Sesuai Mode Light/Dark)
                 SliverToBoxAdapter(
                   child: Container(
                     width: double.infinity,
@@ -584,6 +576,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
     bool isDark,
     bool isDesktop,
   ) {
+    const brandBlue = Color(0xFF2563EB);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -605,7 +599,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppTheme.brandPrimary.withOpacity(0.12),
+                    color: brandBlue.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
@@ -613,7 +607,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.brandPrimaryLight,
+                      color: brandBlue,
                     ),
                   ),
                 ),
@@ -633,7 +627,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.brandPrimaryLight,
+                    color: brandBlue,
                   ),
                 ),
               ),
@@ -650,7 +644,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
           childAspectRatio: isDesktop ? 2.0 : 1.65,
           children: [
             _buildWalletCard('BSI', const Color(0xFF00A39D), 'BSI Hasanah', 'Rp 4.250.000', cardBg, borderColor, textColor, textMuted),
-            _buildWalletCard('MANDIRI', AppTheme.honeyGoldDark, 'Mandiri Utama', 'Rp 6.000.000', cardBg, borderColor, textColor, textMuted),
+            _buildWalletCard('MANDIRI', const Color(0xFFD97706), 'Mandiri Utama', 'Rp 6.000.000', cardBg, borderColor, textColor, textMuted),
             _buildWalletCard('GOPAY', const Color(0xFF00AED6), 'GoPay Wallet', 'Rp 1.000.000', cardBg, borderColor, textColor, textMuted),
             _buildAddAccountCard(isDark, textMuted),
           ],
@@ -734,6 +728,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
   }
 
   Widget _buildAddAccountCard(bool isDark, Color textMuted) {
+    const brandBlue = Color(0xFF2563EB);
+
     return InkWell(
       onTap: () => _openTambahAkunModal(context),
       borderRadius: BorderRadius.circular(14),
@@ -741,7 +737,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
             width: 1.2,
           ),
         ),
@@ -752,10 +748,10 @@ class _BerandaScreenState extends State<BerandaScreen> {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: AppTheme.brandPrimary.withOpacity(0.12),
+                  color: brandBlue.withOpacity(0.12),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(AppIcons.plus, color: AppTheme.brandPrimaryLight, size: 14),
+                child: const Icon(AppIcons.plus, color: brandBlue, size: 14),
               ),
               const SizedBox(height: 6),
               Text(
@@ -778,6 +774,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
   // ==========================================
   Widget _buildQuickActionsSection(Color textColor, bool isDark, bool isDesktop) {
     final activeActions = _userQuickActions.where((item) => item.isEnabled).take(4).toList();
+    const brandBlue = Color(0xFF2563EB);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -814,7 +811,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.brandPrimaryLight,
+                    color: brandBlue,
                   ),
                 ),
               ),
@@ -849,12 +846,10 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: isDark
-                                  ? AppTheme.brandPrimary.withOpacity(0.2)
-                                  : AppTheme.brandPrimary.withOpacity(0.12),
+                              color: brandBlue.withOpacity(isDark ? 0.2 : 0.1),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(act.icon, color: AppTheme.brandPrimaryLight, size: 20),
+                            child: const Icon(AppIcons.sparkles, color: brandBlue, size: 20),
                           ),
                           const SizedBox(height: 6),
                           Text(
@@ -879,16 +874,18 @@ class _BerandaScreenState extends State<BerandaScreen> {
   }
 
   // ==========================================
-  // MY INSIGHT CARD (Honey Gold Accent Highlight)
+  // MY INSIGHT CARD
   // ==========================================
   Widget _buildMyInsightCard(Color textColor, Color textMuted, bool isDark) {
+    const honeyGold = Color(0xFFF59E0B);
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.cardDark : const Color(0xFFFFFBEB), // Gold soft tint
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFFFFBEB),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppTheme.honeyGold.withOpacity(isDark ? 0.4 : 0.3),
+          color: honeyGold.withOpacity(isDark ? 0.35 : 0.25),
         ),
       ),
       child: Row(
@@ -897,10 +894,10 @@ class _BerandaScreenState extends State<BerandaScreen> {
           Container(
             padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
-              color: AppTheme.honeyGold.withOpacity(0.18),
+              color: honeyGold.withOpacity(0.18),
               shape: BoxShape.circle,
             ),
-            child: const Icon(AppIcons.sparkles, color: AppTheme.honeyGold, size: 16),
+            child: const Icon(AppIcons.sparkles, color: honeyGold, size: 16),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -952,6 +949,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
     final double targetTujuan = widget.summaryData?['target_tujuan']?.toDouble() ?? 15000000.0;
     final double tujuanRatio = (terkumpulTujuan / targetTujuan).clamp(0.0, 1.0);
 
+    const brandBlue = Color(0xFF2563EB);
+    const honeyGold = Color(0xFFF59E0B);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -977,7 +977,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.brandPrimaryLight,
+                    color: brandBlue,
                   ),
                 ),
               ),
@@ -1043,8 +1043,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                 borderRadius: BorderRadius.circular(4),
                                 gradient: LinearGradient(
                                   colors: budgetRatio > 0.8
-                                      ? [AppTheme.honeyGold, AppTheme.expenseRed]
-                                      : [AppTheme.incomeGreen, const Color(0xFF10B981)],
+                                      ? [honeyGold, const Color(0xFFEF4444)]
+                                      : [const Color(0xFF10B981), const Color(0xFF059669)],
                                 ),
                               ),
                             ),
@@ -1063,7 +1063,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
             ),
             const SizedBox(width: 10),
 
-            // TUJUAN KEUANGAN (Accent Honey Gold Progress)
+            // TUJUAN KEUANGAN
             Expanded(
               child: Container(
                 padding: const EdgeInsets.all(12),
@@ -1086,7 +1086,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             color: textMuted,
                           ),
                         ),
-                        const Icon(AppIcons.checkCircle2, size: 12, color: AppTheme.honeyGold),
+                        const Icon(AppIcons.checkCircle2, size: 12, color: honeyGold),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -1116,7 +1116,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             child: Container(
                               height: 5,
                               decoration: BoxDecoration(
-                                color: AppTheme.honeyGold,
+                                color: honeyGold,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                             ),
@@ -1152,6 +1152,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
     Color borderColor,
     bool isDark,
   ) {
+    const brandBlue = Color(0xFF2563EB);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1179,11 +1181,11 @@ class _BerandaScreenState extends State<BerandaScreen> {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.brandPrimaryLight,
+                        color: brandBlue,
                       ),
                     ),
                     SizedBox(width: 2),
-                    Icon(AppIcons.chevronRight, size: 14, color: AppTheme.brandPrimaryLight),
+                    Icon(AppIcons.chevronRight, size: 14, color: brandBlue),
                   ],
                 ),
               ),
@@ -1225,12 +1227,12 @@ class _BerandaScreenState extends State<BerandaScreen> {
                       leading: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppTheme.brandPrimary.withOpacity(0.12),
+                          color: brandBlue.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
                           (item['icon'] as IconData?) ?? AppIcons.receipt,
-                          color: AppTheme.brandPrimaryLight,
+                          color: brandBlue,
                           size: 16,
                         ),
                       ),
@@ -1254,7 +1256,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
-                          color: isPemasukan ? AppTheme.incomeGreen : textColor,
+                          color: isPemasukan ? const Color(0xFF10B981) : textColor,
                           letterSpacing: -0.2,
                         ),
                       ),
@@ -1274,13 +1276,15 @@ class _BerandaScreenState extends State<BerandaScreen> {
     Color surfaceColor,
     bool isDark,
   ) {
+    const brandBlue = Color(0xFF2563EB);
+
     return Container(
       key: const ValueKey('SemuaKantongSubPage'),
       color: surfaceColor,
       child: Column(
         children: [
           Container(
-            color: AppTheme.brandPrimary,
+            color: brandBlue,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
@@ -1305,7 +1309,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
               padding: const EdgeInsets.all(20),
               children: [
                 _buildSubPageWalletTile('BSI Hasanah', 'BSI', const Color(0xFF00A39D), 'Rp 4.250.000', cardBg, borderColor, textColor, textMuted),
-                _buildSubPageWalletTile('Mandiri Utama', 'MANDIRI', AppTheme.honeyGoldDark, 'Rp 6.000.000', cardBg, borderColor, textColor, textMuted),
+                _buildSubPageWalletTile('Mandiri Utama', 'MANDIRI', const Color(0xFFD97706), 'Rp 6.000.000', cardBg, borderColor, textColor, textMuted),
                 _buildSubPageWalletTile('GoPay Wallet', 'GOPAY', const Color(0xFF00AED6), 'Rp 1.000.000', cardBg, borderColor, textColor, textMuted),
                 const SizedBox(height: 12),
                 SizedBox(
@@ -1313,16 +1317,16 @@ class _BerandaScreenState extends State<BerandaScreen> {
                   height: 48,
                   child: OutlinedButton.icon(
                     onPressed: () => _openTambahAkunModal(context),
-                    icon: const Icon(AppIcons.plus, size: 16, color: AppTheme.brandPrimaryLight),
+                    icon: const Icon(AppIcons.plus, size: 16, color: brandBlue),
                     label: const Text(
                       'Tambah Kantong Baru',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.brandPrimaryLight,
+                        color: brandBlue,
                       ),
                     ),
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppTheme.brandPrimaryLight),
+                      side: const BorderSide(color: brandBlue),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
                   ),
@@ -1428,6 +1432,7 @@ class _TambahAkunFormContentState extends State<TambahAkunFormContent> {
     final bgColor = theme.colorScheme.surface;
     final textColor = theme.colorScheme.onSurface;
     final fillColor = isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
+    const brandBlue = Color(0xFF2563EB);
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -1525,12 +1530,12 @@ class _TambahAkunFormContentState extends State<TambahAkunFormContent> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('✅ Kantong berhasil ditambahkan!'),
-                    backgroundColor: AppTheme.incomeGreen,
+                    backgroundColor: Color(0xFF10B981),
                   ),
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.brandPrimary,
+                backgroundColor: brandBlue,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -1551,7 +1556,7 @@ class _TambahAkunFormContentState extends State<TambahAkunFormContent> {
 }
 
 // =========================================================
-// DELEGATE TOP BAR (Soft Royal Blue Header)
+// DELEGATE TOP BAR
 // =========================================================
 class _OvoStyleTopBarDelegate extends SliverPersistentHeaderDelegate {
   @override
@@ -1562,8 +1567,11 @@ class _OvoStyleTopBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    const brandBlue = Color(0xFF2563EB);
+    const honeyGold = Color(0xFFF59E0B);
+
     return Container(
-      color: AppTheme.brandPrimary,
+      color: brandBlue,
       padding: const EdgeInsets.symmetric(horizontal: 18),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -1610,9 +1618,9 @@ class _OvoStyleTopBarDelegate extends SliverPersistentHeaderDelegate {
                   width: 7,
                   height: 7,
                   decoration: BoxDecoration(
-                    color: AppTheme.honeyGold, // Aksen Honey Gold untuk dot notifikasi
+                    color: honeyGold,
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppTheme.brandPrimary, width: 1.2),
+                    border: Border.all(color: brandBlue, width: 1.2),
                   ),
                 ),
               ),
