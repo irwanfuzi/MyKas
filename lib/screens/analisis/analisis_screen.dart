@@ -117,7 +117,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                     const SizedBox(height: 16),
 
                     // ==========================================
-                    // 2. METRIK UTAMA 2 KOLOM
+                    // 2. METRIK UTAMA 2 KOLOM (MOBILE & DESKTOP)
                     // ==========================================
                     Row(
                       children: [
@@ -182,7 +182,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
   }
 
   // ==========================================
-  // WIDGET CARD: METRIK UTAMA
+  // WIDGET CARD: METRIK UTAMA (2 KOLOM MOBILE)
   // ==========================================
   Widget _buildMetricCard({
     required String title,
