@@ -15,9 +15,12 @@ class AnalisisScreen extends StatefulWidget {
 }
 
 class _AnalisisScreenState extends State<AnalisisScreen> {
+  // State Filter Periode
   String _selectedSegment = 'Bulan';
-  final String _selectedDateRange = '1 – 31 Oktober 2026';
-  final String _cashFlowFilter = 'This Month';
+  String _selectedDateRange = '1 – 31 Oktober 2026';
+  String _cashFlowFilter = 'Bulan Ini';
+
+  // Toggle Empty State
   final bool _isEmptyState = false;
 
   @override
@@ -27,15 +30,16 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
 
     final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
-    final borderColor = theme.colorScheme.outline.withOpacity(isDark ? 0.3 : 0.12);
+    final borderColor = theme.colorScheme.outline.withOpacity(isDark ? 0.35 : 0.12);
     final textColor = theme.colorScheme.onSurface;
     final textMuted = theme.colorScheme.onSurfaceVariant;
 
-    const brandBlue = Color(0xFF2563EB);
-    const tealGreen = Color(0xFF0D9488);
-    const emeraldGreen = Color(0xFF10B981);
-    const expenseRed = Color(0xFFEF4444);
-    const honeyGold = Color(0xFFF59E0B);
+    // Warna Aksen Utama MyKas
+    const brandBlue = Color(0xFF2563EB); // Soft Royal Blue
+    const brandBlueDark = Color(0xFF1D4ED8);
+    const incomeGreen = Color(0xFF10B981); // Indicator Pemasukan
+    const expenseRed = Color(0xFFEF4444);  // Indicator Pengeluaran
+    const honeyGold = Color(0xFFF59E0B);   // Highlight / Goals
     const accentPurple = Color(0xFF8B5CF6);
 
     return Scaffold(
@@ -45,7 +49,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(
-          'Analysis',
+          'Analisis',
           style: GoogleFonts.inter(
             fontSize: 22,
             fontWeight: FontWeight.w800,
@@ -56,7 +60,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
         actions: [
           IconButton(
             icon: Icon(Icons.settings_outlined, color: textColor, size: 22),
-            onPressed: () {},
+            onPressed: () => _showNotification(context, 'Pengaturan Analisis'),
           ),
           const SizedBox(width: 8),
         ],
@@ -76,18 +80,32 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                   ),
                   physics: const ClampingScrollPhysics(),
                   children: [
-                    _buildSegmentedFilter(cardBg, borderColor, textColor, textMuted, tealGreen, isDark),
+                    // =========================================================
+                    // 1. FILTER PERIODE (SEGMEN & DATE SELECTOR)
+                    // =========================================================
+                    _buildSegmentedFilter(cardBg, borderColor, textColor, textMuted, brandBlue, isDark),
                     const SizedBox(height: 12),
                     _buildDateRangeSelector(cardBg, borderColor, textColor, textMuted, isDark),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 18),
 
                     if (_isEmptyState)
                       _buildEmptyState(cardBg, borderColor, textColor, textMuted, brandBlue)
                     else ...[
-                      _buildFinancialSummaryHero(cardBg, borderColor, textColor, textMuted, tealGreen, emeraldGreen, expenseRed, isDark),
-                      const SizedBox(height: 16),
-                      _buildCashFlowCard(cardBg, borderColor, textColor, textMuted, emeraldGreen, expenseRed, isDark),
-                      const SizedBox(height: 16),
+                      // =========================================================
+                      // 2. RINGKASAN KEUANGAN (HERO CARD MYKAS ROYAL BLUE)
+                      // =========================================================
+                      _buildFinancialSummaryHero(cardBg, borderColor, textColor, textMuted, brandBlue, brandBlueDark, incomeGreen, expenseRed, isDark),
+                      const SizedBox(height: 18),
+
+                      // =========================================================
+                      // 3. ANALISIS ARUS KAS (CASH FLOW CHART)
+                      // =========================================================
+                      _buildCashFlowCard(cardBg, borderColor, textColor, textMuted, incomeGreen, expenseRed, brandBlue, isDark),
+                      const SizedBox(height: 18),
+
+                      // =========================================================
+                      // 4 & 5. BENTO GRID 2 KOLOM: PENGELUARAN & ANGGARAN
+                      // =========================================================
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -96,17 +114,29 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: _buildBudgetAnalysisCard(cardBg, borderColor, textColor, textMuted, tealGreen, isDark),
+                            child: _buildBudgetAnalysisCard(cardBg, borderColor, textColor, textMuted, brandBlue, isDark),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      _buildFinancialGoalsCard(cardBg, borderColor, textColor, textMuted, tealGreen, honeyGold, isDark),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 18),
+
+                      // =========================================================
+                      // 6. TUJUAN KEUANGAN (FINANCIAL GOALS)
+                      // =========================================================
+                      _buildFinancialGoalsCard(cardBg, borderColor, textColor, textMuted, brandBlue, honeyGold, isDark),
+                      const SizedBox(height: 18),
+
+                      // =========================================================
+                      // 7. INSIGHT KEUANGAN (SMART AI ADVICE)
+                      // =========================================================
                       _buildFinancialInsightCard(cardBg, borderColor, textColor, textMuted, accentPurple, isDark),
-                      const SizedBox(height: 16),
-                      _buildReportExportCard(cardBg, borderColor, textColor, textMuted, tealGreen, isDark),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 18),
+
+                      // =========================================================
+                      // 8. LAPORAN KEUANGAN (EXPORT PDF / CSV)
+                      // =========================================================
+                      _buildReportExportCard(cardBg, borderColor, textColor, textMuted, brandBlue, isDark),
+                      const SizedBox(height: 28),
                     ],
                   ],
                 ),
@@ -118,7 +148,57 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
     );
   }
 
-  Widget _buildSegmentedFilter(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color tealGreen, bool isDark) {
+  // ===========================================================================
+  // INTERACTION HELPERS
+  // ===========================================================================
+  void _showNotification(BuildContext context, String title) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          title,
+          style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600, color: Colors.white),
+        ),
+        backgroundColor: const Color(0xFF2563EB),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _selectDateRangePicker() async {
+    final DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2025),
+      lastDate: DateTime(2027),
+      initialDateRange: DateTimeRange(
+        start: DateTime(2026, 10, 1),
+        end: DateTime(2026, 10, 31),
+      ),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+                  primary: const Color(0xFF2563EB),
+                ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _selectedDateRange = '${picked.start.day} – ${picked.end.day} Oktober 2026';
+      });
+    }
+  }
+
+  // ===========================================================================
+  // 1. FILTER PERIODE WIDGETS
+  // ===========================================================================
+  Widget _buildSegmentedFilter(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color brandBlue, bool isDark) {
     return Row(
       children: [
         Expanded(
@@ -135,11 +215,15 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                 final isSelected = _selectedSegment == segment;
                 return Expanded(
                   child: GestureDetector(
-                    onTap: () => setState(() => _selectedSegment = segment),
+                    onTap: () {
+                      setState(() {
+                        _selectedSegment = segment;
+                      });
+                    },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 180),
                       decoration: BoxDecoration(
-                        color: isSelected ? tealGreen : Colors.transparent,
+                        color: isSelected ? brandBlue : Colors.transparent,
                         borderRadius: BorderRadius.circular(18),
                       ),
                       alignment: Alignment.center,
@@ -169,7 +253,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
           ),
           child: IconButton(
             icon: Icon(Icons.calendar_month_outlined, size: 18, color: textColor),
-            onPressed: () {},
+            onPressed: _selectDateRangePicker,
           ),
         ),
       ],
@@ -177,25 +261,32 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
   }
 
   Widget _buildDateRangeSelector(Color cardBg, Color borderColor, Color textColor, Color textMuted, bool isDark) {
-    return Row(
-      children: [
-        Icon(Icons.calendar_today_outlined, size: 14, color: textMuted),
-        const SizedBox(width: 6),
-        Text(
-          _selectedDateRange,
-          style: GoogleFonts.inter(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: textColor,
+    return GestureDetector(
+      onTap: _selectDateRangePicker,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.calendar_today_outlined, size: 14, color: textMuted),
+          const SizedBox(width: 6),
+          Text(
+            _selectedDateRange,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: textColor,
+            ),
           ),
-        ),
-        const SizedBox(width: 4),
-        Icon(Icons.chevron_right, size: 14, color: textMuted),
-      ],
+          const SizedBox(width: 4),
+          Icon(Icons.chevron_right, size: 14, color: textMuted),
+        ],
+      ),
     );
   }
 
-  Widget _buildFinancialSummaryHero(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color tealGreen, Color emeraldGreen, Color expenseRed, bool isDark) {
+  // ===========================================================================
+  // 2. RINGKASAN KEUANGAN (HERO CARD - ROYAL BLUE MYKAS)
+  // ===========================================================================
+  Widget _buildFinancialSummaryHero(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color brandBlue, Color brandBlueDark, Color incomeGreen, Color expenseRed, bool isDark) {
     return Container(
       decoration: BoxDecoration(
         color: cardBg,
@@ -204,13 +295,14 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
       ),
       child: Column(
         children: [
+          // Total Balance Flow Gradient Card
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: isDark
-                    ? [const Color(0xFF0F766E), const Color(0xFF0D9488)]
-                    : [const Color(0xFF0D9488), const Color(0xFF14B8A6)],
+                    ? [const Color(0xFF1E40AF), const Color(0xFF2563EB)]
+                    : [const Color(0xFF2563EB), const Color(0xFF3B82F6)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -225,7 +317,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                     Row(
                       children: [
                         Text(
-                          'Total Balance Flow',
+                          'Total Arus Kas Clean',
                           style: GoogleFonts.inter(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
@@ -233,17 +325,20 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                           ),
                         ),
                         const SizedBox(width: 4),
-                        Icon(Icons.info_outline, size: 13, color: Colors.white.withOpacity(0.8)),
+                        GestureDetector(
+                          onTap: () => _showNotification(context, 'Total akumulasi arus kas bersih periode berjalan'),
+                          child: Icon(Icons.info_outline, size: 13, color: Colors.white.withOpacity(0.8)),
+                        ),
                       ],
                     ),
-                    Icon(Icons.account_balance_wallet_outlined, size: 28, color: Colors.white.withOpacity(0.85)),
+                    Icon(Icons.account_balance_wallet_outlined, size: 28, color: Colors.white.withOpacity(0.9)),
                   ],
                 ),
                 const SizedBox(height: 6),
                 Text(
                   'Rp 2.800.000',
                   style: GoogleFonts.inter(
-                    fontSize: 24,
+                    fontSize: 26,
                     fontWeight: FontWeight.w900,
                     color: Colors.white,
                     letterSpacing: -0.8,
@@ -251,7 +346,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                 ),
                 const SizedBox(height: 10),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12),
@@ -264,7 +359,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                       Text(
                         '12% dibanding bulan lalu',
                         style: GoogleFonts.inter(
-                          fontSize: 10.5,
+                          fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
@@ -275,6 +370,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
               ],
             ),
           ),
+          // Inflow & Outflow Metrics Split
           Padding(
             padding: const EdgeInsets.all(18),
             child: Column(
@@ -286,8 +382,8 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                         title: 'Pemasukan',
                         amount: 'Rp 8.000.000',
                         icon: Icons.arrow_upward,
-                        iconBg: emeraldGreen.withOpacity(0.12),
-                        iconColor: emeraldGreen,
+                        iconBg: incomeGreen.withOpacity(0.12),
+                        iconColor: incomeGreen,
                         textColor: textColor,
                         textMuted: textMuted,
                       ),
@@ -306,22 +402,23 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                   ],
                 ),
                 const SizedBox(height: 14),
+                // Saving Banner
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF0FDF4),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: emeraldGreen.withOpacity(0.2)),
+                    border: Border.all(color: incomeGreen.withOpacity(0.2)),
                   ),
                   child: Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: emeraldGreen.withOpacity(0.15),
+                          color: incomeGreen.withOpacity(0.15),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(Icons.savings_outlined, size: 14, color: emeraldGreen),
+                        child: Icon(Icons.savings_outlined, size: 14, color: incomeGreen),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -332,7 +429,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                               const TextSpan(text: 'Kamu lebih hemat '),
                               TextSpan(
                                 text: 'Rp 600.000 ',
-                                style: GoogleFonts.inter(fontWeight: FontWeight.w800, color: emeraldGreen),
+                                style: GoogleFonts.inter(fontWeight: FontWeight.w800, color: incomeGreen),
                               ),
                               const TextSpan(text: 'dibanding bulan lalu.'),
                             ],
@@ -379,7 +476,10 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
     );
   }
 
-  Widget _buildCashFlowCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color emeraldGreen, Color expenseRed, bool isDark) {
+  // ===========================================================================
+  // 3. ANALISIS ARUS KAS (CASH FLOW CHART CARD)
+  // ===========================================================================
+  Widget _buildCashFlowCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color incomeGreen, Color expenseRed, Color brandBlue, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -395,7 +495,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.bar_chart_rounded, size: 16, color: textColor),
+                  Icon(Icons.bar_chart_rounded, size: 16, color: brandBlue),
                   const SizedBox(width: 8),
                   Text(
                     'Cash Flow',
@@ -407,19 +507,33 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: borderColor),
-                ),
-                child: Row(
-                  children: [
-                    Text(_cashFlowFilter, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: textColor)),
-                    const SizedBox(width: 4),
-                    Icon(Icons.chevron_right, size: 12, color: textMuted),
-                  ],
+              PopupMenuButton<String>(
+                onSelected: (val) {
+                  setState(() {
+                    _cashFlowFilter = val;
+                  });
+                },
+                color: cardBg,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                itemBuilder: (context) => [
+                  PopupMenuItem(value: 'Bulan Ini', child: Text('Bulan Ini', style: GoogleFonts.inter(fontSize: 12, color: textColor))),
+                  PopupMenuItem(value: '3 Bulan', child: Text('3 Bulan Terakhir', style: GoogleFonts.inter(fontSize: 12, color: textColor))),
+                  PopupMenuItem(value: 'Tahun Ini', child: Text('Tahun Ini', style: GoogleFonts.inter(fontSize: 12, color: textColor))),
+                ],
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: borderColor),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(_cashFlowFilter, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: textColor)),
+                      const SizedBox(width: 4),
+                      Icon(Icons.chevron_right, size: 12, color: textMuted),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -428,40 +542,14 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              _buildChartLegend('Pemasukan', emeraldGreen, textMuted),
+              _buildChartLegend('Pemasukan', incomeGreen, textMuted),
               const SizedBox(width: 12),
               _buildChartLegend('Pengeluaran', expenseRed, textMuted),
             ],
           ),
           const SizedBox(height: 12),
-          _buildCashFlowBarVisual(isDark, textMuted, emeraldGreen, expenseRed),
-          const SizedBox(height: 14),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.trending_up, size: 16, color: emeraldGreen),
-                    const SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Saldo bersih periode ini', style: GoogleFonts.inter(fontSize: 10.5, color: textMuted)),
-                        Text('Rp 2.800.000', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w800, color: textColor)),
-                      ],
-                    ),
-                  ],
-                ),
-                Icon(Icons.chevron_right, size: 16, color: textMuted),
-              ],
-            ),
-          ),
+          // Bar Chart Visual
+          _buildCashFlowBarVisual(isDark, textMuted, incomeGreen, expenseRed),
         ],
       ),
     );
@@ -520,6 +608,9 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
     );
   }
 
+  // ===========================================================================
+  // 4. ANALISIS PENGELUARAN (BENTO CARD LEFT)
+  // ===========================================================================
   Widget _buildExpenseAnalysisCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color accentPurple, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -573,7 +664,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
           const SizedBox(height: 12),
           Center(
             child: TextButton(
-              onPressed: () {},
+              onPressed: () => _showNotification(context, 'Membuka seluruh rincian kategori pengeluaran...'),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -605,7 +696,10 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
     );
   }
 
-  Widget _buildBudgetAnalysisCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color tealGreen, bool isDark) {
+  // ===========================================================================
+  // 5. ANALISIS ANGGARAN (BENTO CARD RIGHT - SOFT ROYAL BLUE)
+  // ===========================================================================
+  Widget _buildBudgetAnalysisCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color brandBlue, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -618,7 +712,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.track_changes, size: 15, color: tealGreen),
+              Icon(Icons.track_changes, size: 15, color: brandBlue),
               const SizedBox(width: 6),
               Text('Anggaran', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w800, color: textColor)),
             ],
@@ -631,7 +725,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
               child: CustomPaint(
                 painter: DonutChartPainter(
                   sections: [
-                    DonutSection(value: 70, color: tealGreen),
+                    DonutSection(value: 70, color: brandBlue),
                   ],
                   backgroundColor: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
                 ),
@@ -659,7 +753,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
               child: FractionallySizedBox(
                 alignment: Alignment.centerLeft,
                 widthFactor: 0.7,
-                child: Container(color: tealGreen),
+                child: Container(color: brandBlue),
               ),
             ),
           ),
@@ -667,12 +761,12 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF0FDF4),
+              color: isDark ? const Color(0xFF0F172A) : const Color(0xFFEFF6FF),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               children: [
-                Icon(Icons.account_balance_wallet, size: 12, color: tealGreen),
+                Icon(Icons.account_balance_wallet, size: 12, color: brandBlue),
                 const SizedBox(width: 6),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -687,13 +781,13 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
           const SizedBox(height: 6),
           Center(
             child: TextButton(
-              onPressed: () {},
+              onPressed: () => _showNotification(context, 'Membuka rincian alokasi anggaran...'),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Lihat detail', style: GoogleFonts.inter(fontSize: 10.5, fontWeight: FontWeight.w700, color: tealGreen)),
+                  Text('Lihat detail', style: GoogleFonts.inter(fontSize: 10.5, fontWeight: FontWeight.w700, color: brandBlue)),
                   const SizedBox(width: 2),
-                  Icon(Icons.chevron_right, size: 12, color: tealGreen),
+                  Icon(Icons.chevron_right, size: 12, color: brandBlue),
                 ],
               ),
             ),
@@ -703,7 +797,10 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
     );
   }
 
-  Widget _buildFinancialGoalsCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color tealGreen, Color honeyGold, bool isDark) {
+  // ===========================================================================
+  // 6. TUJUAN KEUANGAN (FINANCIAL GOALS CARD)
+  // ===========================================================================
+  Widget _buildFinancialGoalsCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color brandBlue, Color honeyGold, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -728,54 +825,57 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
             ],
           ),
           const SizedBox(height: 14),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: borderColor),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: tealGreen.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(12),
+          GestureDetector(
+            onTap: () => _showNotification(context, 'Detail Tujuan: Dana Liburan (60% Terkumpul)'),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: borderColor),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: brandBlue.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.flight_takeoff, size: 20, color: Color(0xFF2563EB)),
                   ),
-                  child: const Icon(Icons.flight_takeoff, size: 20, color: Color(0xFF0D9488)),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Dana Liburan', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w700, color: textColor)),
-                      const SizedBox(height: 2),
-                      Text('Rp 6.000.000 / Rp 10.000.000', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: textMuted)),
-                      const SizedBox(height: 6),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(3),
-                        child: Container(
-                          height: 4,
-                          width: double.infinity,
-                          color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-                          child: FractionallySizedBox(
-                            alignment: Alignment.centerLeft,
-                            widthFactor: 0.6,
-                            child: Container(color: tealGreen),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Dana Liburan', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w700, color: textColor)),
+                        const SizedBox(height: 2),
+                        Text('Rp 6.000.000 / Rp 10.000.000', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: textMuted)),
+                        const SizedBox(height: 6),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(3),
+                          child: Container(
+                            height: 4,
+                            width: double.infinity,
+                            color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+                            child: FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: 0.6,
+                              child: Container(color: brandBlue),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Text('60%', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w800, color: textColor)),
-                const SizedBox(width: 4),
-                Icon(Icons.chevron_right, size: 14, color: textMuted),
-              ],
+                  const SizedBox(width: 10),
+                  Text('60%', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w800, color: textColor)),
+                  const SizedBox(width: 4),
+                  Icon(Icons.chevron_right, size: 14, color: textMuted),
+                ],
+              ),
             ),
           ),
         ],
@@ -783,6 +883,9 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
     );
   }
 
+  // ===========================================================================
+  // 7. INSIGHT KEUANGAN (SMART AI ADVICE CARD)
+  // ===========================================================================
   Widget _buildFinancialInsightCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color accentPurple, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -816,7 +919,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
           Align(
             alignment: Alignment.centerRight,
             child: GestureDetector(
-              onTap: () {},
+              onTap: () => _showNotification(context, 'Rekomendasi AI: Tekan pengeluaran kuliner minggu ini.'),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -832,7 +935,10 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
     );
   }
 
-  Widget _buildReportExportCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color tealGreen, bool isDark) {
+  // ===========================================================================
+  // 8. LAPORAN KEUANGAN (EXPORT PDF / CSV CARD)
+  // ===========================================================================
+  Widget _buildReportExportCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color brandBlue, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -871,21 +977,21 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                   ),
                   icon: Icon(Icons.download_outlined, size: 14, color: textColor),
                   label: Text('Export PDF', style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.w700, color: textColor)),
-                  onPressed: () {},
+                  onPressed: () => _showNotification(context, 'Memproses unduhan Laporan_Keuangan_MyKas.pdf...'),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: tealGreen,
+                    backgroundColor: brandBlue,
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     elevation: 0,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
                   icon: const Icon(Icons.download, size: 14, color: Colors.white),
                   label: Text('Export CSV', style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.w700, color: Colors.white)),
-                  onPressed: () {},
+                  onPressed: () => _showNotification(context, 'Memproses unduhan Laporan_Keuangan_MyKas.csv...'),
                 ),
               ),
             ],
@@ -930,6 +1036,9 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
   }
 }
 
+// =============================================================================
+// REUSABLE DONUT CHART PAINTER
+// =============================================================================
 class DonutSection {
   final double value;
   final Color color;
