@@ -2,6 +2,100 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// =============================================================================
+// DESIGN TOKENS
+// =============================================================================
+const double _kRadiusCard = 24;
+const double _kRadiusInner = 16;
+const double _kPadCard = 20;
+const double _kGap = 16;
+
+const Color _brandBlue = Color(0xFF2563EB);
+const Color _incomeGreen = Color(0xFF10B981);
+const Color _expenseRed = Color(0xFFEF4444);
+const Color _honeyGold = Color(0xFFF59E0B);
+const Color _accentPurple = Color(0xFF8B5CF6);
+const Color _slate = Color(0xFF94A3B8);
+
+/// Skala tipografi tunggal: ukuran terkecil 11, supaya tetap terbaca.
+TextStyle _ts(double size, FontWeight w, Color c, {double? height, double? ls}) {
+  return GoogleFonts.inter(
+    fontSize: size,
+    fontWeight: w,
+    color: c,
+    height: height,
+    letterSpacing: ls,
+  );
+}
+
+Color _op(Color c, double o) => c.withOpacity(o);
+
+String _rp(int v) {
+  final s = v.abs().toString();
+  final b = StringBuffer();
+  for (var i = 0; i < s.length; i++) {
+    if (i > 0 && (s.length - i) % 3 == 0) b.write('.');
+    b.write(s[i]);
+  }
+  return '${v < 0 ? '-' : ''}Rp $b';
+}
+
+String _rpJt(int v) {
+  final m = v / 1000000;
+  final t = m == m.roundToDouble()
+      ? m.toStringAsFixed(0)
+      : m.toStringAsFixed(1).replaceAll('.', ',');
+  return 'Rp $t jt';
+}
+
+class _Palette {
+  final bool isDark;
+  final Color bg, surface, surfaceAlt, border, text, muted, track;
+
+  const _Palette({
+    required this.isDark,
+    required this.bg,
+    required this.surface,
+    required this.surfaceAlt,
+    required this.border,
+    required this.text,
+    required this.muted,
+    required this.track,
+  });
+
+  factory _Palette.of(BuildContext context) {
+    final t = Theme.of(context);
+    final d = t.brightness == Brightness.dark;
+    return _Palette(
+      isDark: d,
+      bg: d ? const Color(0xFF0F172A) : const Color(0xFFF5F7FB),
+      surface: d ? const Color(0xFF1E293B) : Colors.white,
+      surfaceAlt: d ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+      border: t.colorScheme.outline.withOpacity(d ? 0.35 : 0.12),
+      text: t.colorScheme.onSurface,
+      muted: t.colorScheme.onSurfaceVariant,
+      track: d ? Colors.white10 : const Color(0xFFE2E8F0),
+    );
+  }
+}
+
+class _Bar {
+  final String label;
+  final double income;
+  final double expense;
+  const _Bar(this.label, this.income, this.expense);
+}
+
+class _Cat {
+  final String name;
+  final double pct;
+  final Color color;
+  const _Cat(this.name, this.pct, this.color);
+}
+
+// =============================================================================
+// SCREEN
+// =============================================================================
 class AnalisisScreen extends StatefulWidget {
   final Map<String, dynamic>? summaryData;
 
@@ -15,51 +109,160 @@ class AnalisisScreen extends StatefulWidget {
 }
 
 class _AnalisisScreenState extends State<AnalisisScreen> {
-  // State Filter Periode
+  // ---- State filter periode
   String _selectedSegment = 'Bulan';
-  String _selectedDateRange = '1 – 31 Oktober 2026';
   String _cashFlowFilter = 'Bulan Ini';
+  late DateTimeRange _range = _rangeFor('Bulan');
 
-  // Toggle Empty State
+  // Toggle empty state
   final bool _isEmptyState = false;
 
+  late _Palette _p;
+
+  // ---- Data (ganti dengan widget.summaryData bila sudah tersedia)
+  static const int _income = 8000000;
+  static const int _expense = 5200000;
+  static const int _budgetLimit = 5000000;
+  static const int _budgetUsed = 3500000;
+  static const int _goalSaved = 6000000;
+  static const int _goalTarget = 10000000;
+
+  static const List<_Cat> _expenseCats = [
+    _Cat('Makanan', 35, Color(0xFFF97316)),
+    _Cat('Belanja', 25, Color(0xFF8B5CF6)),
+    _Cat('Tagihan', 20, Color(0xFF3B82F6)),
+    _Cat('Lainnya', 20, _slate),
+  ];
+
+  static const Map<String, List<_Bar>> _cashFlowData = {
+    'Bulan Ini': [
+      _Bar('Mgg 1', 0.80, 0.55),
+      _Bar('Mgg 2', 0.68, 0.45),
+      _Bar('Mgg 3', 0.72, 0.42),
+      _Bar('Mgg 4', 0.65, 0.40),
+      _Bar('Mgg 5', 0.82, 0.48),
+    ],
+    '3 Bulan': [
+      _Bar('Agu', 0.70, 0.50),
+      _Bar('Sep', 0.78, 0.58),
+      _Bar('Okt', 0.90, 0.58),
+    ],
+    'Tahun Ini': [
+      _Bar('Jan', 0.60, 0.48),
+      _Bar('Feb', 0.64, 0.50),
+      _Bar('Mar', 0.70, 0.52),
+      _Bar('Apr', 0.66, 0.55),
+      _Bar('Mei', 0.72, 0.50),
+      _Bar('Jun', 0.75, 0.56),
+      _Bar('Jul', 0.78, 0.54),
+      _Bar('Agu', 0.70, 0.50),
+      _Bar('Sep', 0.78, 0.58),
+      _Bar('Okt', 0.90, 0.58),
+    ],
+  };
+
+  static const List<String> _months = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+  ];
+
+  // ---------------------------------------------------------------------------
+  // PERIODE
+  // ---------------------------------------------------------------------------
+  DateTimeRange _rangeFor(String segment) {
+    final now = DateTime.now();
+    switch (segment) {
+      case 'Minggu':
+        final start = DateTime(now.year, now.month, now.day)
+            .subtract(Duration(days: now.weekday - 1));
+        return DateTimeRange(start: start, end: start.add(const Duration(days: 6)));
+      case 'Tahun':
+        return DateTimeRange(
+          start: DateTime(now.year, 1, 1),
+          end: DateTime(now.year, 12, 31),
+        );
+      default:
+        return DateTimeRange(
+          start: DateTime(now.year, now.month, 1),
+          end: DateTime(now.year, now.month + 1, 0),
+        );
+    }
+  }
+
+  String get _rangeLabel {
+    final s = _range.start;
+    final e = _range.end;
+    if (s.year == e.year && s.month == e.month) {
+      return '${s.day} – ${e.day} ${_months[s.month - 1]} ${e.year}';
+    }
+    if (s.year == e.year) {
+      return '${s.day} ${_months[s.month - 1]} – ${e.day} ${_months[e.month - 1]} ${e.year}';
+    }
+    return '${s.day} ${_months[s.month - 1]} ${s.year} – ${e.day} ${_months[e.month - 1]} ${e.year}';
+  }
+
+  void _onSegmentChanged(String segment) {
+    setState(() {
+      _selectedSegment = segment;
+      _range = _rangeFor(segment);
+    });
+  }
+
+  Future<void> _selectDateRangePicker() async {
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(DateTime.now().year + 1, 12, 31),
+      initialDateRange: _range,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(primary: _brandBlue),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null && mounted) {
+      setState(() => _range = picked);
+    }
+  }
+
+  void _showNotification(BuildContext context, String title) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(title, style: _ts(13, FontWeight.w600, Colors.white)),
+        backgroundColor: _brandBlue,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // BUILD
+  // ---------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
-    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
-    final borderColor = theme.colorScheme.outline.withOpacity(isDark ? 0.35 : 0.12);
-    final textColor = theme.colorScheme.onSurface;
-    final textMuted = theme.colorScheme.onSurfaceVariant;
-
-    // Warna Aksen Utama MyKas
-    const brandBlue = Color(0xFF2563EB); // Soft Royal Blue
-    const brandBlueDark = Color(0xFF1D4ED8);
-    const incomeGreen = Color(0xFF10B981); // Indicator Pemasukan
-    const expenseRed = Color(0xFFEF4444);  // Indicator Pengeluaran
-    const honeyGold = Color(0xFFF59E0B);   // Highlight / Goals
-    const accentPurple = Color(0xFF8B5CF6);
+    _p = _Palette.of(context);
 
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: _p.bg,
       appBar: AppBar(
-        backgroundColor: bgColor,
+        backgroundColor: _p.bg,
         elevation: 0,
         scrolledUnderElevation: 0,
-        title: Text(
-          'Analisis',
-          style: GoogleFonts.inter(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: textColor,
-            letterSpacing: -0.5,
-          ),
-        ),
+        centerTitle: false,
+        titleSpacing: 20,
+        title: Text('Analisis', style: _ts(24, FontWeight.w700, _p.text, ls: -0.6)),
         actions: [
           IconButton(
-            icon: Icon(Icons.settings_outlined, color: textColor, size: 22),
+            tooltip: 'Pengaturan analisis',
+            icon: Icon(Icons.settings_outlined, color: _p.text, size: 22),
             onPressed: () => _showNotification(context, 'Pengaturan Analisis'),
           ),
           const SizedBox(width: 8),
@@ -75,68 +278,41 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                 constraints: BoxConstraints(maxWidth: isDesktop ? 960 : 520),
                 child: ListView(
                   padding: EdgeInsets.symmetric(
-                    horizontal: isDesktop ? 28.0 : 18.0,
-                    vertical: 12.0,
+                    horizontal: isDesktop ? 28 : 20,
+                    vertical: 8,
                   ),
                   physics: const ClampingScrollPhysics(),
                   children: [
-                    // =========================================================
-                    // 1. FILTER PERIODE (SEGMEN & DATE SELECTOR)
-                    // =========================================================
-                    _buildSegmentedFilter(cardBg, borderColor, textColor, textMuted, brandBlue, isDark),
+                    _buildSegmentedFilter(),
                     const SizedBox(height: 12),
-                    _buildDateRangeSelector(cardBg, borderColor, textColor, textMuted, isDark),
-                    const SizedBox(height: 18),
-
+                    _buildDateRangeSelector(),
+                    const SizedBox(height: 20),
                     if (_isEmptyState)
-                      _buildEmptyState(cardBg, borderColor, textColor, textMuted, brandBlue)
+                      _buildEmptyState()
                     else ...[
-                      // =========================================================
-                      // 2. RINGKASAN KEUANGAN (HERO CARD MYKAS ROYAL BLUE)
-                      // =========================================================
-                      _buildFinancialSummaryHero(cardBg, borderColor, textColor, textMuted, brandBlue, brandBlueDark, incomeGreen, expenseRed, isDark),
-                      const SizedBox(height: 18),
-
-                      // =========================================================
-                      // 3. ANALISIS ARUS KAS (CASH FLOW CHART)
-                      // =========================================================
-                      _buildCashFlowCard(cardBg, borderColor, textColor, textMuted, incomeGreen, expenseRed, brandBlue, isDark),
-                      const SizedBox(height: 18),
-
-                      // =========================================================
-                      // 4 & 5. BENTO GRID 2 KOLOM: PENGELUARAN & ANGGARAN
-                      // =========================================================
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: _buildExpenseAnalysisCard(cardBg, borderColor, textColor, textMuted, accentPurple, isDark),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildBudgetAnalysisCard(cardBg, borderColor, textColor, textMuted, brandBlue, isDark),
-                          ),
-                        ],
+                      _buildFinancialSummaryHero(),
+                      const SizedBox(height: 12),
+                      _buildSavingsBanner(),
+                      const SizedBox(height: _kGap),
+                      _buildCashFlowCard(),
+                      const SizedBox(height: _kGap),
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(child: _buildExpenseAnalysisCard()),
+                            const SizedBox(width: 12),
+                            Expanded(child: _buildBudgetAnalysisCard()),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 18),
-
-                      // =========================================================
-                      // 6. TUJUAN KEUANGAN (FINANCIAL GOALS)
-                      // =========================================================
-                      _buildFinancialGoalsCard(cardBg, borderColor, textColor, textMuted, brandBlue, honeyGold, isDark),
-                      const SizedBox(height: 18),
-
-                      // =========================================================
-                      // 7. INSIGHT KEUANGAN (SMART AI ADVICE)
-                      // =========================================================
-                      _buildFinancialInsightCard(cardBg, borderColor, textColor, textMuted, accentPurple, isDark),
-                      const SizedBox(height: 18),
-
-                      // =========================================================
-                      // 8. LAPORAN KEUANGAN (EXPORT PDF / CSV)
-                      // =========================================================
-                      _buildReportExportCard(cardBg, borderColor, textColor, textMuted, brandBlue, isDark),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: _kGap),
+                      _buildFinancialGoalsCard(),
+                      const SizedBox(height: _kGap),
+                      _buildFinancialInsightCard(),
+                      const SizedBox(height: _kGap),
+                      _buildReportExportCard(),
+                      const SizedBox(height: 32),
                     ],
                   ],
                 ),
@@ -149,528 +325,462 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
   }
 
   // ===========================================================================
-  // INTERACTION HELPERS
+  // SHARED BUILDING BLOCKS
   // ===========================================================================
-  void _showNotification(BuildContext context, String title) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          title,
-          style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600, color: Colors.white),
+  Widget _card({
+    required Widget child,
+    EdgeInsets? padding,
+    Color? color,
+    Color? borderColor,
+  }) {
+    final radius = BorderRadius.circular(_kRadiusCard);
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        boxShadow: _p.isDark
+            ? null
+            : const [
+                BoxShadow(
+                  color: Color(0x0D0F172A),
+                  blurRadius: 24,
+                  offset: Offset(0, 8),
+                ),
+              ],
+      ),
+      child: Material(
+        color: color ?? _p.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: radius,
+          side: BorderSide(color: borderColor ?? _p.border),
         ),
-        backgroundColor: const Color(0xFF2563EB),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        duration: const Duration(seconds: 2),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: padding ?? const EdgeInsets.all(_kPadCard),
+          child: SizedBox(width: double.infinity, child: child),
+        ),
       ),
     );
   }
 
-  void _selectDateRangePicker() async {
-    final DateTimeRange? picked = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime(2025),
-      lastDate: DateTime(2027),
-      initialDateRange: DateTimeRange(
-        start: DateTime(2026, 10, 1),
-        end: DateTime(2026, 10, 31),
-      ),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
-                  primary: const Color(0xFF2563EB),
-                ),
+  Widget _sectionHeader({
+    required IconData icon,
+    required Color color,
+    required String title,
+    Widget? trailing,
+    bool compact = false,
+  }) {
+    final box = compact ? 30.0 : 34.0;
+    return Row(
+      children: [
+        Container(
+          width: box,
+          height: box,
+          decoration: BoxDecoration(
+            color: _op(color, 0.12),
+            borderRadius: BorderRadius.circular(compact ? 10 : 11),
           ),
-          child: child!,
+          child: Icon(icon, size: compact ? 16 : 18, color: color),
+        ),
+        SizedBox(width: compact ? 8 : 10),
+        Expanded(
+          child: Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: _ts(compact ? 14 : 15, FontWeight.w700, _p.text),
+          ),
+        ),
+        if (trailing != null) trailing,
+      ],
+    );
+  }
+
+  Widget _linkButton(String label, Color color, VoidCallback onTap) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(label, style: _ts(13, FontWeight.w600, color)),
+            const SizedBox(width: 2),
+            Icon(Icons.chevron_right_rounded, size: 18, color: color),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _progressBar(double value, Color color, {double height = 8}) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: value),
+      duration: const Duration(milliseconds: 700),
+      curve: Curves.easeOutCubic,
+      builder: (context, v, _) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(height),
+          child: Container(
+            height: height,
+            color: _p.track,
+            alignment: Alignment.centerLeft,
+            child: FractionallySizedBox(
+              widthFactor: v.clamp(0.0, 1.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(height),
+                ),
+              ),
+            ),
+          ),
         );
       },
     );
-
-    if (picked != null) {
-      setState(() {
-        _selectedDateRange = '${picked.start.day} – ${picked.end.day} Oktober 2026';
-      });
-    }
   }
 
-  // ===========================================================================
-  // 1. FILTER PERIODE WIDGETS
-  // ===========================================================================
-  Widget _buildSegmentedFilter(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color brandBlue, bool isDark) {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            height: 42,
-            padding: const EdgeInsets.all(3),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: borderColor),
-            ),
-            child: Row(
-              children: ['Minggu', 'Bulan', 'Tahun'].map((segment) {
-                final isSelected = _selectedSegment == segment;
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedSegment = segment;
-                      });
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      decoration: BoxDecoration(
-                        color: isSelected ? brandBlue : Colors.transparent,
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        segment,
-                        style: GoogleFonts.inter(
-                          fontSize: 12.5,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                          color: isSelected ? Colors.white : textMuted,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Container(
-          height: 42,
-          width: 42,
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: borderColor),
-          ),
-          child: IconButton(
-            icon: Icon(Icons.calendar_month_outlined, size: 18, color: textColor),
-            onPressed: _selectDateRangePicker,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDateRangeSelector(Color cardBg, Color borderColor, Color textColor, Color textMuted, bool isDark) {
-    return GestureDetector(
-      onTap: _selectDateRangePicker,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.calendar_today_outlined, size: 14, color: textMuted),
-          const SizedBox(width: 6),
-          Text(
-            _selectedDateRange,
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: textColor,
-            ),
-          ),
-          const SizedBox(width: 4),
-          Icon(Icons.chevron_right, size: 14, color: textMuted),
-        ],
-      ),
-    );
-  }
-
-  // ===========================================================================
-  // 2. RINGKASAN KEUANGAN (HERO CARD - ROYAL BLUE MYKAS)
-  // ===========================================================================
-  Widget _buildFinancialSummaryHero(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color brandBlue, Color brandBlueDark, Color incomeGreen, Color expenseRed, bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: borderColor),
-      ),
-      child: Column(
-        children: [
-          // Total Balance Flow Gradient Card
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isDark
-                    ? [const Color(0xFF1E40AF), const Color(0xFF2563EB)]
-                    : [const Color(0xFF2563EB), const Color(0xFF3B82F6)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Total Arus Kas Clean',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white.withOpacity(0.9),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        GestureDetector(
-                          onTap: () => _showNotification(context, 'Total akumulasi arus kas bersih periode berjalan'),
-                          child: Icon(Icons.info_outline, size: 13, color: Colors.white.withOpacity(0.8)),
-                        ),
-                      ],
-                    ),
-                    Icon(Icons.account_balance_wallet_outlined, size: 28, color: Colors.white.withOpacity(0.9)),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Rp 2.800.000',
-                  style: GoogleFonts.inter(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                    letterSpacing: -0.8,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.arrow_upward, size: 12, color: Colors.white),
-                      const SizedBox(width: 4),
-                      Text(
-                        '12% dibanding bulan lalu',
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Inflow & Outflow Metrics Split
-          Padding(
-            padding: const EdgeInsets.all(18),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildFlowMetricItem(
-                        title: 'Pemasukan',
-                        amount: 'Rp 8.000.000',
-                        icon: Icons.arrow_upward,
-                        iconBg: incomeGreen.withOpacity(0.12),
-                        iconColor: incomeGreen,
-                        textColor: textColor,
-                        textMuted: textMuted,
-                      ),
-                    ),
-                    Expanded(
-                      child: _buildFlowMetricItem(
-                        title: 'Pengeluaran',
-                        amount: 'Rp 5.200.000',
-                        icon: Icons.arrow_downward,
-                        iconBg: expenseRed.withOpacity(0.12),
-                        iconColor: expenseRed,
-                        textColor: textColor,
-                        textMuted: textMuted,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                // Saving Banner
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF0FDF4),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: incomeGreen.withOpacity(0.2)),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: incomeGreen.withOpacity(0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(Icons.savings_outlined, size: 14, color: incomeGreen),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: RichText(
-                          text: TextSpan(
-                            style: GoogleFonts.inter(fontSize: 11.5, color: textColor),
-                            children: [
-                              const TextSpan(text: 'Kamu lebih hemat '),
-                              TextSpan(
-                                text: 'Rp 600.000 ',
-                                style: GoogleFonts.inter(fontWeight: FontWeight.w800, color: incomeGreen),
-                              ),
-                              const TextSpan(text: 'dibanding bulan lalu.'),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFlowMetricItem({
-    required String title,
-    required String amount,
-    required IconData icon,
-    required Color iconBg,
-    required Color iconColor,
-    required Color textColor,
-    required Color textMuted,
+  Widget _donut({
+    required List<DonutSection> sections,
+    required Widget center,
+    double? total,
   }) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(7),
-          decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
-          child: Icon(icon, size: 14, color: iconColor),
-        ),
-        const SizedBox(width: 10),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: GoogleFonts.inter(fontSize: 11, color: textMuted, fontWeight: FontWeight.w500)),
-            const SizedBox(height: 1),
-            Text(amount, style: GoogleFonts.inter(fontSize: 13.5, color: textColor, fontWeight: FontWeight.w800)),
-          ],
-        ),
-      ],
+    return SizedBox(
+      width: 96,
+      height: 96,
+      child: TweenAnimationBuilder<double>(
+        tween: Tween<double>(begin: 0, end: 1),
+        duration: const Duration(milliseconds: 900),
+        curve: Curves.easeOutCubic,
+        builder: (context, t, child) {
+          return CustomPaint(
+            painter: DonutChartPainter(
+              sections: sections,
+              backgroundColor: _p.track,
+              total: total,
+              progress: t,
+              strokeWidth: 10,
+            ),
+            child: child,
+          );
+        },
+        child: Center(child: center),
+      ),
     );
   }
 
   // ===========================================================================
-  // 3. ANALISIS ARUS KAS (CASH FLOW CHART CARD)
+  // 1. FILTER PERIODE
   // ===========================================================================
-  Widget _buildCashFlowCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color incomeGreen, Color expenseRed, Color brandBlue, bool isDark) {
+  Widget _buildSegmentedFilter() {
     return Container(
-      padding: const EdgeInsets.all(18),
+      height: 46,
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: borderColor),
+        color: _p.isDark ? _p.surface : const Color(0xFFE9EEF6),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _p.border),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.bar_chart_rounded, size: 16, color: brandBlue),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Cash Flow',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                      color: textColor,
-                    ),
-                  ),
-                ],
-              ),
-              PopupMenuButton<String>(
-                onSelected: (val) {
-                  setState(() {
-                    _cashFlowFilter = val;
-                  });
-                },
-                color: cardBg,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                itemBuilder: (context) => [
-                  PopupMenuItem(value: 'Bulan Ini', child: Text('Bulan Ini', style: GoogleFonts.inter(fontSize: 12, color: textColor))),
-                  PopupMenuItem(value: '3 Bulan', child: Text('3 Bulan Terakhir', style: GoogleFonts.inter(fontSize: 12, color: textColor))),
-                  PopupMenuItem(value: 'Tahun Ini', child: Text('Tahun Ini', style: GoogleFonts.inter(fontSize: 12, color: textColor))),
-                ],
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: borderColor),
-                  ),
-                  child: Row(
-                    children: [
-                      Text(_cashFlowFilter, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: textColor)),
-                      const SizedBox(width: 4),
-                      Icon(Icons.chevron_right, size: 12, color: textMuted),
-                    ],
+      child: Row(
+        children: ['Minggu', 'Bulan', 'Tahun'].map((segment) {
+          final selected = _selectedSegment == segment;
+          return Expanded(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => _onSegmentChanged(segment),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOut,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: selected ? _brandBlue : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: selected
+                      ? [
+                          BoxShadow(
+                            color: _op(_brandBlue, 0.30),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Text(
+                  segment,
+                  style: _ts(
+                    13.5,
+                    selected ? FontWeight.w700 : FontWeight.w500,
+                    selected ? Colors.white : _p.muted,
                   ),
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              _buildChartLegend('Pemasukan', incomeGreen, textMuted),
-              const SizedBox(width: 12),
-              _buildChartLegend('Pengeluaran', expenseRed, textMuted),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // Bar Chart Visual
-          _buildCashFlowBarVisual(isDark, textMuted, incomeGreen, expenseRed),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildChartLegend(String label, Color color, Color textMuted) {
-    return Row(
-      children: [
-        Container(width: 7, height: 7, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-        const SizedBox(width: 5),
-        Text(label, style: GoogleFonts.inter(fontSize: 10.5, color: textMuted, fontWeight: FontWeight.w500)),
-      ],
-    );
-  }
-
-  Widget _buildCashFlowBarVisual(bool isDark, Color textMuted, Color inColor, Color outColor) {
-    final barsData = [
-      {'d': '1', 'in': 0.8, 'out': 0.55},
-      {'d': '7', 'in': 0.68, 'out': 0.45},
-      {'d': '14', 'in': 0.72, 'out': 0.42},
-      {'d': '21', 'in': 0.65, 'out': 0.40},
-      {'d': '28', 'in': 0.82, 'out': 0.48},
-    ];
-
-    return SizedBox(
-      height: 110,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: barsData.map((b) {
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    height: 75 * (b['in'] as double),
-                    width: 7,
-                    decoration: BoxDecoration(color: inColor, borderRadius: BorderRadius.circular(4)),
-                  ),
-                  const SizedBox(width: 4),
-                  Container(
-                    height: 75 * (b['out'] as double),
-                    width: 7,
-                    decoration: BoxDecoration(color: outColor, borderRadius: BorderRadius.circular(4)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(b['d'] as String, style: GoogleFonts.inter(fontSize: 10, color: textMuted, fontWeight: FontWeight.w500)),
-            ],
+            ),
           );
         }).toList(),
       ),
     );
   }
 
+  Widget _buildDateRangeSelector() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Material(
+        color: _p.surface,
+        shape: StadiumBorder(side: BorderSide(color: _p.border)),
+        child: InkWell(
+          customBorder: const StadiumBorder(),
+          onTap: _selectDateRangePicker,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.calendar_today_rounded, size: 15, color: _brandBlue),
+                const SizedBox(width: 8),
+                Text(_rangeLabel, style: _ts(13, FontWeight.w600, _p.text)),
+                const SizedBox(width: 4),
+                Icon(Icons.expand_more_rounded, size: 18, color: _p.muted),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   // ===========================================================================
-  // 4. ANALISIS PENGELUARAN (BENTO CARD LEFT)
+  // 2. RINGKASAN KEUANGAN (HERO)
   // ===========================================================================
-  Widget _buildExpenseAnalysisCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color accentPurple, bool isDark) {
+  Widget _glow(double size, double opacity) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: size,
+      height: size,
       decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: borderColor),
+        shape: BoxShape.circle,
+        color: Colors.white.withOpacity(opacity),
+      ),
+    );
+  }
+
+  Widget _buildFinancialSummaryHero() {
+    final net = _income - _expense;
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: _op(_brandBlue, _p.isDark ? 0.25 : 0.30),
+            blurRadius: 28,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: _p.isDark
+                  ? const [Color(0xFF1E3A8A), Color(0xFF2563EB)]
+                  : const [Color(0xFF1D4ED8), Color(0xFF3B82F6)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Stack(
+            children: [
+              Positioned(right: -50, top: -50, child: _glow(170, 0.10)),
+              Positioned(left: -40, bottom: -70, child: _glow(150, 0.07)),
+              Padding(
+                padding: const EdgeInsets.all(22),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Text(
+                                'Arus Kas Bersih',
+                                style: _ts(13, FontWeight.w500, Colors.white.withOpacity(0.85)),
+                              ),
+                              const SizedBox(width: 6),
+                              InkResponse(
+                                radius: 16,
+                                onTap: () => _showNotification(
+                                  context,
+                                  'Selisih pemasukan dan pengeluaran pada periode ini',
+                                ),
+                                child: Icon(
+                                  Icons.info_outline_rounded,
+                                  size: 16,
+                                  color: Colors.white.withOpacity(0.75),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withOpacity(0.16),
+                          ),
+                          child: const Icon(
+                            Icons.account_balance_wallet_outlined,
+                            size: 19,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        _rp(net),
+                        style: _ts(34, FontWeight.w800, Colors.white, ls: -1),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.trending_up_rounded, size: 14, color: Colors.white),
+                          const SizedBox(width: 6),
+                          Text(
+                            '12% dibanding bulan lalu',
+                            style: _ts(12, FontWeight.w600, Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _heroMetric(
+                            title: 'Pemasukan',
+                            amount: _income,
+                            icon: Icons.arrow_upward_rounded,
+                            iconColor: const Color(0xFF6EE7B7),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _heroMetric(
+                            title: 'Pengeluaran',
+                            amount: _expense,
+                            icon: Icons.arrow_downward_rounded,
+                            iconColor: const Color(0xFFFCA5A5),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _heroMetric({
+    required String title,
+    required int amount,
+    required IconData icon,
+    required Color iconColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.14),
+        borderRadius: BorderRadius.circular(_kRadiusInner),
+        border: Border.all(color: Colors.white.withOpacity(0.12)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.pie_chart_outline, size: 15, color: accentPurple),
-              const SizedBox(width: 6),
-              Text('Pengeluaran', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w800, color: textColor)),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Center(
-            child: SizedBox(
-              width: 85,
-              height: 85,
-              child: CustomPaint(
-                painter: DonutChartPainter(
-                  sections: const [
-                    DonutSection(value: 35, color: Color(0xFFF97316)),
-                    DonutSection(value: 25, color: Color(0xFF8B5CF6)),
-                    DonutSection(value: 20, color: Color(0xFF3B82F6)),
-                  ],
-                  backgroundColor: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+              Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.16),
                 ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Total', style: GoogleFonts.inter(fontSize: 8.5, color: textMuted)),
-                      Text('Rp 5.2m', style: GoogleFonts.inter(fontSize: 10.5, fontWeight: FontWeight.w800, color: textColor)),
-                    ],
-                  ),
+                child: Icon(icon, size: 14, color: iconColor),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: _ts(12, FontWeight.w500, Colors.white.withOpacity(0.85)),
                 ),
               ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              _rp(amount),
+              style: _ts(16, FontWeight.w700, Colors.white, ls: -0.2),
             ),
           ),
-          const SizedBox(height: 14),
-          _buildExpenseCategoryRow('Makanan', '35%', 'Rp 1.820.000', const Color(0xFFF97316), textColor),
-          const SizedBox(height: 6),
-          _buildExpenseCategoryRow('Belanja', '25%', 'Rp 1.300.000', const Color(0xFF8B5CF6), textColor),
-          const SizedBox(height: 6),
-          _buildExpenseCategoryRow('Tagihan', '20%', 'Rp 1.040.000', const Color(0xFF3B82F6), textColor),
-          const SizedBox(height: 12),
-          Center(
-            child: TextButton(
-              onPressed: () => _showNotification(context, 'Membuka seluruh rincian kategori pengeluaran...'),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSavingsBanner() {
+    final green = _p.isDark ? _incomeGreen : const Color(0xFF059669);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: _p.isDark ? _op(_incomeGreen, 0.10) : const Color(0xFFECFDF5),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _op(_incomeGreen, 0.25)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: _op(_incomeGreen, 0.16),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.savings_outlined, size: 18, color: green),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                style: _ts(13, FontWeight.w500, _p.text, height: 1.4),
                 children: [
-                  Text('Lihat semua', style: GoogleFonts.inter(fontSize: 10.5, fontWeight: FontWeight.w700, color: accentPurple)),
-                  const SizedBox(width: 2),
-                  Icon(Icons.chevron_right, size: 12, color: accentPurple),
+                  const TextSpan(text: 'Kamu lebih hemat '),
+                  TextSpan(
+                    text: 'Rp 600.000 ',
+                    style: _ts(13, FontWeight.w800, green, height: 1.4),
+                  ),
+                  const TextSpan(text: 'dibanding bulan lalu.'),
                 ],
               ),
             ),
@@ -680,117 +790,478 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
     );
   }
 
-  Widget _buildExpenseCategoryRow(String title, String percent, String amount, Color color, Color textColor) {
+  // ===========================================================================
+  // 3. ARUS KAS
+  // ===========================================================================
+  Widget _buildCashFlowCard() {
+    return _card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sectionHeader(
+            icon: Icons.bar_chart_rounded,
+            color: _brandBlue,
+            title: 'Cash Flow',
+            trailing: PopupMenuButton<String>(
+              tooltip: 'Pilih rentang',
+              onSelected: (val) => setState(() => _cashFlowFilter = val),
+              color: _p.surface,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'Bulan Ini',
+                  child: Text('Bulan Ini', style: _ts(13, FontWeight.w500, _p.text)),
+                ),
+                PopupMenuItem(
+                  value: '3 Bulan',
+                  child: Text('3 Bulan Terakhir', style: _ts(13, FontWeight.w500, _p.text)),
+                ),
+                PopupMenuItem(
+                  value: 'Tahun Ini',
+                  child: Text('Tahun Ini', style: _ts(13, FontWeight.w500, _p.text)),
+                ),
+              ],
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(12, 7, 8, 7),
+                decoration: BoxDecoration(
+                  color: _p.surfaceAlt,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: _p.border),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(_cashFlowFilter, style: _ts(12, FontWeight.w600, _p.text)),
+                    const SizedBox(width: 2),
+                    Icon(Icons.expand_more_rounded, size: 16, color: _p.muted),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _buildChartLegend('Pemasukan', _incomeGreen),
+              const SizedBox(width: 16),
+              _buildChartLegend('Pengeluaran', _expenseRed),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildCashFlowBarVisual(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChartLegend(String label, Color color) {
+    return Row(
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 6),
+        Text(label, style: _ts(12, FontWeight.w500, _p.muted)),
+      ],
+    );
+  }
+
+  Widget _chartBar(double height, Color color, double width) {
+    return Container(
+      width: width,
+      height: max(0, height),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(width / 2),
+          bottom: const Radius.circular(2),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCashFlowBarVisual() {
+    final data = _cashFlowData[_cashFlowFilter] ?? _cashFlowData['Bulan Ini']!;
+    const chartHeight = 150.0;
+    const labelArea = 26.0;
+    const barMax = chartHeight - labelArea - 4;
+    final barW = data.length > 6 ? 6.0 : 10.0;
+
+    return SizedBox(
+      height: chartHeight,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: labelArea),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(
+                  4,
+                  (_) => Container(height: 1, color: _op(_p.muted, 0.12)),
+                ),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: TweenAnimationBuilder<double>(
+              key: ValueKey(_cashFlowFilter),
+              tween: Tween<double>(begin: 0, end: 1),
+              duration: const Duration(milliseconds: 600),
+              curve: Curves.easeOutCubic,
+              builder: (context, t, _) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: data.map((b) {
+                    return Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              _chartBar(barMax * b.income * t, _incomeGreen, barW),
+                              const SizedBox(width: 3),
+                              _chartBar(barMax * b.expense * t, _expenseRed, barW),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            height: 16,
+                            child: Text(
+                              b.label,
+                              maxLines: 1,
+                              style: _ts(11, FontWeight.w500, _p.muted),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // 4. PENGELUARAN
+  // ===========================================================================
+  Widget _buildExpenseAnalysisCard() {
+    return _card(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sectionHeader(
+            icon: Icons.pie_chart_outline_rounded,
+            color: _accentPurple,
+            title: 'Pengeluaran',
+            compact: true,
+          ),
+          const SizedBox(height: 18),
+          Center(
+            child: _donut(
+              sections: _expenseCats
+                  .map((c) => DonutSection(value: c.pct, color: c.color))
+                  .toList(),
+              center: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Total', style: _ts(11, FontWeight.w500, _p.muted)),
+                  Text(
+                    _rpJt(_expense),
+                    style: _ts(13, FontWeight.w800, _p.text),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ..._expenseCats.map(_buildExpenseCategoryRow),
+          const Spacer(),
+          const SizedBox(height: 4),
+          _linkButton(
+            'Lihat detail',
+            _p.isDark ? _accentPurple : const Color(0xFF7C3AED),
+            () => _showNotification(context, 'Membuka rincian kategori pengeluaran...'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExpenseCategoryRow(_Cat c) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: c.color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              c.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: _ts(12.5, FontWeight.w500, _p.text),
+            ),
+          ),
+          Text('${c.pct.toInt()}%', style: _ts(12.5, FontWeight.w700, _p.text)),
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // 5. ANGGARAN
+  // ===========================================================================
+  Widget _buildBudgetAnalysisCard() {
+    final ratio = _budgetUsed / _budgetLimit;
+    final percent = (ratio * 100).round();
+    final left = _budgetLimit - _budgetUsed;
+
+    late final String statusLabel;
+    late final Color statusColor;
+    late final Color donutColor;
+    if (ratio >= 0.9) {
+      statusLabel = 'Kritis';
+      statusColor = _expenseRed;
+      donutColor = _expenseRed;
+    } else if (ratio >= 0.75) {
+      statusLabel = 'Waspada';
+      statusColor = _honeyGold;
+      donutColor = _honeyGold;
+    } else {
+      statusLabel = 'Aman';
+      statusColor = _incomeGreen;
+      donutColor = _brandBlue;
+    }
+
+    return _card(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sectionHeader(
+            icon: Icons.track_changes_rounded,
+            color: _brandBlue,
+            title: 'Anggaran',
+            compact: true,
+          ),
+          const SizedBox(height: 18),
+          Center(
+            child: _donut(
+              total: 100,
+              sections: [DonutSection(value: percent.toDouble(), color: donutColor)],
+              center: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('$percent%', style: _ts(18, FontWeight.w800, _p.text, ls: -0.4)),
+                  Text('terpakai', style: _ts(11, FontWeight.w500, _p.muted)),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: _op(statusColor, 0.14),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                statusLabel,
+                style: _ts(
+                  12,
+                  FontWeight.w700,
+                  statusColor == _honeyGold ? const Color(0xFFB45309) : statusColor,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          _budgetStat('Terpakai', _rpJt(_budgetUsed)),
+          const SizedBox(height: 8),
+          _budgetStat('Sisa', _rpJt(left)),
+          const Spacer(),
+          const SizedBox(height: 4),
+          _linkButton(
+            'Lihat detail',
+            _brandBlue,
+            () => _showNotification(context, 'Membuka rincian alokasi anggaran...'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _budgetStat(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
-          children: [
-            Container(width: 6, height: 6, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-            const SizedBox(width: 5),
-            Text(title, style: GoogleFonts.inter(fontSize: 10.5, fontWeight: FontWeight.w500, color: textColor)),
-          ],
-        ),
-        Text(percent, style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: textColor)),
+        Text(label, style: _ts(12.5, FontWeight.w500, _p.muted)),
+        Text(value, style: _ts(13, FontWeight.w700, _p.text)),
       ],
     );
   }
 
   // ===========================================================================
-  // 5. ANALISIS ANGGARAN (BENTO CARD RIGHT - SOFT ROYAL BLUE)
+  // 6. TUJUAN KEUANGAN
   // ===========================================================================
-  Widget _buildBudgetAnalysisCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color brandBlue, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: borderColor),
-      ),
+  Widget _buildFinancialGoalsCard() {
+    final ratio = _goalSaved / _goalTarget;
+    final percent = (ratio * 100).round();
+
+    return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(Icons.track_changes, size: 15, color: brandBlue),
-              const SizedBox(width: 6),
-              Text('Anggaran', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w800, color: textColor)),
-            ],
+          _sectionHeader(
+            icon: Icons.emoji_events_outlined,
+            color: _honeyGold,
+            title: 'Tujuan Keuangan',
+            trailing: Text('1 tujuan aktif', style: _ts(12, FontWeight.w500, _p.muted)),
           ),
-          const SizedBox(height: 14),
-          Center(
-            child: SizedBox(
-              width: 85,
-              height: 85,
-              child: CustomPaint(
-                painter: DonutChartPainter(
-                  sections: [
-                    DonutSection(value: 70, color: brandBlue),
-                  ],
-                  backgroundColor: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('70%', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w900, color: textColor)),
-                      Text('terpakai', style: GoogleFonts.inter(fontSize: 8.5, color: textMuted)),
-                    ],
-                  ),
-                ),
+          const SizedBox(height: 16),
+          Material(
+            color: _p.surfaceAlt,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(_kRadiusInner),
+              side: BorderSide(color: _p.border),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: () => _showNotification(
+                context,
+                'Detail Tujuan: Dana Liburan ($percent% terkumpul)',
               ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text('Rp 3.5m / Rp 5.0m', style: GoogleFonts.inter(fontSize: 9.5, fontWeight: FontWeight.w700, color: textColor)),
-          const SizedBox(height: 4),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(3),
-            child: Container(
-              height: 5,
-              width: double.infinity,
-              color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-              child: FractionallySizedBox(
-                alignment: Alignment.centerLeft,
-                widthFactor: 0.7,
-                child: Container(color: brandBlue),
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF0F172A) : const Color(0xFFEFF6FF),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.account_balance_wallet, size: 12, color: brandBlue),
-                const SizedBox(width: 6),
-                Column(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Sisa anggaran', style: GoogleFonts.inter(fontSize: 8.5, color: textMuted)),
-                    Text('Rp 1.500.000', style: GoogleFonts.inter(fontSize: 10.5, fontWeight: FontWeight.w800, color: textColor)),
+                    Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: _op(_honeyGold, 0.15),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(Icons.flight_takeoff_rounded, size: 22, color: _honeyGold),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Dana Liburan', style: _ts(14, FontWeight.w700, _p.text)),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Target ${_rp(_goalTarget)}',
+                                style: _ts(12, FontWeight.w500, _p.muted),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text('$percent%', style: _ts(18, FontWeight.w800, _p.text, ls: -0.4)),
+                        const SizedBox(width: 2),
+                        Icon(Icons.chevron_right_rounded, size: 20, color: _p.muted),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    _progressBar(ratio, _honeyGold),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Terkumpul ${_rp(_goalSaved)}',
+                          style: _ts(12, FontWeight.w600, _p.text),
+                        ),
+                        Text(
+                          'Kurang ${_rp(_goalTarget - _goalSaved)}',
+                          style: _ts(12, FontWeight.w500, _p.muted),
+                        ),
+                      ],
+                    ),
                   ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // 7. INSIGHT KEUANGAN
+  // ===========================================================================
+  Widget _buildFinancialInsightCard() {
+    final purpleText = _p.isDark ? const Color(0xFFC4B5FD) : const Color(0xFF7C3AED);
+
+    return _card(
+      color: _p.isDark ? const Color(0xFF1E1B4B) : const Color(0xFFF5F3FF),
+      borderColor: _op(_accentPurple, 0.25),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sectionHeader(
+            icon: Icons.lightbulb_outline_rounded,
+            color: _accentPurple,
+            title: 'Insight Keuangan',
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: _op(_expenseRed, 0.12),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.trending_up_rounded, size: 14, color: _expenseRed),
+                const SizedBox(width: 6),
+                Text(
+                  'Makanan +15%',
+                  style: _ts(
+                    12,
+                    FontWeight.w700,
+                    _p.isDark ? const Color(0xFFFCA5A5) : const Color(0xFFDC2626),
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 6),
-          Center(
-            child: TextButton(
-              onPressed: () => _showNotification(context, 'Membuka rincian alokasi anggaran...'),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Lihat detail', style: GoogleFonts.inter(fontSize: 10.5, fontWeight: FontWeight.w700, color: brandBlue)),
-                  const SizedBox(width: 2),
-                  Icon(Icons.chevron_right, size: 12, color: brandBlue),
-                ],
-              ),
-            ),
+          const SizedBox(height: 12),
+          Text(
+            'Pengeluaran makanan naik 15% dibanding bulan lalu.',
+            style: _ts(15, FontWeight.w700, _p.text, height: 1.4),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Coba tekan pengeluaran kuliner minggu ini.',
+            style: _ts(13, FontWeight.w500, _p.muted, height: 1.4),
+          ),
+          const SizedBox(height: 8),
+          _linkButton(
+            'Lihat detail',
+            purpleText,
+            () => _showNotification(context, 'Rekomendasi: tekan pengeluaran kuliner minggu ini.'),
           ),
         ],
       ),
@@ -798,200 +1269,57 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
   }
 
   // ===========================================================================
-  // 6. TUJUAN KEUANGAN (FINANCIAL GOALS CARD)
+  // 8. LAPORAN KEUANGAN
   // ===========================================================================
-  Widget _buildFinancialGoalsCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color brandBlue, Color honeyGold, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: borderColor),
-      ),
+  Widget _buildReportExportCard() {
+    return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.emoji_events_outlined, size: 16, color: honeyGold),
-                  const SizedBox(width: 8),
-                  Text('Tujuan Keuangan', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w800, color: textColor)),
-                ],
-              ),
-              Text('1 tujuan aktif', style: GoogleFonts.inter(fontSize: 11, color: textMuted, fontWeight: FontWeight.w500)),
-            ],
-          ),
-          const SizedBox(height: 14),
-          GestureDetector(
-            onTap: () => _showNotification(context, 'Detail Tujuan: Dana Liburan (60% Terkumpul)'),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: borderColor),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: brandBlue.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.flight_takeoff, size: 20, color: Color(0xFF2563EB)),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Dana Liburan', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w700, color: textColor)),
-                        const SizedBox(height: 2),
-                        Text('Rp 6.000.000 / Rp 10.000.000', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: textMuted)),
-                        const SizedBox(height: 6),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(3),
-                          child: Container(
-                            height: 4,
-                            width: double.infinity,
-                            color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-                            child: FractionallySizedBox(
-                              alignment: Alignment.centerLeft,
-                              widthFactor: 0.6,
-                              child: Container(color: brandBlue),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text('60%', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w800, color: textColor)),
-                  const SizedBox(width: 4),
-                  Icon(Icons.chevron_right, size: 14, color: textMuted),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ===========================================================================
-  // 7. INSIGHT KEUANGAN (SMART AI ADVICE CARD)
-  // ===========================================================================
-  Widget _buildFinancialInsightCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color accentPurple, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1B4B) : const Color(0xFFEEF2FF),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: accentPurple.withOpacity(0.25)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.lightbulb_outline, size: 16, color: accentPurple),
-                  const SizedBox(width: 8),
-                  Text('Insight Keuangan', style: GoogleFonts.inter(fontSize: 13.5, fontWeight: FontWeight.w800, color: textColor)),
-                ],
-              ),
-              Icon(Icons.insights, size: 16, color: accentPurple),
-            ],
+          _sectionHeader(
+            icon: Icons.receipt_long_outlined,
+            color: _brandBlue,
+            title: 'Laporan Keuangan',
           ),
           const SizedBox(height: 10),
           Text(
-            'Pengeluaran makanan naik 15% dibanding bulan lalu.',
-            style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: textColor),
+            'Unduh laporan lengkap dalam format PDF atau CSV.',
+            style: _ts(12.5, FontWeight.w500, _p.muted, height: 1.4),
           ),
-          const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerRight,
-            child: GestureDetector(
-              onTap: () => _showNotification(context, 'Rekomendasi AI: Tekan pengeluaran kuliner minggu ini.'),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Lihat detail', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: accentPurple)),
-                  const SizedBox(width: 2),
-                  Icon(Icons.chevron_right, size: 12, color: accentPurple),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ===========================================================================
-  // 8. LAPORAN KEUANGAN (EXPORT PDF / CSV CARD)
-  // ===========================================================================
-  Widget _buildReportExportCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color brandBlue, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: borderColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.receipt_long_outlined, size: 18, color: textColor),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Laporan Keuangan', style: GoogleFonts.inter(fontSize: 13.5, fontWeight: FontWeight.w800, color: textColor)),
-                    Text('Unduh laporan lengkap dalam format PDF atau CSV.', style: GoogleFonts.inter(fontSize: 10.5, color: textMuted)),
-                  ],
-                ),
-              ),
-              Icon(Icons.chevron_right, size: 16, color: textMuted),
-            ],
-          ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    side: BorderSide(color: borderColor),
+                    minimumSize: const Size(0, 46),
+                    side: BorderSide(color: _p.border),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
-                  icon: Icon(Icons.download_outlined, size: 14, color: textColor),
-                  label: Text('Export PDF', style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.w700, color: textColor)),
-                  onPressed: () => _showNotification(context, 'Memproses unduhan Laporan_Keuangan_MyKas.pdf...'),
+                  icon: Icon(Icons.picture_as_pdf_outlined, size: 18, color: _p.text),
+                  label: Text('Export PDF', style: _ts(13, FontWeight.w700, _p.text)),
+                  onPressed: () => _showNotification(
+                    context,
+                    'Memproses unduhan Laporan_Keuangan_MyKas.pdf...',
+                  ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: brandBlue,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    backgroundColor: _brandBlue,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(0, 46),
                     elevation: 0,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
-                  icon: const Icon(Icons.download, size: 14, color: Colors.white),
-                  label: Text('Export CSV', style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.w700, color: Colors.white)),
-                  onPressed: () => _showNotification(context, 'Memproses unduhan Laporan_Keuangan_MyKas.csv...'),
+                  icon: const Icon(Icons.table_chart_outlined, size: 18, color: Colors.white),
+                  label: Text('Export CSV', style: _ts(13, FontWeight.w700, Colors.white)),
+                  onPressed: () => _showNotification(
+                    context,
+                    'Memproses unduhan Laporan_Keuangan_MyKas.csv...',
+                  ),
                 ),
               ),
             ],
@@ -1001,34 +1329,48 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
     );
   }
 
-  Widget _buildEmptyState(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color brandBlue) {
-    return Container(
-      padding: const EdgeInsets.all(28),
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: borderColor),
-      ),
+  // ===========================================================================
+  // EMPTY STATE
+  // ===========================================================================
+  Widget _buildEmptyState() {
+    return _card(
+      padding: const EdgeInsets.fromLTRB(28, 36, 28, 32),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(16),
+            width: 72,
+            height: 72,
             decoration: BoxDecoration(
-              color: brandBlue.withOpacity(0.1),
+              color: _op(_brandBlue, 0.10),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.analytics_outlined, size: 32, color: brandBlue),
+            child: const Icon(Icons.analytics_outlined, size: 34, color: _brandBlue),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Text(
             'Belum Ada Transaksi Cukup',
-            style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w800, color: textColor),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Lakukan pencatatan pemasukan dan pengeluaran secara rutin untuk melihat analisis grafik lengkap.',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(fontSize: 12, color: textMuted, height: 1.4),
+            style: _ts(17, FontWeight.w700, _p.text),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Catat pemasukan dan pengeluaran secara rutin untuk melihat analisis grafik lengkap.',
+            textAlign: TextAlign.center,
+            style: _ts(13, FontWeight.w500, _p.muted, height: 1.5),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _brandBlue,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(0, 46),
+              padding: const EdgeInsets.symmetric(horizontal: 22),
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+            icon: const Icon(Icons.add_rounded, size: 20, color: Colors.white),
+            label: Text('Catat Transaksi', style: _ts(13.5, FontWeight.w700, Colors.white)),
+            onPressed: () => _showNotification(context, 'Membuka pencatatan transaksi...'),
           ),
         ],
       ),
@@ -1049,47 +1391,72 @@ class DonutChartPainter extends CustomPainter {
   final List<DonutSection> sections;
   final Color backgroundColor;
 
-  DonutChartPainter({required this.sections, required this.backgroundColor});
+  /// Nilai penuh lingkaran. Bila null, memakai jumlah seluruh section.
+  /// Isi 100 untuk satu section persentase (mis. anggaran 70%).
+  final double? total;
+
+  /// 0..1, untuk animasi saat pertama tampil.
+  final double progress;
+  final double strokeWidth;
+
+  DonutChartPainter({
+    required this.sections,
+    required this.backgroundColor,
+    this.total,
+    this.progress = 1,
+    this.strokeWidth = 10,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double strokeWidth = 8.0;
-    final Offset center = Offset(size.width / 2, size.height / 2);
-    final double radius = (min(size.width, size.height) - strokeWidth) / 2;
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (min(size.width, size.height) - strokeWidth) / 2;
+    final rect = Rect.fromCircle(center: center, radius: radius);
 
-    final Paint bgPaint = Paint()
-      ..color = backgroundColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth;
-
-    canvas.drawCircle(center, radius, bgPaint);
-
-    final double total = sections.fold(0, (sum, section) => sum + section.value);
-    if (total == 0) return;
-
-    double startAngle = -pi / 2;
-
-    for (var section in sections) {
-      final double sweepAngle = (section.value / total) * 2 * pi;
-      final Paint sectionPaint = Paint()
-        ..color = section.color
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = backgroundColor
         ..style = PaintingStyle.stroke
-        ..strokeWidth = strokeWidth
-        ..strokeCap = StrokeCap.round;
+        ..strokeWidth = strokeWidth,
+    );
 
-      final double gap = 0.08;
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        startAngle + gap,
-        max(0, sweepAngle - gap * 2),
-        false,
-        sectionPaint,
-      );
+    final sum = sections.fold<double>(0, (s, e) => s + e.value);
+    final denom = total ?? sum;
+    if (denom <= 0) return;
 
-      startAngle += sweepAngle;
+    // Ujung bulat memanjang setengah stroke; inset agar antar-segmen tidak menempel.
+    final cap = (strokeWidth / 2) / radius;
+    final inset = cap + (sections.length > 1 ? 0.05 : 0.0);
+
+    var start = -pi / 2;
+    for (final section in sections) {
+      final sweep = (section.value / denom) * 2 * pi * progress;
+      final drawSweep = sweep - 2 * inset;
+      if (drawSweep > 0) {
+        canvas.drawArc(
+          rect,
+          start + inset,
+          drawSweep,
+          false,
+          Paint()
+            ..color = section.color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = strokeWidth
+            ..strokeCap = StrokeCap.round,
+        );
+      }
+      start += sweep;
     }
   }
 
   @override
-  bool shouldRepaint(covariant DonutChartPainter oldDelegate) => true;
+  bool shouldRepaint(covariant DonutChartPainter old) {
+    return old.progress != progress ||
+        old.total != total ||
+        old.strokeWidth != strokeWidth ||
+        old.backgroundColor != backgroundColor ||
+        old.sections != sections;
+  }
 }
