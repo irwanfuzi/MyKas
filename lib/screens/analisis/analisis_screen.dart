@@ -278,7 +278,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                   color: brandBlue.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text(
+                child: Text(
                   '62%',
                   style: TextStyle(
                     fontSize: 9.5,
@@ -305,8 +305,8 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                     height: 6,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(4),
-                      gradient: const LinearGradient(
-                        colors: [brandBlue, Color(0xFF3B82F6)],
+                      gradient: LinearGradient(
+                        colors: [brandBlue, const Color(0xFF3B82F6)],
                       ),
                     ),
                   ),
