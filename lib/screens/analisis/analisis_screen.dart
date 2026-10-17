@@ -25,7 +25,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
 
     final bgColor = theme.scaffoldBackgroundColor;
     final cardBg = theme.colorScheme.surface;
-    final borderColor = theme.colorScheme.outline.withOpacity(isDark ? 0.35 : 0.2);
+    final borderColor = theme.colorScheme.outline.withOpacity(isDark ? 0.35 : 0.15);
     final textColor = theme.colorScheme.onSurface;
     final textMuted = theme.colorScheme.onSurfaceVariant;
 
@@ -45,11 +45,11 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
               child: ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: isDesktop ? 1100 : 540),
                 child: ListView(
-                  padding: EdgeInsets.all(isDesktop ? 28.0 : 16.0),
+                  padding: EdgeInsets.all(isDesktop ? 28.0 : 18.0),
                   physics: const ClampingScrollPhysics(),
                   children: [
                     // ==========================================
-                    // 1. HEADER & FILTER RENTANG WAKTU
+                    // 1. HEADER & PREMIUM FILTER SELECTOR
                     // ==========================================
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -60,30 +60,31 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Analisis Keuangan',
+                                'Analisis Kas',
                                 style: GoogleFonts.urbanist(
-                                  fontSize: isDesktop ? 26 : 20,
+                                  fontSize: isDesktop ? 26 : 22,
                                   fontWeight: FontWeight.w900,
                                   color: textColor,
-                                  letterSpacing: -0.5,
+                                  letterSpacing: -0.6,
                                 ),
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Rincian alokasi & kesehatan kas',
+                                'Ringkasan kesehatan finansial & alokasi',
                                 style: TextStyle(
-                                  fontSize: 11.5,
+                                  fontSize: 12,
                                   color: textMuted,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ],
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                           decoration: BoxDecoration(
                             color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(18),
+                            borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: borderColor),
                           ),
                           child: DropdownButtonHideUnderline(
@@ -91,7 +92,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                               value: _selectedRentang,
                               dropdownColor: cardBg,
                               style: const TextStyle(
-                                fontSize: 11.5,
+                                fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 color: brandBlue,
                               ),
@@ -114,16 +115,16 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
                     // ==========================================
-                    // 2. METRIK UTAMA 2 KOLOM (MOBILE & DESKTOP)
+                    // 2. CASHFLOW METRICS (INFLOW VS OUTFLOW)
                     // ==========================================
                     Row(
                       children: [
                         Expanded(
                           child: _buildMetricCard(
-                            title: 'Pemasukan',
+                            title: 'Total Pemasukan',
                             amount: 'Rp 8.500.000',
                             icon: AppIcons.arrowUpRight,
                             iconColor: incomeGreen,
@@ -133,10 +134,10 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                             textMuted: textMuted,
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: _buildMetricCard(
-                            title: 'Pengeluaran',
+                            title: 'Total Keluar',
                             amount: 'Rp 2.804.178',
                             icon: AppIcons.arrowDownLeft,
                             iconColor: expenseRed,
@@ -148,10 +149,10 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
 
                     // ==========================================
-                    // 3. BUDGET & INSIGHT 2 KOLOM BERDAMPINGAN
+                    // 3. BUDGET STATUS & SMART INSIGHT ROW
                     // ==========================================
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,7 +160,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                         Expanded(
                           child: _buildBudgetCard(cardBg, borderColor, textColor, textMuted, isDark, brandBlue),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: _buildInsightCard(cardBg, borderColor, textColor, textMuted, isDark, honeyGold),
                         ),
@@ -168,7 +169,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                     const SizedBox(height: 16),
 
                     // ==========================================
-                    // 4. BREAKDOWN KATEGORI PENGELUARAN
+                    // 4. BREAKDOWN KATEGORI PENGELUARAN (HIERARKI BERSIH)
                     // ==========================================
                     _buildCategoryCard(cardBg, borderColor, textColor, textMuted, isDark),
                   ],
@@ -182,7 +183,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
   }
 
   // ==========================================
-  // WIDGET CARD: METRIK UTAMA (2 KOLOM MOBILE)
+  // METRIC CARD WIDGET
   // ==========================================
   Widget _buildMetricCard({
     required String title,
@@ -195,10 +196,10 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
     required Color textMuted,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: cardBg,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: borderColor),
       ),
       child: Column(
@@ -210,29 +211,29 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
               Text(
                 title,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 11.5,
                   fontWeight: FontWeight.w600,
                   color: textMuted,
                 ),
               ),
               Container(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
                   color: iconColor.withOpacity(0.12),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, size: 12, color: iconColor),
+                child: Icon(icon, size: 13, color: iconColor),
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           Text(
             amount,
             style: GoogleFonts.urbanist(
-              fontSize: 14.5,
+              fontSize: 15,
               fontWeight: FontWeight.w900,
               color: textColor,
-              letterSpacing: -0.3,
+              letterSpacing: -0.4,
             ),
           ),
         ],
@@ -241,7 +242,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
   }
 
   // ==========================================
-  // WIDGET CARD: PENGGUNAAN BUDGET
+  // BUDGET USAGE CARD WIDGET
   // ==========================================
   Widget _buildBudgetCard(
     Color cardBg,
@@ -252,10 +253,10 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
     Color brandBlue,
   ) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: cardBg,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: borderColor),
       ),
       child: Column(
@@ -265,23 +266,23 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Budget Bulan Ini',
+                'Porsi Budget',
                 style: TextStyle(
-                  fontSize: 11.5,
+                  fontSize: 12,
                   fontWeight: FontWeight.w800,
                   color: textColor,
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: brandBlue.withOpacity(0.12),
+                  color: brandBlue.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   '62%',
                   style: TextStyle(
-                    fontSize: 9.5,
+                    fontSize: 10,
                     fontWeight: FontWeight.w900,
                     color: brandBlue,
                   ),
@@ -289,7 +290,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: Stack(
@@ -316,11 +317,11 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Sisa Rp 1.695.822 dari Rp 4.500.000',
+            'Sisa Rp 1.695.822',
             style: TextStyle(
-              fontSize: 9.5,
+              fontSize: 10.5,
               color: textMuted,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -331,7 +332,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
   }
 
   // ==========================================
-  // WIDGET CARD: SMART INSIGHT
+  // SMART INSIGHT CARD WIDGET
   // ==========================================
   Widget _buildInsightCard(
     Color cardBg,
@@ -342,10 +343,10 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
     Color honeyGold,
   ) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : const Color(0xFFFFFBEB),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: honeyGold.withOpacity(isDark ? 0.35 : 0.25)),
       ),
       child: Column(
@@ -354,7 +355,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
                   color: honeyGold.withOpacity(0.18),
                   shape: BoxShape.circle,
@@ -363,22 +364,22 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
               ),
               const SizedBox(width: 6),
               Text(
-                'Status Kas',
+                'Financial Insight',
                 style: TextStyle(
-                  fontSize: 11.5,
+                  fontSize: 12,
                   fontWeight: FontWeight.w800,
                   color: isDark ? textColor : const Color(0xFF92400E),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
-            'Pengeluaran hemat 12% dibanding minggu lalu. Kondisi aman!',
+            'Pengeluaran turun 12% dari minggu lalu. Pertahankan!',
             style: TextStyle(
-              fontSize: 9.5,
+              fontSize: 10.5,
               color: isDark ? textMuted : const Color(0xFFB45309),
-              height: 1.25,
+              height: 1.3,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -389,7 +390,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
   }
 
   // ==========================================
-  // WIDGET CARD: BREAKDOWN KATEGORI PENGELUARAN
+  // CATEGORY BREAKDOWN CARD WIDGET
   // ==========================================
   Widget _buildCategoryCard(
     Color cardBg,
@@ -399,24 +400,37 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
     bool isDark,
   ) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: cardBg,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Kategori Pengeluaran Terbesar',
-            style: TextStyle(
-              fontSize: 13.5,
-              fontWeight: FontWeight.w800,
-              color: textColor,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Pengeluaran Berdasarkan Porsi',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: textColor,
+                ),
+              ),
+              Text(
+                'Top 4',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: textMuted,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           _buildCategoryRow(
             'Kuliner & Makanan',
             'Rp 1.250.000',
@@ -428,7 +442,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
             textMuted,
             isDark,
           ),
-          Divider(color: borderColor, height: 18),
+          Divider(color: borderColor, height: 20),
           _buildCategoryRow(
             'Kebutuhan Harian',
             'Rp 850.000',
@@ -440,7 +454,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
             textMuted,
             isDark,
           ),
-          Divider(color: borderColor, height: 18),
+          Divider(color: borderColor, height: 20),
           _buildCategoryRow(
             'Layanan Antar / GoFood',
             'Rp 384.178',
@@ -452,7 +466,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
             textMuted,
             isDark,
           ),
-          Divider(color: borderColor, height: 18),
+          Divider(color: borderColor, height: 20),
           _buildCategoryRow(
             'Utilitas & Tagihan',
             'Rp 320.000',
@@ -486,14 +500,14 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(7),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: iconBg.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, size: 15, color: iconBg),
+              child: Icon(icon, size: 16, color: iconBg),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -501,15 +515,15 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                   Text(
                     category,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
                       color: textColor,
                     ),
                   ),
-                  const SizedBox(height: 1),
+                  const SizedBox(height: 2),
                   Text(
                     'Porsi $percentage',
-                    style: TextStyle(fontSize: 10, color: textMuted),
+                    style: TextStyle(fontSize: 11, color: textMuted),
                   ),
                 ],
               ),
@@ -517,30 +531,30 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
             Text(
               amount,
               style: GoogleFonts.urbanist(
-                fontSize: 13,
+                fontSize: 13.5,
                 fontWeight: FontWeight.w900,
                 color: textColor,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         ClipRRect(
-          borderRadius: BorderRadius.circular(3),
+          borderRadius: BorderRadius.circular(4),
           child: Stack(
             children: [
               Container(
-                height: 4,
+                height: 5,
                 width: double.infinity,
                 color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
               ),
               FractionallySizedBox(
                 widthFactor: progress,
                 child: Container(
-                  height: 4,
+                  height: 5,
                   decoration: BoxDecoration(
                     color: iconBg,
-                    borderRadius: BorderRadius.circular(3),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                 ),
               ),
