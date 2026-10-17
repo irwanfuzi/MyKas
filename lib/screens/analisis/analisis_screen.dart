@@ -804,4 +804,183 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                   Text('Insight Keuangan', style: GoogleFonts.inter(fontSize: 13.5, fontWeight: FontWeight.w800, color: textColor)),
                 ],
               ),
-              Icon(Icons.insights,
+              Icon(Icons.insights, size: 16, color: accentPurple),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Pengeluaran makanan naik 15% dibanding bulan lalu.',
+            style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: textColor),
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: GestureDetector(
+              onTap: () {},
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Lihat detail', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: accentPurple)),
+                  const SizedBox(width: 2),
+                  Icon(Icons.chevron_right, size: 12, color: accentPurple),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReportExportCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color tealGreen, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.receipt_long_outlined, size: 18, color: textColor),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Laporan Keuangan', style: GoogleFonts.inter(fontSize: 13.5, fontWeight: FontWeight.w800, color: textColor)),
+                    Text('Unduh laporan lengkap dalam format PDF atau CSV.', style: GoogleFonts.inter(fontSize: 10.5, color: textMuted)),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, size: 16, color: textMuted),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    side: BorderSide(color: borderColor),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  icon: Icon(Icons.download_outlined, size: 14, color: textColor),
+                  label: Text('Export PDF', style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.w700, color: textColor)),
+                  onPressed: () {},
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: tealGreen,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  icon: const Icon(Icons.download, size: 14, color: Colors.white),
+                  label: Text('Export CSV', style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.w700, color: Colors.white)),
+                  onPressed: () {},
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color brandBlue) {
+    return Container(
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: borderColor),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: brandBlue.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.analytics_outlined, size: 32, color: brandBlue),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Belum Ada Transaksi Cukup',
+            style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w800, color: textColor),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Lakukan pencatatan pemasukan dan pengeluaran secara rutin untuk melihat analisis grafik lengkap.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(fontSize: 12, color: textMuted, height: 1.4),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class DonutSection {
+  final double value;
+  final Color color;
+  const DonutSection({required this.value, required this.color});
+}
+
+class DonutChartPainter extends CustomPainter {
+  final List<DonutSection> sections;
+  final Color backgroundColor;
+
+  DonutChartPainter({required this.sections, required this.backgroundColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double strokeWidth = 8.0;
+    final Offset center = Offset(size.width / 2, size.height / 2);
+    final double radius = (min(size.width, size.height) - strokeWidth) / 2;
+
+    final Paint bgPaint = Paint()
+      ..color = backgroundColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth;
+
+    canvas.drawCircle(center, radius, bgPaint);
+
+    final double total = sections.fold(0, (sum, section) => sum + section.value);
+    if (total == 0) return;
+
+    double startAngle = -pi / 2;
+
+    for (var section in sections) {
+      final double sweepAngle = (section.value / total) * 2 * pi;
+      final Paint sectionPaint = Paint()
+        ..color = section.color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round;
+
+      final double gap = 0.08;
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle + gap,
+        max(0, sweepAngle - gap * 2),
+        false,
+        sectionPaint,
+      );
+
+      startAngle += sweepAngle;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant DonutChartPainter oldDelegate) => true;
+}
