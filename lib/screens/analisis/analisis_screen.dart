@@ -17,26 +17,55 @@ class AnalisisScreen extends StatefulWidget {
 }
 
 class _AnalisisScreenState extends State<AnalisisScreen> {
-  String _selectedRentang = 'Bulan Ini';
+  // Filter Periode State
+  String _selectedSegment = 'Bulan'; // Minggu, Bulan, Tahun
+  String _selectedDateRange = '1 – 31 Oktober 2026';
+  String _cashFlowFilter = 'This Month';
+
+  // Empty State Flag (Ubah ke true untuk menguji tampilan kosong)
+  final bool _isEmptyState = false;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final bgColor = theme.scaffoldBackgroundColor;
+    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
     final borderColor = theme.colorScheme.outline.withOpacity(isDark ? 0.3 : 0.12);
     final textColor = theme.colorScheme.onSurface;
     final textMuted = theme.colorScheme.onSurfaceVariant;
 
     const brandBlue = Color(0xFF2563EB);
-    const honeyGold = Color(0xFFF59E0B);
-    const incomeGreen = Color(0xFF10B981);
+    const tealGreen = Color(0xFF0D9488);
+    const emeraldGreen = Color(0xFF10B981);
     const expenseRed = Color(0xFFEF4444);
+    const honeyGold = Color(0xFFF59E0B);
+    const accentPurple = Color(0xFF8B5CF6);
 
     return Scaffold(
       backgroundColor: bgColor,
+      appBar: AppBar(
+        backgroundColor: bgColor,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: Text(
+          'Analysis',
+          style: GoogleFonts.inter(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: textColor,
+            letterSpacing: -0.5,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(AppIcons.settings, color: textColor, size: 22),
+            onPressed: () {},
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -44,408 +73,72 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
 
             return Center(
               child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: isDesktop ? 1000 : 520),
+                constraints: BoxConstraints(maxWidth: isDesktop ? 960 : 520),
                 child: ListView(
                   padding: EdgeInsets.symmetric(
                     horizontal: isDesktop ? 28.0 : 18.0,
-                    vertical: 20.0,
+                    vertical: 12.0,
                   ),
                   physics: const ClampingScrollPhysics(),
                   children: [
                     // =========================================================
-                    // 1. HEADER & DROPDOWN ACCENT
+                    // 1. FILTER PERIODE (SEGMEN & RANGE SELECTOR)
                     // =========================================================
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Analisis Kas',
-                              style: GoogleFonts.inter(
-                                fontSize: isDesktop ? 28 : 22,
-                                fontWeight: FontWeight.w800,
-                                color: textColor,
-                                letterSpacing: -0.6,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Kesehatan finansial & alokasi kas',
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                color: textMuted,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: brandBlue.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(color: brandBlue.withOpacity(0.3)),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              value: _selectedRentang,
-                              dropdownColor: cardBg,
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: brandBlue,
-                              ),
-                              icon: const Padding(
-                                padding: EdgeInsets.only(left: 4),
-                                child: Icon(AppIcons.chevronRight, size: 14, color: brandBlue),
-                              ),
-                              items: ['Minggu Ini', 'Bulan Ini', 'Tahun Ini']
-                                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                                  .toList(),
-                              onChanged: (val) {
-                                if (val != null) {
-                                  setState(() {
-                                    _selectedRentang = val;
-                                  });
-                                }
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    // =========================================================
-                    // 2. BENTO CARD 1: HERO CASHFLOW HIGHLIGHT
-                    // =========================================================
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: cardBg,
-                        borderRadius: BorderRadius.circular(22),
-                        border: Border.all(color: borderColor),
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildHeroMetric(
-                                  label: 'Pemasukan',
-                                  value: 'Rp 8.500.000',
-                                  icon: AppIcons.arrowUpRight,
-                                  color: incomeGreen,
-                                  textColor: textColor,
-                                  textMuted: textMuted,
-                                ),
-                              ),
-                              Container(height: 40, width: 1, color: borderColor),
-                              Expanded(
-                                child: _buildHeroMetric(
-                                  label: 'Pengeluaran',
-                                  value: 'Rp 2.804.178',
-                                  icon: AppIcons.arrowDownLeft,
-                                  color: expenseRed,
-                                  textColor: textColor,
-                                  textMuted: textMuted,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: honeyGold.withOpacity(isDark ? 0.12 : 0.08),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: honeyGold.withOpacity(0.25)),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: const BoxDecoration(
-                                    color: honeyGold,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(AppIcons.sparkles, color: Colors.black, size: 13),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Kondisi Kas Safe Zone',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700,
-                                          color: isDark ? textColor : const Color(0xFF92400E),
-                                        ),
-                                      ),
-                                      Text(
-                                        'Pengeluaran harian Rp 93.472 (Turun 12% dari minggu lalu).',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 11,
-                                          color: isDark ? textMuted : const Color(0xFFB45309),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildSegmentedFilter(cardBg, borderColor, textColor, textMuted, tealGreen, isDark),
+                    const SizedBox(height: 12),
+                    _buildDateRangeSelector(cardBg, borderColor, textColor, textMuted, isDark),
                     const SizedBox(height: 16),
 
-                    // =========================================================
-                    // 3. BENTO CARD 2: DONUT CHART + CATEGORY PROGRESS
-                    // =========================================================
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: cardBg,
-                        borderRadius: BorderRadius.circular(22),
-                        border: Border.all(color: borderColor),
-                      ),
-                      child: Column(
+                    if (_isEmptyState)
+                      _buildEmptyState(cardBg, borderColor, textColor, textMuted, brandBlue)
+                    else ...[
+                      // =========================================================
+                      // 2. RINGKASAN KEUANGAN (HERO CARD)
+                      // =========================================================
+                      _buildFinancialSummaryHero(cardBg, borderColor, textColor, textMuted, tealGreen, emeraldGreen, expenseRed, isDark),
+                      const SizedBox(height: 16),
+
+                      // =========================================================
+                      // 3. ANALISIS ARUS KAS (CASH FLOW CHART)
+                      // =========================================================
+                      _buildCashFlowCard(cardBg, borderColor, textColor, textMuted, emeraldGreen, expenseRed, isDark),
+                      const SizedBox(height: 16),
+
+                      // =========================================================
+                      // 4 & 5. BENTO GRID 2 KOLOM: PENGELUARAN & ANGGARAN
+                      // =========================================================
+                      Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Porsi Pengeluaran Kas',
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: textColor,
-                            ),
+                          Expanded(
+                            child: _buildExpenseAnalysisCard(cardBg, borderColor, textColor, textMuted, accentPurple, isDark),
                           ),
-                          const SizedBox(height: 18),
-                          Row(
-                            children: [
-                              // Interactive Ring Visual
-                              SizedBox(
-                                width: 105,
-                                height: 105,
-                                child: CustomPaint(
-                                  painter: DonutChartPainter(
-                                    sections: [
-                                      const DonutSection(value: 44.5, color: Color(0xFFF97316)),
-                                      const DonutSection(value: 30.3, color: Color(0xFF8B5CF6)),
-                                      const DonutSection(value: 13.7, color: Color(0xFF00AED6)),
-                                      const DonutSection(value: 11.5, color: Color(0xFFEAB308)),
-                                    ],
-                                    backgroundColor: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-                                  ),
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          'Total Porsi',
-                                          style: GoogleFonts.inter(fontSize: 9.5, color: textMuted),
-                                        ),
-                                        Text(
-                                          '100%',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w800,
-                                            color: textColor,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 20),
-                              // Interactive Category List
-                              Expanded(
-                                child: Column(
-                                  children: [
-                                    _buildCategoryProgressItem('Kuliner & Makanan', '44.5%', 'Rp 1.250.000', const Color(0xFFF97316), textColor, textMuted, isDark),
-                                    const SizedBox(height: 10),
-                                    _buildCategoryProgressItem('Kebutuhan Harian', '30.3%', 'Rp 850.000', const Color(0xFF8B5CF6), textColor, textMuted, isDark),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Divider(color: borderColor, height: 1),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(child: _buildCategoryProgressItem('Layanan Antar', '13.7%', 'Rp 384.178', const Color(0xFF00AED6), textColor, textMuted, isDark)),
-                              const SizedBox(width: 16),
-                              Expanded(child: _buildCategoryProgressItem('Utilitas & Tagihan', '11.5%', 'Rp 320.000', const Color(0xFFEAB308), textColor, textMuted, isDark)),
-                            ],
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildBudgetAnalysisCard(cardBg, borderColor, textColor, textMuted, tealGreen, isDark),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-                    // =========================================================
-                    // 4. BENTO GRID 2 KOLOM BERDAMPINGAN: BUDGET & CHART
-                    // =========================================================
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Budget Bento Card
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: cardBg,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: borderColor),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Budget Bulan Ini',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                        color: textColor,
-                                      ),
-                                    ),
-                                    Text(
-                                      '62%',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w800,
-                                        color: brandBlue,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(4),
-                                  child: Stack(
-                                    children: [
-                                      Container(
-                                        height: 6,
-                                        width: double.infinity,
-                                        color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-                                      ),
-                                      FractionallySizedBox(
-                                        widthFactor: 0.62,
-                                        child: Container(
-                                          height: 6,
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(4),
-                                            color: brandBlue,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  'Sisa Rp 1.695.822\ndari Rp 4.500.000',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 10.5,
-                                    color: textMuted,
-                                    height: 1.3,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        // Trend Chart Bento Card
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: cardBg,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: borderColor),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Tren Pekanan',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: textColor,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                _buildSlimBarChart(isDark, textMuted, brandBlue),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
+                      // =========================================================
+                      // 6. TUJUAN KEUANGAN (FINANCIAL GOALS)
+                      // =========================================================
+                      _buildFinancialGoalsCard(cardBg, borderColor, textColor, textMuted, tealGreen, honeyGold, isDark),
+                      const SizedBox(height: 16),
 
-                    // =========================================================
-                    // 5. BENTO CARD 4: TAGIHAN RUTIN (HORIZONTAL CHIPS)
-                    // =========================================================
-                    Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: cardBg,
-                        borderRadius: BorderRadius.circular(22),
-                        border: Border.all(color: borderColor),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Tagihan Rutin Mendatang',
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: textColor,
-                                ),
-                              ),
-                              Text(
-                                '2 Tagihan',
-                                style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: honeyGold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: [
-                                _buildBentoBillChip('Spotify Family', 'Rp 86.900', '3 hari lagi', brandBlue, isDark, textColor, textMuted),
-                                const SizedBox(width: 10),
-                                _buildBentoBillChip('Indihome 30Mbps', 'Rp 340.000', '8 hari lagi', honeyGold, isDark, textColor, textMuted),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                      // =========================================================
+                      // 7. INSIGHT KEUANGAN (SMART AI ADVICE - MAX 2)
+                      // =========================================================
+                      _buildFinancialInsightCard(cardBg, borderColor, textColor, textMuted, accentPurple, isDark),
+                      const SizedBox(height: 16),
+
+                      // =========================================================
+                      // 8. LAPORAN KEUANGAN (DOWNLOAD & EXPORT PDF/CSV)
+                      // =========================================================
+                      _buildReportExportCard(cardBg, borderColor, textColor, textMuted, tealGreen, isDark),
+                      const SizedBox(height: 24),
+                    ],
                   ],
                 ),
               ),
@@ -456,209 +149,805 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // HELPER BENTO WIDGETS
-  // ---------------------------------------------------------------------------
-
-  Widget _buildHeroMetric({
-    required String label,
-    required String value,
-    required IconData icon,
-    required Color color,
-    required Color textColor,
-    required Color textMuted,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  // ===========================================================================
+  // 1. FILTER PERIODE WIDGETS
+  // ===========================================================================
+  Widget _buildSegmentedFilter(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color tealGreen, bool isDark) {
+    return Row(
       children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 12, color: color),
+        Expanded(
+          child: Container(
+            height: 42,
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: borderColor),
             ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w500,
-                color: textMuted,
-              ),
+            child: Row(
+              children: ['Minggu', 'Bulan', 'Tahun'].map((segment) {
+                final isSelected = _selectedSegment == segment;
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _selectedSegment = segment),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      decoration: BoxDecoration(
+                        color: isSelected ? tealGreen : Colors.transparent,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        segment,
+                        style: GoogleFonts.inter(
+                          fontSize: 12.5,
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                          color: isSelected ? Colors.white : textMuted,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
-          ],
+          ),
         ),
-        const SizedBox(height: 6),
-        Text(
-          value,
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-            color: textColor,
-            letterSpacing: -0.4,
+        const SizedBox(width: 8),
+        Container(
+          height: 42,
+          width: 42,
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: borderColor),
+          ),
+          child: IconButton(
+            icon: Icon(AppIcons.calendar, size: 18, color: textColor),
+            onPressed: () {},
           ),
         ),
       ],
     );
   }
 
-  Widget _buildCategoryProgressItem(
-    String category,
-    String percentage,
-    String amount,
-    Color color,
-    Color textColor,
-    Color textMuted,
-    bool isDark,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildDateRangeSelector(Color cardBg, Color borderColor, Color textColor, Color textMuted, bool isDark) {
+    return Row(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
+        Icon(AppIcons.calendar, size: 14, color: textMuted),
+        const SizedBox(width: 6),
+        Text(
+          _selectedDateRange,
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: textColor,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Icon(AppIcons.chevronRight, size: 14, color: textMuted),
+      ],
+    );
+  }
+
+  // ===========================================================================
+  // 2. RINGKASAN KEUANGAN (HERO CARD)
+  // ===========================================================================
+  Widget _buildFinancialSummaryHero(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color tealGreen, Color emeraldGreen, Color expenseRed, bool isDark) {
+    return Container(
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: borderColor),
+      ),
+      child: Column(
+        children: [
+          // Total Balance Flow Gradient Card
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isDark
+                    ? [const Color(0xFF0F766E), const Color(0xFF0D9488)]
+                    : [const Color(0xFF0D9488), const Color(0xFF14B8A6)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(22),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Total Balance Flow',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(AppIcons.info, size: 13, color: Colors.white.withOpacity(0.8)),
+                      ],
+                    ),
+                    Icon(AppIcons.wallet, size: 28, color: Colors.white.withOpacity(0.85)),
+                  ],
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(height: 6),
                 Text(
-                  category,
+                  'Rp 2.800.000',
                   style: GoogleFonts.inter(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w600,
-                    color: textColor,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: -0.8,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(AppIcons.arrowUpRight, size: 12, color: Colors.white),
+                      const SizedBox(width: 4),
+                      Text(
+                        '12% dibanding bulan lalu',
+                        style: GoogleFonts.inter(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            Text(
-              amount,
-              style: GoogleFonts.inter(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w700,
-                color: textColor,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(2),
-          child: Container(
-            height: 3,
-            width: double.infinity,
-            color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: double.parse(percentage.replaceAll('%', '')) / 100,
-              child: Container(color: color),
+          ),
+          // Inflow & Outflow Metrics Split
+          Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildFlowMetricItem(
+                        title: 'Pemasukan',
+                        amount: 'Rp 8.000.000',
+                        icon: AppIcons.arrowUpRight,
+                        iconBg: emeraldGreen.withOpacity(0.12),
+                        iconColor: emeraldGreen,
+                        textColor: textColor,
+                        textMuted: textMuted,
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildFlowMetricItem(
+                        title: 'Pengeluaran',
+                        amount: 'Rp 5.200.000',
+                        icon: AppIcons.arrowDownLeft,
+                        iconBg: expenseRed.withOpacity(0.12),
+                        iconColor: expenseRed,
+                        textColor: textColor,
+                        textMuted: textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                // Saving Banner
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF0FDF4),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: emeraldGreen.withOpacity(0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: emeraldGreen.withOpacity(0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(AppIcons.wallet, size: 14, color: emeraldGreen),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                            style: GoogleFonts.inter(fontSize: 11.5, color: textColor),
+                            children: [
+                              const TextSpan(text: 'Kamu lebih hemat '),
+                              TextSpan(
+                                text: 'Rp 600.000 ',
+                                style: GoogleFonts.inter(fontWeight: FontWeight.w800, color: emeraldGreen),
+                              ),
+                              const TextSpan(text: 'dibanding bulan lalu.'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFlowMetricItem({
+    required String title,
+    required String amount,
+    required IconData icon,
+    required Color iconBg,
+    required Color iconColor,
+    required Color textColor,
+    required Color textMuted,
+  }) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(7),
+          decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
+          child: Icon(icon, size: 14, color: iconColor),
+        ),
+        const SizedBox(width: 10),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: GoogleFonts.inter(fontSize: 11, color: textMuted, fontWeight: FontWeight.w500)),
+            const SizedBox(height: 1),
+            Text(amount, style: GoogleFonts.inter(fontSize: 13.5, color: textColor, fontWeight: FontWeight.w800)),
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildSlimBarChart(bool isDark, Color textMuted, Color brandBlue) {
-    final weeks = [
-      {'label': 'M1', 'value': 0.4},
-      {'label': 'M2', 'value': 0.85},
-      {'label': 'M3', 'value': 0.55},
-      {'label': 'M4', 'value': 0.3},
+  // ===========================================================================
+  // 3. ANALISIS ARUS KAS (CASH FLOW CHART CARD)
+  // ===========================================================================
+  Widget _buildCashFlowCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color emeraldGreen, Color expenseRed, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(AppIcons.chart, size: 16, color: textColor),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Cash Flow',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: textColor,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: borderColor),
+                ),
+                child: Row(
+                  children: [
+                    Text(_cashFlowFilter, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: textColor)),
+                    const SizedBox(width: 4),
+                    Icon(AppIcons.chevronRight, size: 12, color: textMuted),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              _buildChartLegend('Pemasukan', emeraldGreen, textMuted),
+              const SizedBox(width: 12),
+              _buildChartLegend('Pengeluaran', expenseRed, textMuted),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Bar Chart Visual
+          _buildCashFlowBarVisual(isDark, textMuted, emeraldGreen, expenseRed),
+          const SizedBox(height: 14),
+          // Net Savings Banner
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(AppIcons.arrowUpRight, size: 16, color: emeraldGreen),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Saldo bersih periode ini', style: GoogleFonts.inter(fontSize: 10.5, color: textMuted)),
+                        Text('Rp 2.800.000', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w800, color: textColor)),
+                      ],
+                    ),
+                  ],
+                ),
+                Icon(AppIcons.chevronRight, size: 16, color: textMuted),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChartLegend(String label, Color color, Color textMuted) {
+    return Row(
+      children: [
+        Container(width: 7, height: 7, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        const SizedBox(width: 5),
+        Text(label, style: GoogleFonts.inter(fontSize: 10.5, color: textMuted, fontWeight: FontWeight.w500)),
+      ],
+    );
+  }
+
+  Widget _buildCashFlowBarVisual(bool isDark, Color textMuted, Color inColor, Color outColor) {
+    final barsData = [
+      {'d': '1', 'in': 0.8, 'out': 0.55},
+      {'d': '7', 'in': 0.68, 'out': 0.45},
+      {'d': '14', 'in': 0.72, 'out': 0.42},
+      {'d': '21', 'in': 0.65, 'out': 0.40},
+      {'d': '28', 'in': 0.82, 'out': 0.48},
     ];
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: weeks.map((w) {
-        final double heightFactor = w['value'] as double;
-        return Column(
-          children: [
-            Container(
-              height: 42,
-              width: 14,
-              decoration: BoxDecoration(
-                color: isDark ? Colors.white10 : const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(8),
+    return SizedBox(
+      height: 110,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: barsData.map((b) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    height: 75 * (b['in'] as double),
+                    width: 7,
+                    decoration: BoxDecoration(color: inColor, borderRadius: BorderRadius.circular(4)),
+                  ),
+                  const SizedBox(width: 4),
+                  Container(
+                    height: 75 * (b['out'] as double),
+                    width: 7,
+                    decoration: BoxDecoration(color: outColor, borderRadius: BorderRadius.circular(4)),
+                  ),
+                ],
               ),
-              alignment: Alignment.bottomCenter,
-              child: FractionallySizedBox(
-                heightFactor: heightFactor,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: heightFactor > 0.75 ? const Color(0xFFEF4444) : brandBlue,
-                    borderRadius: BorderRadius.circular(8),
+              const SizedBox(height: 8),
+              Text(b['d'] as String, style: GoogleFonts.inter(fontSize: 10, color: textMuted, fontWeight: FontWeight.w500)),
+            ],
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // 4. ANALISIS PENGELUARAN (BENTO CARD LEFT)
+  // ===========================================================================
+  Widget _buildExpenseAnalysisCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color accentPurple, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(AppIcons.shoppingBag, size: 15, color: accentPurple),
+              const SizedBox(width: 6),
+              Text('Pengeluaran', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w800, color: textColor)),
+            ],
+          ),
+          const SizedBox(height: 14),
+          // Donut Ring Visual
+          Center(
+            child: SizedBox(
+              width: 85,
+              height: 85,
+              child: CustomPaint(
+                painter: DonutChartPainter(
+                  sections: const [
+                    DonutSection(value: 35, color: Color(0xFFF97316)),
+                    DonutSection(value: 25, color: Color(0xFF8B5CF6)),
+                    DonutSection(value: 20, color: Color(0xFF3B82F6)),
+                  ],
+                  backgroundColor: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Total', style: GoogleFonts.inter(fontSize: 8.5, color: textMuted)),
+                      Text('Rp 5.2m', style: GoogleFonts.inter(fontSize: 10.5, fontWeight: FontWeight.w800, color: textColor)),
+                    ],
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 6),
-            Text(
-              w['label'] as String,
-              style: GoogleFonts.inter(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: textMuted,
+          ),
+          const SizedBox(height: 14),
+          _buildExpenseCategoryRow('Makanan', '35%', 'Rp 1.820.000', const Color(0xFFF97316), textColor),
+          const SizedBox(height: 6),
+          _buildExpenseCategoryRow('Belanja', '25%', 'Rp 1.300.000', const Color(0xFF8B5CF6), textColor),
+          const SizedBox(height: 6),
+          _buildExpenseCategoryRow('Tagihan', '20%', 'Rp 1.040.000', const Color(0xFF3B82F6), textColor),
+          const SizedBox(height: 12),
+          Center(
+            child: TextButton(
+              onPressed: () {},
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Lihat semua kategori', style: GoogleFonts.inter(fontSize: 10.5, fontWeight: FontWeight.w700, color: accentPurple)),
+                  const SizedBox(width: 2),
+                  Icon(AppIcons.chevronRight, size: 12, color: accentPurple),
+                ],
               ),
             ),
-          ],
-        );
-      }).toList(),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildBentoBillChip(
-    String title,
-    String amount,
-    String dueDate,
-    Color accentColor,
-    bool isDark,
-    Color textColor,
-    Color textMuted,
-  ) {
+  Widget _buildExpenseCategoryRow(String title, String percent, String amount, Color color, Color textColor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Container(width: 6, height: 6, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+            const SizedBox(width: 5),
+            Text(title, style: GoogleFonts.inter(fontSize: 10.5, fontWeight: FontWeight.w500, color: textColor)),
+          ],
+        ),
+        Text(percent, style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: textColor)),
+      ],
+    );
+  }
+
+  // ===========================================================================
+  // 5. ANALISIS ANGGARAN (BENTO CARD RIGHT)
+  // ===========================================================================
+  Widget _buildBudgetAnalysisCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color tealGreen, bool isDark) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: accentColor.withOpacity(0.25)),
+        color: cardBg,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: borderColor),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 4,
-            height: 28,
-            decoration: BoxDecoration(
-              color: accentColor,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
-              Text(
-                title,
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: textColor,
+              Icon(AppIcons.target, size: 15, color: tealGreen),
+              const SizedBox(width: 6),
+              Text('Anggaran', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w800, color: textColor)),
+            ],
+          ),
+          const SizedBox(height: 14),
+          // Donut Gauge Progress Visual
+          Center(
+            child: SizedBox(
+              width: 85,
+              height: 85,
+              child: CustomPaint(
+                painter: DonutChartPainter(
+                  sections: [
+                    DonutSection(value: 70, color: tealGreen),
+                  ],
+                  backgroundColor: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('70%', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w900, color: textColor)),
+                      Text('terpakai', style: GoogleFonts.inter(fontSize: 8.5, color: textMuted)),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 2),
-              Text(
-                '$dueDate • $amount',
-                style: GoogleFonts.inter(
-                  fontSize: 10.5,
-                  color: textMuted,
-                  fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text('Rp 3.500.000 / Rp 5.000.000', style: GoogleFonts.inter(fontSize: 9.5, fontWeight: FontWeight.w700, color: textColor)),
+          const SizedBox(height: 4),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(3),
+            child: Container(
+              height: 5,
+              width: double.infinity,
+              color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: 0.7,
+                child: Container(color: tealGreen),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF0FDF4),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                Icon(AppIcons.wallet, size: 12, color: tealGreen),
+                const SizedBox(width: 6),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Sisa anggaran', style: GoogleFonts.inter(fontSize: 8.5, color: textMuted)),
+                    Text('Rp 1.500.000', style: GoogleFonts.inter(fontSize: 10.5, fontWeight: FontWeight.w800, color: textColor)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Center(
+            child: TextButton(
+              onPressed: () {},
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Lihat anggaran', style: GoogleFonts.inter(fontSize: 10.5, fontWeight: FontWeight.w700, color: tealGreen)),
+                  const SizedBox(width: 2),
+                  Icon(AppIcons.chevronRight, size: 12, color: tealGreen),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // 6. TUJUAN KEUANGAN (FINANCIAL GOALS CARD)
+  // ===========================================================================
+  Widget _buildFinancialGoalsCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color tealGreen, Color honeyGold, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(AppIcons.sparkles, size: 16, color: honeyGold),
+                  const SizedBox(width: 8),
+                  Text('Tujuan Keuangan', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w800, color: textColor)),
+                ],
+              ),
+              Text('1 tujuan aktif', style: GoogleFonts.inter(fontSize: 11, color: textMuted, fontWeight: FontWeight.w500)),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: borderColor),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: tealGreen.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(AppIcons.compass, size: 20, color: Color(0xFF0D9488)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Dana Liburan', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w700, color: textColor)),
+                      const SizedBox(height: 2),
+                      Text('Rp 6.000.000 / Rp 10.000.000', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: textMuted)),
+                      const SizedBox(height: 6),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(3),
+                        child: Container(
+                          height: 4,
+                          width: double.infinity,
+                          color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+                          child: FractionallySizedBox(
+                            alignment: Alignment.centerLeft,
+                            widthFactor: 0.6,
+                            child: Container(color: tealGreen),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text('60%', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w800, color: textColor)),
+                const SizedBox(width: 4),
+                Icon(AppIcons.chevronRight, size: 14, color: textMuted),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // 7. INSIGHT KEUANGAN (SMART AI ADVICE CARD)
+  // ===========================================================================
+  Widget _buildFinancialInsightCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color accentPurple, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1B4B) : const Color(0xFFEEF2FF),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: accentPurple.withOpacity(0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(AppIcons.sparkles, size: 16, color: accentPurple),
+                  const SizedBox(width: 8),
+                  Text('Insight Keuangan', style: GoogleFonts.inter(fontSize: 13.5, fontWeight: FontWeight.w800, color: textColor)),
+                ],
+              ),
+              Icon(AppIcons.chart, size: 16, color: accentPurple),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Pengeluaran makanan naik 15% dibanding bulan lalu.',
+            style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: textColor),
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: GestureDetector(
+              onTap: () {},
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Lihat detail', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: accentPurple)),
+                  const SizedBox(width: 2),
+                  Icon(AppIcons.chevronRight, size: 12, color: accentPurple),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // 8. LAPORAN KEUANGAN (DOWNLOAD & EXPORT PDF/CSV CARD)
+  // ===========================================================================
+  Widget _buildReportExportCard(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color tealGreen, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(AppIcons.receipt, size: 18, color: textColor),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Laporan Keuangan', style: GoogleFonts.inter(fontSize: 13.5, fontWeight: FontWeight.w800, color: textColor)),
+                    Text('Unduh laporan lengkap dalam format PDF atau CSV.', style: GoogleFonts.inter(fontSize: 10.5, color: textMuted)),
+                  ],
+                ),
+              ),
+              Icon(AppIcons.chevronRight, size: 16, color: textMuted),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    side: BorderSide(color: borderColor),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  icon: Icon(AppIcons.download, size: 14, color: textColor),
+                  label: Text('Export PDF', style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.w700, color: textColor)),
+                  onPressed: () {},
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: tealGreen,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  icon: const Icon(AppIcons.download, size: 14, color: Colors.white),
+                  label: Text('Export CSV', style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.w700, color: Colors.white)),
+                  onPressed: () {},
                 ),
               ),
             ],
@@ -667,15 +956,51 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
       ),
     );
   }
+
+  // ===========================================================================
+  // EMPTY STATE WIDGET
+  // ===========================================================================
+  Widget _buildEmptyState(Color cardBg, Color borderColor, Color textColor, Color textMuted, Color brandBlue) {
+    return Container(
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: borderColor),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: brandBlue.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(AppIcons.chart, size: 32, color: brandBlue),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Belum Ada Transaksi Cukup',
+            style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w800, color: textColor),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Lakukan pencatatan pemasukan dan pengeluaran secara rutin untuk melihat analisis grafik lengkap.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(fontSize: 12, color: textMuted, height: 1.4),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // =============================================================================
-// DONUT CHART PAINTER
+// DONUT CHART PAINTER (REUSABLE)
 // =============================================================================
 class DonutSection {
   final double value;
   final Color color;
-
   const DonutSection({required this.value, required this.color});
 }
 
@@ -687,7 +1012,7 @@ class DonutChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double strokeWidth = 10.0;
+    final double strokeWidth = 8.0;
     final Offset center = Offset(size.width / 2, size.height / 2);
     final double radius = (min(size.width, size.height) - strokeWidth) / 2;
 
@@ -705,14 +1030,13 @@ class DonutChartPainter extends CustomPainter {
 
     for (var section in sections) {
       final double sweepAngle = (section.value / total) * 2 * pi;
-
       final Paint sectionPaint = Paint()
         ..color = section.color
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth
         ..strokeCap = StrokeCap.round;
 
-      final double gap = 0.06;
+      final double gap = 0.08;
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: radius),
         startAngle + gap,
@@ -728,3 +1052,4 @@ class DonutChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant DonutChartPainter oldDelegate) => true;
 }
+
