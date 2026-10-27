@@ -18,7 +18,6 @@ const Color _incomeGreen = Color(0xFF10B981);
 const Color _expenseRed = Color(0xFFEF4444);
 const Color _honeyGold = Color(0xFFF59E0B);
 const Color _accentPurple = Color(0xFF8B5CF6);
-const Color _slate = Color(0xFF94A3B8);
 
 TextStyle _ts(double size, FontWeight w, Color c, {double? height, double? ls}) {
   return GoogleFonts.inter(
@@ -261,52 +260,49 @@ class _BerandaScreenState extends State<BerandaScreen> {
   Widget build(BuildContext context) {
     _p = _Palette.of(context);
 
-    final rawSaldo = widget.summaryData?['saldo'] ?? 'Rp 11.250.000';
+    // Data sesuai state referensi HTML (Total Saldo: Rp 24.850.000)
+    final rawSaldo = widget.summaryData?['saldo'] ?? 'Rp 24.850.000';
 
     final List riwayat = widget.summaryData?['riwayat'] as List? ?? [
       {
-        'judul': 'Gudeg Bu Dani Solo',
-        'kategori': 'Kuliner & Makanan',
-        'tanggal': 'Hari Ini, 12:45',
-        'nominal': '45000',
-        'jenis': 'pengeluaran',
-        'icon': AppIcons.utensils,
-      },
-      {
-        'judul': 'Gaji Bulanan Utama',
-        'kategori': 'Payroll Inflow',
-        'tanggal': '25 Agu 2026',
-        'nominal': '8500000',
-        'jenis': 'pemasukan',
-        'icon': AppIcons.wallet,
-      },
-      {
-        'judul': 'GoFood Indonesia',
-        'kategori': 'Layanan Antar',
-        'tanggal': '24 Agu 2026',
-        'nominal': '68000',
-        'jenis': 'pengeluaran',
-        'icon': AppIcons.shoppingBag,
-      },
-      {
-        'judul': 'Supermarket Transmart',
-        'kategori': 'Kebutuhan Harian',
-        'tanggal': '22 Agu 2026',
-        'nominal': '235000',
+        'judul': 'Supermarket Papaya Fresh',
+        'kategori': 'Belanja Bulanan',
+        'tanggal': 'Hari ini',
+        'nominal': '348500',
         'jenis': 'pengeluaran',
         'icon': AppIcons.shoppingCart,
+        'badge': 'BCA',
       },
       {
-        'judul': 'Token Listrik PLN',
-        'kategori': 'Tagihan Harian',
-        'tanggal': '20 Agu 2026',
-        'nominal': '100000',
+        'judul': 'Gaji Bulanan',
+        'kategori': 'Penghasilan',
+        'tanggal': '25 Okt',
+        'nominal': '14500000',
+        'jenis': 'pemasukan',
+        'icon': AppIcons.wallet,
+        'badge': 'Mandiri',
+      },
+      {
+        'judul': 'Kopi Kenangan Mantan',
+        'kategori': 'Kuliner & F&B',
+        'tanggal': '24 Okt',
+        'nominal': '38000',
+        'jenis': 'pengeluaran',
+        'icon': AppIcons.utensils,
+        'badge': 'GoPay',
+      },
+      {
+        'judul': 'PLN & Internet',
+        'kategori': 'Tagihan Utilitas',
+        'tanggal': '23 Okt',
+        'nominal': '450000',
         'jenis': 'pengeluaran',
         'icon': AppIcons.sliders,
+        'badge': 'BCA',
       },
     ];
 
-    final recentTransactions = riwayat.take(5).toList();
+    final recentTransactions = riwayat.take(4).toList();
 
     return PopScope(
       canPop: !_showAllKantongSubPage,
@@ -359,22 +355,25 @@ class _BerandaScreenState extends State<BerandaScreen> {
             child: CustomScrollView(
               physics: const ClampingScrollPhysics(),
               slivers: [
+                // TopBar Pinned
                 SliverPersistentHeader(
                   pinned: true,
                   delegate: _OvoStyleTopBarDelegate(),
                 ),
+
+                // Hero Balance Card (Royal Blue Gradient persis HTML)
                 SliverToBoxAdapter(
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: _p.isDark
                             ? const [Color(0xFF1E40AF), Color(0xFF2563EB)]
-                            : const [Color(0xFF2563EB), Color(0xFF3B82F6)],
+                            : const [Color(0xFF1E40AF), Color(0xFF2563EB), Color(0xFF3B82F6)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                     ),
-                    padding: const EdgeInsets.fromLTRB(18, 4, 18, 22),
+                    padding: const EdgeInsets.fromLTRB(18, 10, 18, 28),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
@@ -383,7 +382,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                           children: [
                             Text(
                               'Total Saldo',
-                              style: _ts(12, FontWeight.w500, Colors.white.withOpacity(0.85)),
+                              style: _ts(12, FontWeight.w500, Colors.white.withOpacity(0.9)),
                             ),
                             const SizedBox(width: 6),
                             InkWell(
@@ -397,8 +396,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                 padding: const EdgeInsets.all(4.0),
                                 child: Icon(
                                   _isSaldoVisible ? AppIcons.eye : AppIcons.eyeOff,
-                                  color: Colors.white.withOpacity(0.85),
-                                  size: 15,
+                                  color: Colors.white.withOpacity(0.9),
+                                  size: 14,
                                 ),
                               ),
                             ),
@@ -414,20 +413,16 @@ class _BerandaScreenState extends State<BerandaScreen> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(AppIcons.clock, color: Colors.white.withOpacity(0.7), size: 11),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Updated 2m ago',
-                              style: _ts(11, FontWeight.w500, Colors.white.withOpacity(0.7)),
-                            ),
-                          ],
+                        Text(
+                          'Diperbarui 09:41 WIB',
+                          style: _ts(11, FontWeight.w500, Colors.white.withOpacity(0.8)),
                         ),
                       ],
                     ),
                   ),
                 ),
+
+                // Main Curved Sheet Content
                 SliverToBoxAdapter(
                   child: Container(
                     width: double.infinity,
@@ -458,19 +453,19 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             width: 36,
                             height: 4,
                             decoration: BoxDecoration(
-                              color: _p.border,
+                              color: Colors.slate300,
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),
                         ),
+                        const SizedBox(height: 12),
+                        _buildPortofolioKasSection(),
                         const SizedBox(height: 16),
-                        _buildKantongKeuanganSection(isDesktop),
-                        const SizedBox(height: 16),
-                        _buildQuickActionsSection(isDesktop),
+                        _buildAksiCepatSection(),
                         const SizedBox(height: 16),
                         _buildMyInsightCard(),
                         const SizedBox(height: 16),
-                        _buildRencanaKeuanganSection(isDesktop),
+                        _buildRencanaKeuanganSection(),
                         const SizedBox(height: 16),
                         _buildRecentTransactionsSection(recentTransactions),
                       ],
@@ -485,27 +480,17 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
   }
 
-  Widget _buildKantongKeuanganSection(bool isDesktop) {
+  // ==========================================
+  // 1. PORTOFOLIO KAS (SESUAI HTML)
+  // ==========================================
+  Widget _buildPortofolioKasSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                Text('Kantong Keuangan', style: _ts(14, FontWeight.w800, _p.text)),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: _op(_brandBlue, 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text('3 Terhubung', style: _ts(10, FontWeight.w700, _brandBlue)),
-                ),
-              ],
-            ),
+            Text('Portofolio Kas', style: _ts(14, FontWeight.w800, _p.text, ls: -0.2)),
             InkWell(
               onTap: () {
                 setState(() {
@@ -515,36 +500,45 @@ class _BerandaScreenState extends State<BerandaScreen> {
               borderRadius: BorderRadius.circular(6),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                child: Text('Lihat Semua >', style: _ts(11.5, FontWeight.w700, _brandBlue)),
+                child: Row(
+                  children: [
+                    Text('Kelola', style: _ts(12, FontWeight.w700, _brandBlue)),
+                    const SizedBox(width: 2),
+                    const Icon(AppIcons.chevronRight, size: 14, color: _brandBlue),
+                  ],
+                ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
-          childAspectRatio: isDesktop ? 2.0 : 1.7,
-          children: [
-            _buildWalletCard('BSI', const Color(0xFF00A39D), 'BSI Hasanah', 'Rp 4.250.000'),
-            _buildWalletCard('MANDIRI', _honeyGold, 'Mandiri Utama', 'Rp 6.000.000'),
-            _buildWalletCard('GOPAY', const Color(0xFF00AED6), 'GoPay Wallet', 'Rp 1.000.000'),
-            _buildAddAccountCard(),
-          ],
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 98,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            children: [
+              _buildPortofolioCard('BCA', _brandBlue, 'Bank BCA', '•• 8291', 'Utama', '14.300.000'),
+              const SizedBox(width: 10),
+              _buildPortofolioCard('MDR', Colors.slate900, 'Bank Mandiri', '•• 3409', 'Operasional', '4.550.000', badgeColor: _honeyGold),
+              const SizedBox(width: 10),
+              _buildPortofolioCard('GOPAY', const Color(0xFF00AED6), 'GoPay', 'e-Wallet', 'Harian', '2.800.000'),
+              const SizedBox(width: 10),
+              _buildAddAccountTile(),
+            ],
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildWalletCard(String badge, Color badgeBg, String title, String amount) {
+  Widget _buildPortofolioCard(String code, Color badgeColor, String title, String sub, String status, String amount, {Color? badgeColor}) {
     return Container(
-      padding: const EdgeInsets.all(_kPadCard),
+      width: 215,
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: _p.surface,
-        borderRadius: BorderRadius.circular(_kRadiusCard),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: _p.border),
       ),
       child: Column(
@@ -554,30 +548,43 @@ class _BerandaScreenState extends State<BerandaScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: badgeColor,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(code, style: _ts(9, FontWeight.w900, badgeColor == Colors.slate900 ? _honeyGold : Colors.white)),
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title, style: _ts(12, FontWeight.w700, _p.text)),
+                      Text(sub, style: _ts(9, FontWeight.w500, _p.muted)),
+                    ],
+                  ),
+                ],
+              ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(color: badgeBg, borderRadius: BorderRadius.circular(6)),
-                child: Text(badge, style: _ts(9, FontWeight.w900, Colors.white)),
-              ),
-              InkWell(
-                onTap: () => _openPengaturanKantongBottomSheet(context, title),
-                borderRadius: BorderRadius.circular(8),
-                child: Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: Icon(AppIcons.chevronRight, size: 14, color: _p.muted),
+                decoration: BoxDecoration(
+                  color: status == 'Utama' ? _op(_brandBlue, 0.1) : _p.surfaceAlt,
+                  borderRadius: BorderRadius.circular(6),
                 ),
+                child: Text(status, style: _ts(8, FontWeight.w700, status == 'Utama' ? _brandBlue : _p.muted)),
               ),
             ],
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: _ts(11, FontWeight.w500, _p.muted), overflow: TextOverflow.ellipsis),
-              const SizedBox(height: 2),
-              Text(
-                _isSaldoVisible ? amount : 'Rp ••••••••',
-                style: _ts(13.5, FontWeight.w800, _p.text, ls: -0.3),
-              ),
+              Text('Saldo Tersedia', style: _ts(9, FontWeight.w500, _p.muted)),
+              Text(_isSaldoVisible ? 'Rp $amount' : 'Rp ••••••••', style: _ts(14, FontWeight.w800, _p.text, ls: -0.3)),
             ],
           ),
         ],
@@ -585,47 +592,48 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
   }
 
-  Widget _buildAddAccountCard() {
+  Widget _buildAddAccountTile() {
     return InkWell(
       onTap: () => _openTambahAkunModal(context),
-      borderRadius: BorderRadius.circular(_kRadiusCard),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
+        width: 130,
         decoration: BoxDecoration(
-          color: _p.surface,
-          borderRadius: BorderRadius.circular(_kRadiusCard),
+          color: _op(_p.surfaceAlt, 0.6),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: _p.border, width: 1.2),
         ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: _op(_brandBlue, 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(AppIcons.plus, color: _brandBlue, size: 16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: _op(_brandBlue, 0.12),
+                shape: BoxShape.circle,
               ),
-              const SizedBox(height: 6),
-              Text('+ Tambah Akun', style: _ts(11, FontWeight.w700, _brandBlue)),
-            ],
-          ),
+              child: const Icon(AppIcons.plus, color: _brandBlue, size: 16),
+            ),
+            const SizedBox(height: 6),
+            Text('Tambah Akun', style: _ts(11, FontWeight.w700, _p.text)),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildQuickActionsSection(bool isDesktop) {
-    final activeActions = _userQuickActions.where((item) => item.isEnabled).take(4).toList();
-
+  // ==========================================
+  // 2. AKSI CEPAT (SESUAI HTML: TRANSFER, TOP UP, SETOR TARGET, LAINNYA)
+  // ==========================================
+  Widget _buildAksiCepatSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Aksi Cepat', style: _ts(14, FontWeight.w800, _p.text)),
+            Text('Aksi Cepat', style: _ts(14, FontWeight.w800, _p.text, ls: -0.2)),
             InkWell(
               onTap: () {
                 CustomizeQuickActionsSheet.show(
@@ -638,99 +646,119 @@ class _BerandaScreenState extends State<BerandaScreen> {
                   },
                 );
               },
-              borderRadius: BorderRadius.circular(6),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                child: Text('Edit', style: _ts(11.5, FontWeight.w700, _brandBlue)),
-              ),
+              child: Text('Atur', style: _ts(12, FontWeight.w700, _brandBlue)),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         Container(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
           decoration: BoxDecoration(
             color: _p.surface,
-            borderRadius: BorderRadius.circular(_kRadiusCard),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(color: _p.border),
           ),
-          child: activeActions.isEmpty
-              ? SizedBox(
-                  height: 50,
-                  child: Center(
-                    child: Text('Belum ada aksi cepat dipilih.', style: _ts(12, FontWeight.w500, _p.muted)),
-                  ),
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: activeActions.map((act) {
-                    return InkWell(
-                      onTap: () {},
-                      borderRadius: BorderRadius.circular(12),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: _op(_brandBlue, _p.isDark ? 0.2 : 0.1),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: const Icon(AppIcons.sparkles, color: _brandBlue, size: 20),
-                          ),
-                          const SizedBox(height: 6),
-                          SizedBox(
-                            width: 64,
-                            child: Text(
-                              act.title,
-                              textAlign: TextAlign.center,
-                              style: _ts(11, FontWeight.w600, _p.text),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildQuickActionItem('Transfer', AppIcons.arrowUpRight, _brandBlue),
+              _buildQuickActionItem('Top Up', AppIcons.plus, _incomeGreen),
+              _buildQuickActionItem('Setor Target', AppIcons.checkCircle2, _honeyGold),
+              _buildQuickActionItem('Lainnya', AppIcons.sliders, _accentPurple),
+            ],
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildMyInsightCard() {
-    return Container(
-      padding: const EdgeInsets.all(_kPadCard),
-      decoration: BoxDecoration(
-        color: _p.isDark ? const Color(0xFF1E1B4B) : const Color(0xFFEEF2FF),
-        borderRadius: BorderRadius.circular(_kRadiusCard),
-        border: Border.all(color: _op(_accentPurple, 0.25)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildQuickActionItem(String title, IconData icon, Color color) {
+    return InkWell(
+      onTap: () {},
+      borderRadius: BorderRadius.circular(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 34,
-            height: 34,
+            width: 46,
+            height: 46,
             decoration: BoxDecoration(
-              color: _op(_accentPurple, 0.14),
-              borderRadius: BorderRadius.circular(12),
+              color: _op(color, 0.12),
+              borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(AppIcons.sparkles, color: _accentPurple, size: 16),
+            child: Icon(icon, color: color, size: 22),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('My Insight', style: _ts(12.5, FontWeight.w800, _p.text)),
-                const SizedBox(height: 2),
-                Text(
-                  'Pengeluaran menurun 12%! Hemat Rp1.450.000 pada pos non-primer dibanding minggu lalu.',
-                  style: _ts(11, FontWeight.w500, _p.muted, height: 1.3),
+          const SizedBox(height: 6),
+          Text(title, style: _ts(11, FontWeight.w600, _p.text)),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================
+  // 3. MY INSIGHT CARD (SESUAI HTML)
+  // ==========================================
+  Widget _buildMyInsightCard() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1E3A8A), Color(0xFF1D4ED8), Color(0xFF2563EB)],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: _op(_brandBlue, 0.22),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(AppIcons.sparkles, color: _honeyGold, size: 12),
+                  ),
+                  const SizedBox(width: 6),
+                  Text('MY INSIGHT ✨', style: _ts(11, FontWeight.w800, Colors.white, ls: 0.5)),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                child: Text('Pekan Ini', style: _ts(10, FontWeight.w500, Colors.white)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          RichText(
+            text: TextSpan(
+              style: _ts(11.5, FontWeight.normal, Colors.white.withOpacity(0.95), height: 1.3),
+              children: [
+                const TextSpan(text: 'Pengeluaran turun '),
+                TextSpan(text: '18%', style: _ts(11.5, FontWeight.bold, _honeyGold)),
+                const TextSpan(text: ' minggu ini. Arus kas dalam kondisi '),
+                TextSpan(
+                  text: 'sangat sehat',
+                  style: _ts(11.5, FontWeight.bold, Colors.white),
+                ),
+                const TextSpan(text: '.'),
               ],
             ),
           ),
@@ -739,159 +767,156 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
   }
 
-  Widget _buildRencanaKeuanganSection(bool isDesktop) {
-    final double totalBudget = widget.summaryData?['total_budget']?.toDouble() ?? 5000000.0;
-    final double terpakaiBudget = widget.summaryData?['terpakai_budget']?.toDouble() ?? 2804178.0;
-    final double sisaBudget = (totalBudget - terpakaiBudget).clamp(0, totalBudget);
-    final double budgetRatio = (terpakaiBudget / totalBudget).clamp(0.0, 1.0);
-
-    final double terkumpulTujuan = widget.summaryData?['terkumpul_tujuan']?.toDouble() ?? 10500000.0;
-    final double targetTujuan = widget.summaryData?['target_tujuan']?.toDouble() ?? 15000000.0;
-    final double tujuanRatio = (terkumpulTujuan / targetTujuan).clamp(0.0, 1.0);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  // ==========================================
+  // 4. RENCANA FINANSIAL / KEUANGAN (BERDAMPINGAN)
+  // ==========================================
+  Widget _buildRencanaKeuanganSection() {
+    return Row(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Rencana Keuangan', style: _ts(14, FontWeight.w800, _p.text)),
-            InkWell(
-              onTap: widget.onNavigateToAnalisis,
-              borderRadius: BorderRadius.circular(6),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                child: Text('Lihat Detail >', style: _ts(11.5, FontWeight.w700, _brandBlue)),
-              ),
+        // Sisa Budget Card
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(_kPadCard),
+            decoration: BoxDecoration(
+              color: _p.surface,
+              borderRadius: BorderRadius.circular(_kRadiusCard),
+              border: Border.all(color: _p.border),
             ),
-          ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: _expenseRed,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text('Sisa Budget', style: _ts(11, FontWeight.w700, _p.text)),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF2F2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text('94%', style: _ts(9, FontWeight.w800, _expenseRed)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _isSaldoVisible ? 'Rp 480.000' : 'Rp ••••••••',
+                  style: _ts(15, FontWeight.w900, _p.text, ls: -0.3),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: 0.94,
+                    backgroundColor: _p.track,
+                    valueColor: const AlwaysStoppedAnimation<Color>(_expenseRed),
+                    minHeight: 6,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Terpakai 7,52 Jt', style: _ts(9.5, FontWeight.w500, _p.muted)),
+                    Text('Limit 8 Jt', style: _ts(9.5, FontWeight.w600, _p.muted)),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(_kPadCard),
-                decoration: BoxDecoration(
-                  color: _p.surface,
-                  borderRadius: BorderRadius.circular(_kRadiusCard),
-                  border: Border.all(color: _p.border),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        const SizedBox(width: 10),
+        // Target Finansial Card
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(_kPadCard),
+            decoration: BoxDecoration(
+              color: _p.surface,
+              borderRadius: BorderRadius.circular(_kRadiusCard),
+              border: Border.all(color: _p.border),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Budget Bulan Ini', style: _ts(11, FontWeight.w600, _p.muted)),
-                        Icon(AppIcons.sliders, size: 12, color: _p.muted),
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: _incomeGreen,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text('Target Finansial', style: _ts(11, FontWeight.w700, _p.text)),
                       ],
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      _isSaldoVisible ? 'Sisa ${_formatCurrency(sisaBudget)}' : 'Rp ••••••••',
-                      style: _ts(13, FontWeight.w800, _p.text, ls: -0.2),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Stack(
-                        children: [
-                          Container(
-                            height: 6,
-                            width: double.infinity,
-                            color: _p.track,
-                          ),
-                          FractionallySizedBox(
-                            widthFactor: budgetRatio,
-                            child: Container(
-                              height: 6,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(4),
-                                color: budgetRatio > 0.8 ? _expenseRed : _incomeGreen,
-                              ),
-                            ),
-                          ),
-                        ],
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFECFDF5),
+                        borderRadius: BorderRadius.circular(6),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Terpakai ${(budgetRatio * 100).toInt()}%',
-                      style: _ts(9.5, FontWeight.w500, _p.muted),
+                      child: Text('92%', style: _ts(9, FontWeight.w800, _incomeGreen)),
                     ),
                   ],
                 ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(_kPadCard),
-                decoration: BoxDecoration(
-                  color: _p.surface,
-                  borderRadius: BorderRadius.circular(_kRadiusCard),
-                  border: Border.all(color: _p.border),
+                const SizedBox(height: 6),
+                Text(
+                  _isSaldoVisible ? 'Rp 55.200.000' : 'Rp ••••••••',
+                  style: _ts(15, FontWeight.w900, _p.text, ls: -0.3),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: 0.92,
+                    backgroundColor: _p.track,
+                    valueColor: const AlwaysStoppedAnimation<Color>(_incomeGreen),
+                    minHeight: 6,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Tujuan Keuangan', style: _ts(11, FontWeight.w600, _p.muted)),
-                        const Icon(AppIcons.checkCircle2, size: 12, color: _honeyGold),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      _isSaldoVisible ? _formatCurrency(terkumpulTujuan) : 'Rp ••••••••',
-                      style: _ts(13, FontWeight.w800, _p.text, ls: -0.2),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Stack(
-                        children: [
-                          Container(
-                            height: 6,
-                            width: double.infinity,
-                            color: _p.track,
-                          ),
-                          FractionallySizedBox(
-                            widthFactor: tujuanRatio,
-                            child: Container(
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: _honeyGold,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Target ${_formatCurrency(targetTujuan)} (${(tujuanRatio * 100).toInt()}%)',
-                      style: _ts(9.5, FontWeight.w500, _p.muted),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    Text('Hampir Finish!', style: _ts(9.5, FontWeight.w500, _p.muted)),
+                    Text('Target 60 Jt', style: _ts(9.5, FontWeight.w600, _p.muted)),
                   ],
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ],
     );
   }
 
+  // ==========================================
+  // 5. AKTIVITAS TERBARU (SESUAI HTML)
+  // ==========================================
   Widget _buildRecentTransactionsSection(List recentTransactions) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -899,76 +924,71 @@ class _BerandaScreenState extends State<BerandaScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Riwayat Transaksi', style: _ts(14, FontWeight.w800, _p.text)),
-            InkWell(
-              onTap: widget.onNavigateToAnalisis,
-              borderRadius: BorderRadius.circular(6),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                child: Row(
-                  children: [
-                    Text('Lihat Semua', style: _ts(11.5, FontWeight.w700, _brandBlue)),
-                    const SizedBox(width: 2),
-                    const Icon(AppIcons.chevronRight, size: 14, color: _brandBlue),
-                  ],
-                ),
-              ),
-            ),
+            Text('Aktivitas Terbaru', style: _ts(14, FontWeight.w800, _p.text, ls: -0.2)),
+            Text('${recentTransactions.length} Transaksi', style: _ts(11, FontWeight.w500, _p.muted)),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         Container(
           decoration: BoxDecoration(
             color: _p.surface,
             borderRadius: BorderRadius.circular(_kRadiusCard),
             border: Border.all(color: _p.border),
           ),
-          child: recentTransactions.isEmpty
-              ? Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Center(
-                    child: Text('Belum ada transaksi dicatat.', style: _ts(12, FontWeight.w500, _p.muted)),
-                  ),
-                )
-              : ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: recentTransactions.length,
-                  separatorBuilder: (context, index) => Divider(color: _p.border, height: 1),
-                  itemBuilder: (context, index) {
-                    final item = recentTransactions[index];
-                    final isPemasukan = item['jenis'] == 'pemasukan';
-                    final formattedNominal = _formatCurrency(item['nominal']);
+          child: ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: recentTransactions.length,
+            separatorBuilder: (context, index) => Divider(color: _p.border, height: 1),
+            itemBuilder: (context, index) {
+              final item = recentTransactions[index];
+              final isPemasukan = item['jenis'] == 'pemasukan';
+              final formattedNominal = _formatCurrency(item['nominal']);
 
-                    return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-                      leading: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: _op(_brandBlue, 0.12),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(
-                          (item['icon'] as IconData?) ?? AppIcons.receipt,
-                          color: _brandBlue,
-                          size: 16,
-                        ),
-                      ),
-                      title: Text(
-                        item['judul'] ?? 'Transaksi',
-                        style: _ts(12.5, FontWeight.w700, _p.text),
-                      ),
-                      subtitle: Text(
-                        '${item['tanggal'] ?? 'Hari ini'} • ${item['kategori'] ?? 'Umum'}',
-                        style: _ts(11, FontWeight.w500, _p.muted),
-                      ),
-                      trailing: Text(
-                        '${isPemasukan ? '+' : '-'}$formattedNominal',
-                        style: _ts(13, FontWeight.w800, isPemasukan ? _incomeGreen : _p.text, ls: -0.2),
-                      ),
-                    );
-                  },
+              return ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: _op(_brandBlue, 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    (item['icon'] as IconData?) ?? AppIcons.receipt,
+                    color: _brandBlue,
+                    size: 18,
+                  ),
                 ),
+                title: Text(
+                  item['judul'] ?? 'Transaksi',
+                  style: _ts(12.5, FontWeight.w700, _p.text),
+                ),
+                subtitle: Text(
+                  '${item['tanggal']} • ${item['kategori']}',
+                  style: _ts(10.5, FontWeight.w500, _p.muted),
+                ),
+                trailing: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${isPemasukan ? '+' : '-'}$formattedNominal',
+                      style: _ts(12.5, FontWeight.w800, isPemasukan ? _incomeGreen : _p.text, ls: -0.2),
+                    ),
+                    const SizedBox(height: 2),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: _p.surfaceAlt,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(item['badge'] ?? 'BCA', style: _ts(8.5, FontWeight.w600, _p.muted)),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ],
     );
