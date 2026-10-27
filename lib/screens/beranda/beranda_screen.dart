@@ -7,20 +7,24 @@ import '../../utils/app_icons.dart';
 import '../../widgets/customize_quick_actions_sheet.dart';
 
 // =============================================================================
-// DESIGN TOKENS (MYKAS FINTECH FLAT PREMIUM)
+// DESIGN TOKENS (OBSIDIAN KINETIC / ROYAL PRECISION)
 // =============================================================================
 const double _kMaxWidth = 520;
-const double _kRadiusCard = 22;
-const double _kPadCard = 16;
+const double _kRadiusCard = 20.0;
+const double _kRadiusAction = 14.0;
+const double _kPadCard = 16.0;
 
-const Color _brandBlue = Color(0xFF2563EB); // Soft Royal Blue MyKas
-const Color _incomeGreen = Color(0xFF10B981);
-const Color _expenseRed = Color(0xFFEF4444);
-const Color _honeyGold = Color(0xFFF59E0B);
+// Token Warna Spesifikasi PRD v1.0
+const Color _brandBlue = Color(0xFF3B82F6);       // Primary Accent Royal Blue (#3B82F6)
+const Color _brandBlueActive = Color(0xFF2563EB); // Hover/Active (#2563EB)
+const Color _incomeGreen = Color(0xFF10B981);     // Emerald Green (#10B981)
+const Color _expenseRed = Color(0xFFEF4444);      // Coral Red (#EF4444)
+const Color _honeyGold = Color(0xFFF59E0B);       // Secondary Accent Honey Gold (#F59E0B)
 const Color _accentPurple = Color(0xFF8B5CF6);
 
-TextStyle _ts(double size, FontWeight w, Color c, {double? height, double? ls}) {
-  return GoogleFonts.inter(
+// Tipografi UI (Plus Jakarta Sans)
+TextStyle _tsUI(double size, FontWeight w, Color c, {double? height, double? ls}) {
+  return GoogleFonts.plusJakartaSans(
     fontSize: size,
     fontWeight: w,
     color: c,
@@ -29,35 +33,50 @@ TextStyle _ts(double size, FontWeight w, Color c, {double? height, double? ls}) 
   );
 }
 
+// Tipografi Data Angka & Tabular Figures (Google Inter - tnum)
+TextStyle _tsNum(double size, FontWeight w, Color c, {double? height, double? ls}) {
+  return GoogleFonts.inter(
+    fontSize: size,
+    fontWeight: w,
+    color: c,
+    height: height,
+    letterSpacing: ls,
+    fontFeatures: const [FontFeature.tabularFigures()],
+  );
+}
+
 Color _op(Color c, double o) => c.withOpacity(o);
 
 class _Palette {
   final bool isDark;
-  final Color bg, surface, surfaceAlt, border, text, muted, track;
+  final Color baseBg, headerBg, surfaceCard, surfaceElevated, border, textPrimary, textSecondary, textMuted, track;
 
   const _Palette({
     required this.isDark,
-    required this.bg,
-    required this.surface,
-    required this.surfaceAlt,
+    required this.baseBg,
+    required this.headerBg,
+    required this.surfaceCard,
+    required this.surfaceElevated,
     required this.border,
-    required this.text,
-    required this.muted,
+    required this.textPrimary,
+    required this.textSecondary,
+    required this.textMuted,
     required this.track,
   });
 
   factory _Palette.of(BuildContext context) {
-    final t = Theme.of(context);
-    final d = t.brightness == Brightness.dark;
+    final d = Theme.of(context).brightness == Brightness.dark;
     return _Palette(
       isDark: d,
-      bg: d ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-      surface: d ? const Color(0xFF1E293B) : Colors.white,
-      surfaceAlt: d ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
-      border: t.colorScheme.outline.withOpacity(d ? 0.25 : 0.10),
-      text: t.colorScheme.onSurface,
-      muted: t.colorScheme.onSurfaceVariant,
-      track: d ? Colors.white10 : const Color(0xFFE2E8F0),
+      baseBg: d ? const Color(0xFF0A0E18) : const Color(0xFFF8FAFC),
+      headerBg: d ? const Color(0xFF0F131D) : const Color(0xFF1E40AF),
+      surfaceCard: d ? const Color(0xFF171B26) : Colors.white,
+      surfaceElevated: d ? const Color(0xFF1E2433) : const Color(0xFFF1F5F9),
+      border: d ? const Color(0xFF232938) : const Color(0xFFE2E8F0),
+      textPrimary: d ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A),
+      textSecondary: d ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+      textMuted: d ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+      track: d ? const Color(0xFF232938) : const Color(0xFFE2E8F0),
     );
   }
 }
@@ -140,7 +159,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
         return Container(
           padding: const EdgeInsets.all(20.0),
           decoration: BoxDecoration(
-            color: _p.surface,
+            color: _p.surfaceCard,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
@@ -152,7 +171,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                   width: 38,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: _p.muted.withOpacity(0.3),
+                    color: _p.textMuted.withOpacity(0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -164,13 +183,13 @@ class _BerandaScreenState extends State<BerandaScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Pengaturan Kantong', style: _ts(16, FontWeight.w800, _p.text)),
-                      Text(namaKantong, style: _ts(12, FontWeight.w500, _p.muted)),
+                      Text('Pengaturan Kantong', style: _tsUI(16, FontWeight.w700, _p.textPrimary)),
+                      Text(namaKantong, style: _tsUI(12, FontWeight.w500, _p.textSecondary)),
                     ],
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: Icon(AppIcons.x, size: 18, color: _p.text),
+                    icon: Icon(AppIcons.x, size: 18, color: _p.textPrimary),
                   ),
                 ],
               ),
@@ -225,7 +244,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: _p.surfaceAlt,
+        color: _p.surfaceElevated,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: _p.border),
       ),
@@ -239,9 +258,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
           ),
           child: Icon(icon, size: 18, color: iconColor),
         ),
-        title: Text(title, style: _ts(13, FontWeight.w700, textColor ?? _p.text)),
-        subtitle: Text(subtitle, style: _ts(11, FontWeight.w500, _p.muted)),
-        trailing: Icon(AppIcons.chevronRight, size: 16, color: _p.muted),
+        title: Text(title, style: _tsUI(13, FontWeight.w600, textColor ?? _p.textPrimary)),
+        subtitle: Text(subtitle, style: _tsUI(11, FontWeight.w500, _p.textSecondary)),
+        trailing: Icon(AppIcons.chevronRight, size: 16, color: _p.textMuted),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
@@ -311,7 +330,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
         }
       },
       child: Container(
-        color: _brandBlue,
+        color: _p.headerBg,
         child: SafeArea(
           bottom: false,
           child: ScrollConfiguration(
@@ -355,7 +374,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
               child: CustomScrollView(
                 physics: const ClampingScrollPhysics(),
                 slivers: [
-                  // Collapsing Header dengan transisi halus & proporsional
+                  // Collapsing Header sesuai spesifikasi PRD v1.0 3-Fase
                   SliverPersistentHeader(
                     pinned: true,
                     delegate: _CollapsingHeaderDelegate(
@@ -366,16 +385,16 @@ class _BerandaScreenState extends State<BerandaScreen> {
                           _isSaldoVisible = !_isSaldoVisible;
                         });
                       },
-                      isDark: _p.isDark,
+                      palette: _p,
                     ),
                   ),
 
-                  // Main Curved Sheet Content
+                  // Main Curved Sheet Content (Lembaran Konten Utama)
                   SliverToBoxAdapter(
                     child: Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: _p.bg,
+                        color: _p.baseBg,
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                         boxShadow: _p.isDark
                             ? null
@@ -401,20 +420,20 @@ class _BerandaScreenState extends State<BerandaScreen> {
                               width: 36,
                               height: 4,
                               decoration: BoxDecoration(
-                                color: const Color(0xFFCBD5E1),
+                                color: _p.border,
                                 borderRadius: BorderRadius.circular(2),
                               ),
                             ),
                           ),
                           const SizedBox(height: 12),
                           _buildPortofolioKasSection(),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 20),
                           _buildAksiCepatSection(),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 20),
                           _buildMyInsightCard(),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 20),
                           _buildRencanaKeuanganSection(),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 20),
                           _buildRecentTransactionsSection(recentTransactions),
                         ],
                       ),
@@ -429,6 +448,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
   }
 
+  // =============================================================================
+  // 1. PORTOFOLIO KAS
+  // =============================================================================
   Widget _buildPortofolioKasSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -436,7 +458,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Portofolio Kas', style: _ts(14, FontWeight.w800, _p.text, ls: -0.2)),
+            Text('Portofolio Kas', style: _tsUI(16, FontWeight.w700, _p.textPrimary, ls: -0.01)),
             InkWell(
               onTap: () {
                 setState(() {
@@ -448,7 +470,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 child: Row(
                   children: [
-                    Text('Kelola', style: _ts(12, FontWeight.w700, _brandBlue)),
+                    Text('Kelola', style: _tsUI(12, FontWeight.w600, _brandBlue)),
                     const SizedBox(width: 2),
                     const Icon(AppIcons.chevronRight, size: 14, color: _brandBlue),
                   ],
@@ -457,7 +479,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         SizedBox(
           height: 98,
           child: ListView(
@@ -483,9 +505,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
       width: 215,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: _p.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _p.border),
+        color: _p.surfaceCard,
+        borderRadius: BorderRadius.circular(_kRadiusCard),
+        border: Border.all(color: _p.border, width: 1.0),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -504,14 +526,14 @@ class _BerandaScreenState extends State<BerandaScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     alignment: Alignment.center,
-                    child: Text(code, style: _ts(9, FontWeight.w900, badgeColor == const Color(0xFF0F172A) ? (_honeyGold) : Colors.white)),
+                    child: Text(code, style: _tsUI(9, FontWeight.w800, badgeColor == const Color(0xFF0F172A) ? _honeyGold : Colors.white)),
                   ),
                   const SizedBox(width: 8),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: _ts(12, FontWeight.w700, _p.text)),
-                      Text(sub, style: _ts(9, FontWeight.w500, _p.muted)),
+                      Text(title, style: _tsUI(14, FontWeight.w600, _p.textPrimary)),
+                      Text(sub, style: _tsUI(12, FontWeight.w500, _p.textSecondary)),
                     ],
                   ),
                 ],
@@ -519,18 +541,18 @@ class _BerandaScreenState extends State<BerandaScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: status == 'Utama' ? _op(_brandBlue, 0.1) : _p.surfaceAlt,
-                  borderRadius: BorderRadius.circular(6),
+                  color: status == 'Utama' ? _op(_brandBlue, 0.15) : _p.surfaceElevated,
+                  borderRadius: BorderRadius.circular(9999),
                 ),
-                child: Text(status, style: _ts(8, FontWeight.w700, status == 'Utama' ? _brandBlue : _p.muted)),
+                child: Text(status, style: _tsUI(10, FontWeight.w700, status == 'Utama' ? _brandBlue : _p.textSecondary, ls: 0.02)),
               ),
             ],
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Saldo Tersedia', style: _ts(9, FontWeight.w500, _p.muted)),
-              Text(_isSaldoVisible ? 'Rp $amount' : 'Rp ••••••••', style: _ts(14, FontWeight.w800, _p.text, ls: -0.3)),
+              Text('Saldo Tersedia', style: _tsUI(12, FontWeight.w500, _p.textSecondary)),
+              Text(_isSaldoVisible ? 'Rp $amount' : 'Rp ••••••••', style: _tsNum(14, FontWeight.w700, _p.textPrimary, ls: -0.3)),
             ],
           ),
         ],
@@ -541,13 +563,13 @@ class _BerandaScreenState extends State<BerandaScreen> {
   Widget _buildAddAccountTile() {
     return InkWell(
       onTap: () => _openTambahAkunModal(context),
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(_kRadiusCard),
       child: Container(
         width: 130,
         decoration: BoxDecoration(
-          color: _op(_p.surfaceAlt, 0.6),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _p.border, width: 1.2),
+          color: _op(_p.surfaceElevated, 0.6),
+          borderRadius: BorderRadius.circular(_kRadiusCard),
+          border: Border.all(color: _p.border, width: 1.0),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -556,19 +578,22 @@ class _BerandaScreenState extends State<BerandaScreen> {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: _op(_brandBlue, 0.12),
+                color: _op(_brandBlue, 0.15),
                 shape: BoxShape.circle,
               ),
               child: const Icon(AppIcons.plus, color: _brandBlue, size: 16),
             ),
             const SizedBox(height: 6),
-            Text('Tambah Akun', style: _ts(11, FontWeight.w700, _p.text)),
+            Text('Tambah Akun', style: _tsUI(12, FontWeight.w600, _p.textPrimary)),
           ],
         ),
       ),
     );
   }
 
+  // =============================================================================
+  // 2. AKSI CEPAT (QUICK ACTIONS)
+  // =============================================================================
   Widget _buildAksiCepatSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -576,7 +601,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Aksi Cepat', style: _ts(14, FontWeight.w800, _p.text, ls: -0.2)),
+            Text('Aksi Cepat', style: _tsUI(16, FontWeight.w700, _p.textPrimary, ls: -0.01)),
             InkWell(
               onTap: () {
                 CustomizeQuickActionsSheet.show(
@@ -589,17 +614,17 @@ class _BerandaScreenState extends State<BerandaScreen> {
                   },
                 );
               },
-              child: Text('Atur', style: _ts(12, FontWeight.w700, _brandBlue)),
+              child: Text('Atur', style: _tsUI(12, FontWeight.w600, _brandBlue)),
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
           decoration: BoxDecoration(
-            color: _p.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _p.border),
+            color: _p.surfaceCard,
+            borderRadius: BorderRadius.circular(_kRadiusCard),
+            border: Border.all(color: _p.border, width: 1.0),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -618,7 +643,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
   Widget _buildQuickActionItem(String title, IconData icon, Color color) {
     return InkWell(
       onTap: () {},
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(_kRadiusAction),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -626,33 +651,32 @@ class _BerandaScreenState extends State<BerandaScreen> {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: _op(color, 0.12),
-              borderRadius: BorderRadius.circular(14),
+              color: _op(color, 0.15),
+              borderRadius: BorderRadius.circular(_kRadiusAction),
             ),
             child: Icon(icon, color: color, size: 22),
           ),
           const SizedBox(height: 6),
-          Text(title, style: _ts(11, FontWeight.w600, _p.text)),
+          Text(title, style: _tsUI(12, FontWeight.w600, _p.textPrimary)),
         ],
       ),
     );
   }
 
+  // =============================================================================
+  // 3. MY INSIGHT CARD
+  // =============================================================================
   Widget _buildMyInsightCard() {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1E3A8A), Color(0xFF1D4ED8), Color(0xFF2563EB)],
+        gradient: LinearGradient(
+          colors: _p.isDark
+              ? const [Color(0xFF1E2433), Color(0xFF171B26)]
+              : const [Color(0xFF1E3A8A), Color(0xFF2563EB)],
         ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: _op(_brandBlue, 0.22),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(_kRadiusCard),
+        border: Border.all(color: _p.border, width: 1.0),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -673,31 +697,28 @@ class _BerandaScreenState extends State<BerandaScreen> {
                     child: const Icon(AppIcons.sparkles, color: _honeyGold, size: 12),
                   ),
                   const SizedBox(width: 6),
-                  Text('MY INSIGHT ✨', style: _ts(11, FontWeight.w800, Colors.white, ls: 0.5)),
+                  Text('MY INSIGHT ✨', style: _tsUI(11, FontWeight.w800, Colors.white, ls: 0.02)),
                 ],
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.white.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(9999),
                 ),
-                child: Text('Pekan Ini', style: _ts(10, FontWeight.w500, Colors.white)),
+                child: Text('Pekan Ini', style: _tsUI(10, FontWeight.w600, Colors.white)),
               ),
             ],
           ),
           const SizedBox(height: 8),
           RichText(
             text: TextSpan(
-              style: _ts(11.5, FontWeight.normal, Colors.white.withOpacity(0.95), height: 1.3),
+              style: _tsUI(12, FontWeight.w500, Colors.white.withOpacity(0.95), height: 1.3),
               children: [
                 const TextSpan(text: 'Pengeluaran turun '),
-                TextSpan(text: '18%', style: _ts(11.5, FontWeight.bold, _honeyGold)),
+                TextSpan(text: '18%', style: _tsNum(12, FontWeight.w700, _honeyGold)),
                 const TextSpan(text: ' minggu ini. Arus kas dalam kondisi '),
-                TextSpan(
-                  text: 'sangat sehat',
-                  style: _ts(11.5, FontWeight.bold, Colors.white),
-                ),
+                TextSpan(text: 'sangat sehat', style: _tsUI(12, FontWeight.w700, Colors.white)),
                 const TextSpan(text: '.'),
               ],
             ),
@@ -707,16 +728,20 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
   }
 
+  // =============================================================================
+  // 4. RENCANA FINANSIAL / KEUANGAN (BERDAMPINGAN)
+  // =============================================================================
   Widget _buildRencanaKeuanganSection() {
     return Row(
       children: [
+        // Card Sisa Budget
         Expanded(
           child: Container(
             padding: const EdgeInsets.all(_kPadCard),
             decoration: BoxDecoration(
-              color: _p.surface,
+              color: _p.surfaceCard,
               borderRadius: BorderRadius.circular(_kRadiusCard),
-              border: Border.all(color: _p.border),
+              border: Border.all(color: _p.border, width: 1.0),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -735,23 +760,23 @@ class _BerandaScreenState extends State<BerandaScreen> {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        Text('Sisa Budget', style: _ts(11, FontWeight.w700, _p.text)),
+                        Text('Sisa Budget', style: _tsUI(12, FontWeight.w600, _p.textPrimary)),
                       ],
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFEF2F2),
-                        borderRadius: BorderRadius.circular(6),
+                        color: _op(_expenseRed, 0.15),
+                        borderRadius: BorderRadius.circular(9999),
                       ),
-                      child: Text('94%', style: _ts(9, FontWeight.w800, _expenseRed)),
+                      child: Text('94%', style: _tsNum(10, FontWeight.w700, _expenseRed)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 6),
                 Text(
                   _isSaldoVisible ? 'Rp 480.000' : 'Rp ••••••••',
-                  style: _ts(15, FontWeight.w900, _p.text, ls: -0.3),
+                  style: _tsNum(18, FontWeight.w700, _p.textPrimary, ls: -0.3),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -769,22 +794,23 @@ class _BerandaScreenState extends State<BerandaScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Terpakai 7,52 Jt', style: _ts(9.5, FontWeight.w500, _p.muted)),
-                    Text('Limit 8 Jt', style: _ts(9.5, FontWeight.w600, _p.muted)),
+                    Text('Terpakai 7,52 Jt', style: _tsUI(12, FontWeight.w500, _p.textSecondary)),
+                    Text('Limit 8 Jt', style: _tsUI(12, FontWeight.w600, _p.textSecondary)),
                   ],
                 ),
               ],
             ),
           ),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: 12),
+        // Card Target Finansial
         Expanded(
           child: Container(
             padding: const EdgeInsets.all(_kPadCard),
             decoration: BoxDecoration(
-              color: _p.surface,
+              color: _p.surfaceCard,
               borderRadius: BorderRadius.circular(_kRadiusCard),
-              border: Border.all(color: _p.border),
+              border: Border.all(color: _p.border, width: 1.0),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -803,23 +829,23 @@ class _BerandaScreenState extends State<BerandaScreen> {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        Text('Target Finansial', style: _ts(11, FontWeight.w700, _p.text)),
+                        Text('Target Finansial', style: _tsUI(12, FontWeight.w600, _p.textPrimary)),
                       ],
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFECFDF5),
-                        borderRadius: BorderRadius.circular(6),
+                        color: _op(_incomeGreen, 0.15),
+                        borderRadius: BorderRadius.circular(9999),
                       ),
-                      child: Text('92%', style: _ts(9, FontWeight.w800, _incomeGreen)),
+                      child: Text('92%', style: _tsNum(10, FontWeight.w700, _incomeGreen)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 6),
                 Text(
                   _isSaldoVisible ? 'Rp 55.200.000' : 'Rp ••••••••',
-                  style: _ts(15, FontWeight.w900, _p.text, ls: -0.3),
+                  style: _tsNum(18, FontWeight.w700, _p.textPrimary, ls: -0.3),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -837,8 +863,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Hampir Finish!', style: _ts(9.5, FontWeight.w500, _p.muted)),
-                    Text('Target 60 Jt', style: _ts(9.5, FontWeight.w600, _p.muted)),
+                    Text('Hampir Finish!', style: _tsUI(12, FontWeight.w500, _p.textSecondary)),
+                    Text('Target 60 Jt', style: _tsUI(12, FontWeight.w600, _p.textSecondary)),
                   ],
                 ),
               ],
@@ -849,6 +875,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
   }
 
+  // =============================================================================
+  // 5. AKTIVITAS TERBARU
+  // =============================================================================
   Widget _buildRecentTransactionsSection(List recentTransactions) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -856,16 +885,16 @@ class _BerandaScreenState extends State<BerandaScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Aktivitas Terbaru', style: _ts(14, FontWeight.w800, _p.text, ls: -0.2)),
-            Text('${recentTransactions.length} Transaksi', style: _ts(11, FontWeight.w500, _p.muted)),
+            Text('Aktivitas Terbaru', style: _tsUI(16, FontWeight.w700, _p.textPrimary, ls: -0.01)),
+            Text('${recentTransactions.length} Transaksi', style: _tsUI(12, FontWeight.w500, _p.textSecondary)),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            color: _p.surface,
+            color: _p.surfaceCard,
             borderRadius: BorderRadius.circular(_kRadiusCard),
-            border: Border.all(color: _p.border),
+            border: Border.all(color: _p.border, width: 1.0),
           ),
           child: ListView.separated(
             shrinkWrap: true,
@@ -882,8 +911,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: _op(_brandBlue, 0.1),
-                    borderRadius: BorderRadius.circular(10),
+                    color: _op(_brandBlue, 0.15),
+                    borderRadius: BorderRadius.circular(_kRadiusAction),
                   ),
                   child: Icon(
                     (item['icon'] as IconData?) ?? AppIcons.receipt,
@@ -893,11 +922,11 @@ class _BerandaScreenState extends State<BerandaScreen> {
                 ),
                 title: Text(
                   item['judul'] ?? 'Transaksi',
-                  style: _ts(12.5, FontWeight.w700, _p.text),
+                  style: _tsUI(14, FontWeight.w600, _p.textPrimary),
                 ),
                 subtitle: Text(
                   '${item['tanggal']} • ${item['kategori']}',
-                  style: _ts(10.5, FontWeight.w500, _p.muted),
+                  style: _tsUI(12, FontWeight.w500, _p.textSecondary),
                 ),
                 trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -905,16 +934,16 @@ class _BerandaScreenState extends State<BerandaScreen> {
                   children: [
                     Text(
                       '${isPemasukan ? '+' : '-'}$formattedNominal',
-                      style: _ts(12.5, FontWeight.w800, isPemasukan ? _incomeGreen : _p.text, ls: -0.2),
+                      style: _tsNum(14, FontWeight.w700, isPemasukan ? _incomeGreen : _p.textPrimary, ls: -0.2),
                     ),
                     const SizedBox(height: 2),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                       decoration: BoxDecoration(
-                        color: _p.surfaceAlt,
+                        color: _p.surfaceElevated,
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: Text(item['badge'] ?? 'BCA', style: _ts(8.5, FontWeight.w600, _p.muted)),
+                      child: Text(item['badge'] ?? 'BCA', style: _tsUI(10, FontWeight.w700, _p.textSecondary, ls: 0.02)),
                     ),
                   ],
                 ),
@@ -930,11 +959,11 @@ class _BerandaScreenState extends State<BerandaScreen> {
     return SizedBox.expand(
       key: const ValueKey('SemuaKantongSubPage'),
       child: Container(
-        color: _p.bg,
+        color: _p.baseBg,
         child: Column(
           children: [
             Container(
-              color: _brandBlue,
+              color: _p.headerBg,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
@@ -943,7 +972,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                     icon: const Icon(AppIcons.arrowLeft, color: Colors.white, size: 20),
                   ),
                   const SizedBox(width: 8),
-                  Text('Semua Kantong Keuangan', style: _ts(18, FontWeight.w800, Colors.white)),
+                  Text('Semua Kantong Keuangan', style: _tsUI(18, FontWeight.w800, Colors.white)),
                 ],
               ),
             ),
@@ -961,7 +990,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                     child: OutlinedButton.icon(
                       onPressed: () => _openTambahAkunModal(context),
                       icon: const Icon(AppIcons.plus, size: 16, color: _brandBlue),
-                      label: Text('Tambah Kantong Baru', style: _ts(13, FontWeight.w700, _brandBlue)),
+                      label: Text('Tambah Kantong Baru', style: _tsUI(13, FontWeight.w700, _brandBlue)),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: _brandBlue),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -982,34 +1011,34 @@ class _BerandaScreenState extends State<BerandaScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(_kPadCard),
       decoration: BoxDecoration(
-        color: _p.surface,
+        color: _p.surfaceCard,
         borderRadius: BorderRadius.circular(_kRadiusCard),
-        border: Border.all(color: _p.border),
+        border: Border.all(color: _p.border, width: 1.0),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(color: badgeBg, borderRadius: BorderRadius.circular(6)),
-            child: Text(badge, style: _ts(10, FontWeight.w900, Colors.white)),
+            child: Text(badge, style: _tsUI(10, FontWeight.w800, Colors.white)),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: _ts(11.5, FontWeight.w500, _p.muted)),
+                Text(title, style: _tsUI(12, FontWeight.w500, _p.textSecondary)),
                 const SizedBox(height: 2),
                 Text(
                   _isSaldoVisible ? amount : 'Rp ••••••••',
-                  style: _ts(14, FontWeight.w800, _p.text, ls: -0.3),
+                  style: _tsNum(14, FontWeight.w700, _p.textPrimary, ls: -0.3),
                 ),
               ],
             ),
           ),
           IconButton(
             onPressed: () => _openPengaturanKantongBottomSheet(context, title),
-            icon: Icon(AppIcons.moreVertical, size: 18, color: _p.muted),
+            icon: Icon(AppIcons.moreVertical, size: 18, color: _p.textSecondary),
           ),
         ],
       ),
@@ -1018,23 +1047,23 @@ class _BerandaScreenState extends State<BerandaScreen> {
 }
 
 // =============================================================================
-// COLLAPSING HEADER DELEGATE (SMOOTH SLIDE & FADE)
+// COLLAPSING HEADER DELEGATE (3-PHASE INTERACTIVE PARALLAX & SMOOTH MORPH)
 // =============================================================================
 class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
   final bool isSaldoVisible;
   final String rawSaldo;
   final VoidCallback onToggleSaldo;
-  final bool isDark;
+  final _Palette palette;
 
   const _CollapsingHeaderDelegate({
     required this.isSaldoVisible,
     required this.rawSaldo,
     required this.onToggleSaldo,
-    required this.isDark,
+    required this.palette,
   });
 
   @override
-  double get minExtent => 56.0;
+  double get minExtent => 56.0; // Top Bar Height Clamped (48px - 56px)
 
   @override
   double get maxExtent => 175.0;
@@ -1043,116 +1072,127 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     final double progress = (shrinkOffset / (maxExtent - minExtent)).clamp(0.0, 1.0);
 
-    // Smooth fade curve formulas
+    // Smooth cubic-bezier cubic scale & opacity curve
     final double expandedOpacity = (1.0 - (progress * 2.2)).clamp(0.0, 1.0);
     final double collapsedOpacity = ((progress - 0.25) * 1.8).clamp(0.0, 1.0);
+    final double iconScale = 1.0 - (progress * 0.12); // scale(1.0) -> scale(0.88)
 
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF1E40AF), Color(0xFF2563EB), Color(0xFF3B82F6)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+      decoration: BoxDecoration(
+        color: palette.headerBg,
+        border: progress >= 0.95
+            ? Border(bottom: BorderSide(color: Colors.white.withOpacity(0.05), width: 1.0))
+            : null,
       ),
       child: Stack(
         children: [
-          // 1. Expanded State (Tampilan awal saat di atas)
+          // FASE 0 & 1: Tampilan Utama Awal (Hero Balance 32px & TopBar)
           Positioned.fill(
             child: Opacity(
               opacity: expandedOpacity,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(18, 10, 18, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Icon Profil Diperbesar
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(AppIcons.user, color: Colors.white, size: 20),
-                        ),
-                        Text(
-                          'MyKas',
-                          style: _ts(18, FontWeight.w800, Colors.white, ls: -0.5),
-                        ),
-                        // Icon Notifikasi Diperbesar
-                        Stack(
-                          clipBehavior: Clip.none,
-                          alignment: Alignment.center,
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
+              child: Transform.translate(
+                offset: Offset(0, -shrinkOffset * 0.5), // Paralaks 0.5x meluncur naik
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 10, 18, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Avatar Pengguna Kiri (36x36px menyusut ke 0.88x)
+                          Transform.scale(
+                            scale: iconScale,
+                            child: Container(
+                              width: 36,
+                              height: 36,
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.15),
+                                color: Colors.white.withOpacity(0.2),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(AppIcons.bell, color: Colors.white, size: 20),
-                            ),
-                            Positioned(
-                              right: 8,
-                              top: 8,
-                              child: Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: _honeyGold,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: _brandBlue, width: 1.2),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    Row(
-                      children: [
-                        Text(
-                          'Total Saldo',
-                          style: _ts(12, FontWeight.w500, Colors.white.withOpacity(0.9)),
-                        ),
-                        const SizedBox(width: 6),
-                        InkWell(
-                          onTap: onToggleSaldo,
-                          borderRadius: BorderRadius.circular(10),
-                          child: Padding(
-                            padding: const EdgeInsets.all(4.0),
-                            child: Icon(
-                              isSaldoVisible ? AppIcons.eye : AppIcons.eyeOff,
-                              color: Colors.white.withOpacity(0.9),
-                              size: 14,
+                              child: const Icon(AppIcons.user, color: Colors.white, size: 18),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      isSaldoVisible ? rawSaldo : 'Rp ••••••••',
-                      style: _ts(26, FontWeight.w900, Colors.white, ls: -0.8),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Diperbarui 09:41 WIB',
-                      style: _ts(11, FontWeight.w500, Colors.white.withOpacity(0.8)),
-                    ),
-                  ],
+                          // Judul Tengah MyKas
+                          Text(
+                            'MyKas',
+                            style: _tsUI(18, FontWeight.w800, Colors.white, ls: -0.01),
+                          ),
+                          // Lonceng Notifikasi Kanan dengan Badge Honey Gold Terkunci
+                          Transform.scale(
+                            scale: iconScale,
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              alignment: Alignment.center,
+                              children: [
+                                Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.15),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(AppIcons.bell, color: Colors.white, size: 18),
+                                ),
+                                Positioned(
+                                  right: 7,
+                                  top: 7,
+                                  child: Container(
+                                    width: 7,
+                                    height: 7,
+                                    decoration: BoxDecoration(
+                                      color: _honeyGold,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: _brandBlue, width: 1.2),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Spacer(),
+                      Row(
+                        children: [
+                          Text(
+                            'Total Saldo',
+                            style: _tsUI(12, FontWeight.w500, Colors.white.withOpacity(0.9)),
+                          ),
+                          const SizedBox(width: 6),
+                          InkWell(
+                            onTap: onToggleSaldo,
+                            borderRadius: BorderRadius.circular(10),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Icon(
+                                isSaldoVisible ? AppIcons.eye : AppIcons.eyeOff,
+                                color: Colors.white.withOpacity(0.9),
+                                size: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      // Hero Balance (32px / 800 ExtraBold)
+                      Text(
+                        isSaldoVisible ? rawSaldo : 'Rp ••••••••',
+                        style: _tsNum(32, FontWeight.w800, Colors.white, ls: -0.02),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Diperbarui 09:41 WIB',
+                        style: _tsUI(12, FontWeight.w500, Colors.white.withOpacity(0.8)),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
 
-          // 2. Collapsed State (Muncul saat di-scroll ke atas dengan animasi slide & 2 row)
+          // FASE 2: Sticky State Terkunci (Scroll >= 120px)
           Positioned.fill(
             child: Opacity(
               opacity: collapsedOpacity,
@@ -1162,14 +1202,14 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Sisi Kiri: Muncul bergeser dari arah icon profil ke kanan
+                    // Sisi Kiri: Sapaan Ringkas "Halo, Budi" muncul dari arah avatar
                     Transform.translate(
-                      offset: Offset(20 * (1.0 - collapsedOpacity), 0),
+                      offset: Offset(18 * (1.0 - collapsedOpacity), 0),
                       child: Row(
                         children: [
                           Container(
-                            width: 38,
-                            height: 38,
+                            width: 36,
+                            height: 36,
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.2),
                               shape: BoxShape.circle,
@@ -1183,11 +1223,11 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
                             children: [
                               Text(
                                 'Halo,',
-                                style: _ts(10.5, FontWeight.w500, Colors.white.withOpacity(0.8)),
+                                style: _tsUI(12, FontWeight.w500, Colors.white.withOpacity(0.8)),
                               ),
                               Text(
                                 'Irwan',
-                                style: _ts(14, FontWeight.w800, Colors.white),
+                                style: _tsUI(14, FontWeight.w600, Colors.white),
                               ),
                             ],
                           ),
@@ -1195,20 +1235,20 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
                       ),
                     ),
 
-                    // Sisi Kanan: Muncul bergeser dari arah icon notifikasi ke kiri
+                    // Sisi Kanan: Dual-Tier Balance (Label 11px & Nilai 13px Tabular Bold)
                     Transform.translate(
-                      offset: Offset(-20 * (1.0 - collapsedOpacity), 0),
+                      offset: Offset(-18 * (1.0 - collapsedOpacity), 0),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
                             'Total Saldo',
-                            style: _ts(10, FontWeight.w500, Colors.white.withOpacity(0.8)),
+                            style: _tsUI(11, FontWeight.w500, Colors.white.withOpacity(0.8)),
                           ),
                           Text(
                             isSaldoVisible ? rawSaldo : 'Rp ••••••',
-                            style: _ts(13.5, FontWeight.w900, Colors.white),
+                            style: _tsNum(13, FontWeight.w700, Colors.white),
                           ),
                         ],
                       ),
@@ -1227,12 +1267,12 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(covariant _CollapsingHeaderDelegate oldDelegate) {
     return oldDelegate.isSaldoVisible != isSaldoVisible ||
         oldDelegate.rawSaldo != rawSaldo ||
-        oldDelegate.isDark != isDark;
+        oldDelegate.palette != palette;
   }
 }
 
 // =============================================================================
-// TAMBAH AKUN FORM CONTENT
+// FORM TAMBAH AKUN CONTENT
 // =============================================================================
 class TambahAkunFormContent extends StatefulWidget {
   const TambahAkunFormContent({super.key});
@@ -1260,7 +1300,7 @@ class _TambahAkunFormContentState extends State<TambahAkunFormContent> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: p.surface,
+        color: p.surfaceCard,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -1272,7 +1312,7 @@ class _TambahAkunFormContentState extends State<TambahAkunFormContent> {
               width: 38,
               height: 4,
               decoration: BoxDecoration(
-                color: p.muted.withOpacity(0.3),
+                color: p.textMuted.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -1281,28 +1321,28 @@ class _TambahAkunFormContentState extends State<TambahAkunFormContent> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Tambah Kantong Keuangan', style: _ts(17, FontWeight.w800, p.text)),
+              Text('Tambah Kantong Keuangan', style: _tsUI(17, FontWeight.w800, p.textPrimary)),
               IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: Icon(AppIcons.x, size: 18, color: p.text),
+                icon: Icon(AppIcons.x, size: 18, color: p.textPrimary),
               ),
             ],
           ),
           const SizedBox(height: 20),
           DropdownButtonFormField<String>(
             value: _jenisKantong,
-            dropdownColor: p.surface,
+            dropdownColor: p.surfaceCard,
             decoration: InputDecoration(
               labelText: 'Jenis Kantong',
               filled: true,
-              fillColor: p.surfaceAlt,
+              fillColor: p.surfaceElevated,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
                 borderSide: BorderSide.none,
               ),
             ),
             items: ['Bank', 'E-Wallet', 'Tunai', 'Investasi']
-                .map((e) => DropdownMenuItem(value: e, child: Text(e, style: _ts(13, FontWeight.w500, p.text))))
+                .map((e) => DropdownMenuItem(value: e, child: Text(e, style: _tsUI(13, FontWeight.w500, p.textPrimary))))
                 .toList(),
             onChanged: (val) {
               if (val != null) setState(() => _jenisKantong = val);
@@ -1311,12 +1351,12 @@ class _TambahAkunFormContentState extends State<TambahAkunFormContent> {
           const SizedBox(height: 14),
           TextFormField(
             controller: _namaCtrl,
-            style: _ts(13, FontWeight.w500, p.text),
+            style: _tsUI(13, FontWeight.w500, p.textPrimary),
             decoration: InputDecoration(
               labelText: 'Nama Kantong / Akun',
               hintText: 'Contoh: Mandiri Utama / GoPay',
               filled: true,
-              fillColor: p.surfaceAlt,
+              fillColor: p.surfaceElevated,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
                 borderSide: BorderSide.none,
@@ -1327,12 +1367,12 @@ class _TambahAkunFormContentState extends State<TambahAkunFormContent> {
           TextFormField(
             controller: _saldoCtrl,
             keyboardType: TextInputType.number,
-            style: _ts(13, FontWeight.w500, p.text),
+            style: _tsNum(13, FontWeight.w500, p.textPrimary),
             decoration: InputDecoration(
               labelText: 'Saldo Awal (Rp)',
               hintText: 'Contoh: 1000000',
               filled: true,
-              fillColor: p.surfaceAlt,
+              fillColor: p.surfaceElevated,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
                 borderSide: BorderSide.none,
@@ -1348,7 +1388,7 @@ class _TambahAkunFormContentState extends State<TambahAkunFormContent> {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Kantong berhasil ditambahkan!', style: _ts(13, FontWeight.w600, Colors.white)),
+                    content: Text('Kantong berhasil ditambahkan!', style: _tsUI(13, FontWeight.w600, Colors.white)),
                     backgroundColor: _incomeGreen,
                   ),
                 );
@@ -1360,7 +1400,7 @@ class _TambahAkunFormContentState extends State<TambahAkunFormContent> {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: Text('Simpan Kantong', style: _ts(13, FontWeight.w700, Colors.white)),
+              child: Text('Simpan Kantong', style: _tsUI(13, FontWeight.w700, Colors.white)),
             ),
           ),
         ],
