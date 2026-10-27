@@ -437,6 +437,42 @@ class _BerandaScreenState extends State<BerandaScreen> {
     }
   }
 
+  // Method helper _buildSettingTileItem yang sebelumnya missing
+  Widget _buildSettingTileItem({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    Color iconColor = _brandBlue,
+    Color? textColor,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: _p.surfaceElevated,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _p.border),
+      ),
+      child: ListTile(
+        onTap: onTap,
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: _op(iconColor, 0.12),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 18, color: iconColor),
+        ),
+        title: Text(title, style: _tsUI(13, FontWeight.w600, textColor ?? _p.textPrimary)),
+        subtitle: Text(subtitle, style: _tsUI(11, FontWeight.w500, _p.textSecondary)),
+        trailing: Icon(AppIcons.chevronRight, size: 16, color: _p.textMuted),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+    );
+  }
+
   void _openPengaturanKantongBottomSheet(BuildContext context, String namaKantong) {
     showModalBottomSheet(
       context: context,
