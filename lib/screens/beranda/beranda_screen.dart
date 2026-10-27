@@ -355,130 +355,22 @@ class _BerandaScreenState extends State<BerandaScreen> {
               child: CustomScrollView(
                 physics: const ClampingScrollPhysics(),
                 slivers: [
-                  // Header Atur Top Bar & Total Saldo Menyatu di dalam Container Biru
-                  SliverToBoxAdapter(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: _p.isDark
-                              ? const [Color(0xFF1E40AF), Color(0xFF2563EB)]
-                              : const [Color(0xFF1E40AF), Color(0xFF2563EB), Color(0xFF3B82F6)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Top Bar Custom
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Container(
-                                  width: 34,
-                                  height: 34,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(AppIcons.user, color: Colors.white, size: 16),
-                                ),
-                                Expanded(
-                                  child: Center(
-                                    child: Text(
-                                      'MyKas',
-                                      style: _ts(18, FontWeight.w800, Colors.white, ls: -0.5),
-                                    ),
-                                  ),
-                                ),
-                                Stack(
-                                  clipBehavior: Clip.none,
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Container(
-                                      width: 34,
-                                      height: 34,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.15),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(AppIcons.bell, color: Colors.white, size: 16),
-                                    ),
-                                    Positioned(
-                                      right: 7,
-                                      top: 7,
-                                      child: Container(
-                                        width: 7,
-                                        height: 7,
-                                        decoration: BoxDecoration(
-                                          color: _honeyGold,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(color: _brandBlue, width: 1.2),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          
-                          // Informasi Total Saldo
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(18, 6, 18, 28),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      'Total Saldo',
-                                      style: _ts(12, FontWeight.w500, Colors.white.withOpacity(0.9)),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    InkWell(
-                                      onTap: () {
-                                        setState(() {
-                                          _isSaldoVisible = !_isSaldoVisible;
-                                        });
-                                      },
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(4.0),
-                                        child: Icon(
-                                          _isSaldoVisible ? AppIcons.eye : AppIcons.eyeOff,
-                                          color: Colors.white.withOpacity(0.9),
-                                          size: 14,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 2),
-                                AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 200),
-                                  child: Text(
-                                    _isSaldoVisible ? rawSaldo : 'Rp ••••••••••',
-                                    key: ValueKey<bool>(_isSaldoVisible),
-                                    style: _ts(26, FontWeight.w900, Colors.white, ls: -0.8),
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Diperbarui 09:41 WIB',
-                                  style: _ts(11, FontWeight.w500, Colors.white.withOpacity(0.8)),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                  // Collapsing Header yang menyatukan Top Bar & Total Saldo secara mulus
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _CollapsingHeaderDelegate(
+                      isSaldoVisible: _isSaldoVisible,
+                      rawSaldo: rawSaldo,
+                      onToggleSaldo: () {
+                        setState(() {
+                          _isSaldoVisible = !_isSaldoVisible;
+                        });
+                      },
+                      isDark: _p.isDark,
                     ),
                   ),
 
-                  // Main Curved Sheet Content (Lembar putih melengkung di bawah saldo)
+                  // Main Curved Sheet Content (Lembar putih melengkung di bawah header)
                   SliverToBoxAdapter(
                     child: Container(
                       width: double.infinity,
@@ -1125,6 +1017,198 @@ class _BerandaScreenState extends State<BerandaScreen> {
   }
 }
 
+// =============================================================================
+// COLLAPSING HEADER DELEGATE (TRANSISI SAAT SCROLL)
+// =============================================================================
+class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final bool isSaldoVisible;
+  final String rawSaldo;
+  final VoidCallback onToggleSaldo;
+  final bool isDark;
+
+  const _CollapsingHeaderDelegate({
+    required this.isSaldoVisible,
+    required this.rawSaldo,
+    required this.onToggleSaldo,
+    required this.isDark,
+  });
+
+  @override
+  double get minExtent => 68.0;
+
+  @override
+  double get maxExtent => 185.0;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final double progress = (shrinkOffset / (maxExtent - minExtent)).clamp(0.0, 1.0);
+
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF1E40AF), Color(0xFF2563EB), Color(0xFF3B82F6)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Expanded State (Tampilan awal di atas saat belum di-scroll)
+          Positioned.fill(
+            child: Opacity(
+              opacity: (1.0 - (progress * 1.8)).clamp(0.0, 1.0),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(18, 10, 18, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(AppIcons.user, color: Colors.white, size: 16),
+                        ),
+                        Text(
+                          'MyKas',
+                          style: _ts(18, FontWeight.w800, Colors.white, ls: -0.5),
+                        ),
+                        Stack(
+                          clipBehavior: Clip.none,
+                          alignment: Alignment.center,
+                          children: [
+                            Container(
+                              width: 34,
+                              height: 34,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.15),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(AppIcons.bell, color: Colors.white, size: 16),
+                            ),
+                            Positioned(
+                              right: 7,
+                              top: 7,
+                              child: Container(
+                                width: 7,
+                                height: 7,
+                                decoration: BoxDecoration(
+                                  color: _honeyGold,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: _brandBlue, width: 1.2),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    Row(
+                      children: [
+                        Text(
+                          'Total Saldo',
+                          style: _ts(12, FontWeight.w500, Colors.white.withOpacity(0.9)),
+                        ),
+                        const SizedBox(width: 6),
+                        InkWell(
+                          onTap: onToggleSaldo,
+                          borderRadius: BorderRadius.circular(10),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Icon(
+                              isSaldoVisible ? AppIcons.eye : AppIcons.eyeOff,
+                              color: Colors.white.withOpacity(0.9),
+                              size: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      isSaldoVisible ? rawSaldo : 'Rp ••••••••••',
+                      style: _ts(26, FontWeight.w900, Colors.white, ls: -0.8),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Diperbarui 09:41 WIB',
+                      style: _ts(11, FontWeight.w500, Colors.white.withOpacity(0.8)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Collapsed State (Muncul saat di-scroll: Kiri "Halo, Irwan", Kanan "Total Saldo")
+          Positioned.fill(
+            child: Opacity(
+              opacity: ((progress - 0.3) * 1.5).clamp(0.0, 1.0),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(AppIcons.user, color: Colors.white, size: 16),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Halo, Irwan',
+                          style: _ts(15, FontWeight.w800, Colors.white),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Total Saldo',
+                          style: _ts(10, FontWeight.w500, Colors.white.withOpacity(0.8)),
+                        ),
+                        Text(
+                          isSaldoVisible ? rawSaldo : 'Rp ••••••',
+                          style: _ts(13, FontWeight.w900, Colors.white),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _CollapsingHeaderDelegate oldDelegate) {
+    return oldDelegate.isSaldoVisible != isSaldoVisible ||
+        oldDelegate.rawSaldo != rawSaldo ||
+        oldDelegate.isDark != isDark;
+  }
+}
+
+// =============================================================================
+// TAMBAH AKUN FORM CONTENT
+// =============================================================================
 class TambahAkunFormContent extends StatefulWidget {
   const TambahAkunFormContent({super.key});
 
