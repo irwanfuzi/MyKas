@@ -260,7 +260,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
   Widget build(BuildContext context) {
     _p = _Palette.of(context);
 
-    // Data sesuai state referensi HTML (Total Saldo: Rp 24.850.000)
     final rawSaldo = widget.summaryData?['saldo'] ?? 'Rp 24.850.000';
 
     final List riwayat = widget.summaryData?['riwayat'] as List? ?? [
@@ -355,13 +354,10 @@ class _BerandaScreenState extends State<BerandaScreen> {
             child: CustomScrollView(
               physics: const ClampingScrollPhysics(),
               slivers: [
-                // TopBar Pinned
                 SliverPersistentHeader(
                   pinned: true,
                   delegate: _OvoStyleTopBarDelegate(),
                 ),
-
-                // Hero Balance Card (Royal Blue Gradient persis HTML)
                 SliverToBoxAdapter(
                   child: Container(
                     decoration: BoxDecoration(
@@ -421,8 +417,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
                     ),
                   ),
                 ),
-
-                // Main Curved Sheet Content
                 SliverToBoxAdapter(
                   child: Container(
                     width: double.infinity,
@@ -453,7 +447,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             width: 36,
                             height: 4,
                             decoration: BoxDecoration(
-                              color: Colors.slate300,
+                              color: const Color(0xFFCBD5E1), // Diperbaiki dari Colors.slate300
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),
@@ -480,9 +474,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
   }
 
-  // ==========================================
-  // 1. PORTOFOLIO KAS (SESUAI HTML)
-  // ==========================================
   Widget _buildPortofolioKasSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -520,7 +511,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
             children: [
               _buildPortofolioCard('BCA', _brandBlue, 'Bank BCA', '•• 8291', 'Utama', '14.300.000'),
               const SizedBox(width: 10),
-              _buildPortofolioCard('MDR', Colors.slate900, 'Bank Mandiri', '•• 3409', 'Operasional', '4.550.000', badgeColor: _honeyGold),
+              _buildPortofolioCard('MDR', const Color(0xFF0F172A), 'Bank Mandiri', '•• 3409', 'Operasional', '4.550.000', customBadgeColor: _honeyGold), // Diperbaiki dari Colors.slate900 & konflik parameter
               const SizedBox(width: 10),
               _buildPortofolioCard('GOPAY', const Color(0xFF00AED6), 'GoPay', 'e-Wallet', 'Harian', '2.800.000'),
               const SizedBox(width: 10),
@@ -532,7 +523,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
   }
 
-  Widget _buildPortofolioCard(String code, Color badgeColor, String title, String sub, String status, String amount, {Color? badgeColor}) {
+  // Perbaikan parameter: Menghindari duplikasi parameter 'badgeColor' dengan mengganti parameter opsional jadi 'customBadgeColor'
+  Widget _buildPortofolioCard(String code, Color badgeColor, String title, String sub, String status, String amount, {Color? customBadgeColor}) {
     return Container(
       width: 215,
       padding: const EdgeInsets.all(12),
@@ -558,7 +550,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     alignment: Alignment.center,
-                    child: Text(code, style: _ts(9, FontWeight.w900, badgeColor == Colors.slate900 ? _honeyGold : Colors.white)),
+                    child: Text(code, style: _ts(9, FontWeight.w900, badgeColor == const Color(0xFF0F172A) ? (_honeyGold) : Colors.white)),
                   ),
                   const SizedBox(width: 8),
                   Column(
@@ -623,9 +615,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
   }
 
-  // ==========================================
-  // 2. AKSI CEPAT (SESUAI HTML: TRANSFER, TOP UP, SETOR TARGET, LAINNYA)
-  // ==========================================
   Widget _buildAksiCepatSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -695,9 +684,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
   }
 
-  // ==========================================
-  // 3. MY INSIGHT CARD (SESUAI HTML)
-  // ==========================================
   Widget _buildMyInsightCard() {
     return Container(
       padding: const EdgeInsets.all(14),
@@ -767,13 +753,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
   }
 
-  // ==========================================
-  // 4. RENCANA FINANSIAL / KEUANGAN (BERDAMPINGAN)
-  // ==========================================
   Widget _buildRencanaKeuanganSection() {
     return Row(
       children: [
-        // Sisa Budget Card
         Expanded(
           child: Container(
             padding: const EdgeInsets.all(_kPadCard),
@@ -842,7 +824,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
           ),
         ),
         const SizedBox(width: 10),
-        // Target Finansial Card
         Expanded(
           child: Container(
             padding: const EdgeInsets.all(_kPadCard),
@@ -914,9 +895,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
   }
 
-  // ==========================================
-  // 5. AKTIVITAS TERBARU (SESUAI HTML)
-  // ==========================================
   Widget _buildRecentTransactionsSection(List recentTransactions) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
