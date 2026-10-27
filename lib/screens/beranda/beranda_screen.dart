@@ -355,7 +355,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
               child: CustomScrollView(
                 physics: const ClampingScrollPhysics(),
                 slivers: [
-                  // Collapsing Header yang menyatukan Top Bar & Total Saldo secara mulus
+                  // Collapsing Header dengan transisi halus & proporsional
                   SliverPersistentHeader(
                     pinned: true,
                     delegate: _CollapsingHeaderDelegate(
@@ -370,7 +370,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                     ),
                   ),
 
-                  // Main Curved Sheet Content (Lembar putih melengkung di bawah header)
+                  // Main Curved Sheet Content
                   SliverToBoxAdapter(
                     child: Container(
                       width: double.infinity,
@@ -1018,7 +1018,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
 }
 
 // =============================================================================
-// COLLAPSING HEADER DELEGATE (TRANSISI SAAT SCROLL)
+// COLLAPSING HEADER DELEGATE (SMOOTH SLIDE & FADE)
 // =============================================================================
 class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
   final bool isSaldoVisible;
@@ -1034,14 +1034,18 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  double get minExtent => 68.0;
+  double get minExtent => 56.0;
 
   @override
-  double get maxExtent => 185.0;
+  double get maxExtent => 175.0;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     final double progress = (shrinkOffset / (maxExtent - minExtent)).clamp(0.0, 1.0);
+
+    // Smooth fade curve formulas
+    final double expandedOpacity = (1.0 - (progress * 2.2)).clamp(0.0, 1.0);
+    final double collapsedOpacity = ((progress - 0.25) * 1.8).clamp(0.0, 1.0);
 
     return Container(
       decoration: const BoxDecoration(
@@ -1053,10 +1057,10 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
       ),
       child: Stack(
         children: [
-          // Expanded State (Tampilan awal di atas saat belum di-scroll)
+          // 1. Expanded State (Tampilan awal saat di atas)
           Positioned.fill(
             child: Opacity(
-              opacity: (1.0 - (progress * 1.8)).clamp(0.0, 1.0),
+              opacity: expandedOpacity,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(18, 10, 18, 16),
                 child: Column(
@@ -1065,38 +1069,40 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        // Icon Profil Diperbesar
                         Container(
-                          width: 34,
-                          height: 34,
+                          width: 40,
+                          height: 40,
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.2),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(AppIcons.user, color: Colors.white, size: 16),
+                          child: const Icon(AppIcons.user, color: Colors.white, size: 20),
                         ),
                         Text(
                           'MyKas',
                           style: _ts(18, FontWeight.w800, Colors.white, ls: -0.5),
                         ),
+                        // Icon Notifikasi Diperbesar
                         Stack(
                           clipBehavior: Clip.none,
                           alignment: Alignment.center,
                           children: [
                             Container(
-                              width: 34,
-                              height: 34,
+                              width: 40,
+                              height: 40,
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.15),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(AppIcons.bell, color: Colors.white, size: 16),
+                              child: const Icon(AppIcons.bell, color: Colors.white, size: 20),
                             ),
                             Positioned(
-                              right: 7,
-                              top: 7,
+                              right: 8,
+                              top: 8,
                               child: Container(
-                                width: 7,
-                                height: 7,
+                                width: 8,
+                                height: 8,
                                 decoration: BoxDecoration(
                                   color: _honeyGold,
                                   shape: BoxShape.circle,
@@ -1132,7 +1138,7 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      isSaldoVisible ? rawSaldo : 'Rp ••••••••••',
+                      isSaldoVisible ? rawSaldo : 'Rp ••••••••',
                       style: _ts(26, FontWeight.w900, Colors.white, ls: -0.8),
                     ),
                     const SizedBox(height: 2),
@@ -1146,47 +1152,66 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
             ),
           ),
 
-          // Collapsed State (Muncul saat di-scroll: Kiri "Halo, Irwan", Kanan "Total Saldo")
+          // 2. Collapsed State (Muncul saat di-scroll ke atas dengan animasi slide & 2 row)
           Positioned.fill(
             child: Opacity(
-              opacity: ((progress - 0.3) * 1.5).clamp(0.0, 1.0),
+              opacity: collapsedOpacity,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 34,
-                          height: 34,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            shape: BoxShape.circle,
+                    // Sisi Kiri: Muncul bergeser dari arah icon profil ke kanan
+                    Transform.translate(
+                      offset: Offset(20 * (1.0 - collapsedOpacity), 0),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(AppIcons.user, color: Colors.white, size: 18),
                           ),
-                          child: const Icon(AppIcons.user, color: Colors.white, size: 16),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          'Halo, Irwan',
-                          style: _ts(15, FontWeight.w800, Colors.white),
-                        ),
-                      ],
+                          const SizedBox(width: 10),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Halo,',
+                                style: _ts(10.5, FontWeight.w500, Colors.white.withOpacity(0.8)),
+                              ),
+                              Text(
+                                'Irwan',
+                                style: _ts(14, FontWeight.w800, Colors.white),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          'Total Saldo',
-                          style: _ts(10, FontWeight.w500, Colors.white.withOpacity(0.8)),
-                        ),
-                        Text(
-                          isSaldoVisible ? rawSaldo : 'Rp ••••••',
-                          style: _ts(13, FontWeight.w900, Colors.white),
-                        ),
-                      ],
+
+                    // Sisi Kanan: Muncul bergeser dari arah icon notifikasi ke kiri
+                    Transform.translate(
+                      offset: Offset(-20 * (1.0 - collapsedOpacity), 0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            'Total Saldo',
+                            style: _ts(10, FontWeight.w500, Colors.white.withOpacity(0.8)),
+                          ),
+                          Text(
+                            isSaldoVisible ? rawSaldo : 'Rp ••••••',
+                            style: _ts(13.5, FontWeight.w900, Colors.white),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
