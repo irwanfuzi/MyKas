@@ -14,15 +14,13 @@ const double _kRadiusCard = 20.0;
 const double _kRadiusAction = 14.0;
 const double _kPadCard = 16.0;
 
-// Token Warna Spesifikasi PRD v1.0
-const Color _brandBlue = Color(0xFF3B82F6);       // Primary Accent Royal Blue (#3B82F6)
-const Color _brandBlueActive = Color(0xFF2563EB); // Hover/Active (#2563EB)
-const Color _incomeGreen = Color(0xFF10B981);     // Emerald Green (#10B981)
-const Color _expenseRed = Color(0xFFEF4444);      // Coral Red (#EF4444)
-const Color _honeyGold = Color(0xFFF59E0B);       // Secondary Accent Honey Gold (#F59E0B)
+const Color _brandBlue = Color(0xFF3B82F6);
+const Color _brandBlueActive = Color(0xFF2563EB);
+const Color _incomeGreen = Color(0xFF10B981);
+const Color _expenseRed = Color(0xFFEF4444);
+const Color _honeyGold = Color(0xFFF59E0B);
 const Color _accentPurple = Color(0xFF8B5CF6);
 
-// Tipografi UI (Plus Jakarta Sans)
 TextStyle _tsUI(double size, FontWeight w, Color c, {double? height, double? ls}) {
   return GoogleFonts.plusJakartaSans(
     fontSize: size,
@@ -33,7 +31,6 @@ TextStyle _tsUI(double size, FontWeight w, Color c, {double? height, double? ls}
   );
 }
 
-// Tipografi Data Angka & Tabular Figures (Google Inter - tnum)
 TextStyle _tsNum(double size, FontWeight w, Color c, {double? height, double? ls}) {
   return GoogleFonts.inter(
     fontSize: size,
@@ -98,6 +95,7 @@ class BerandaScreen extends StatefulWidget {
 class _BerandaScreenState extends State<BerandaScreen> {
   bool _showAllKantongSubPage = false;
   bool _isSaldoVisible = true;
+  bool _hasUnreadNotification = true;
 
   List<QuickActionItem> _userQuickActions = QuickActionItem.defaultList;
   late _Palette _p;
@@ -120,19 +118,310 @@ class _BerandaScreenState extends State<BerandaScreen> {
     return 'Rp $buffer';
   }
 
+  // =========================================================================
+  // FUNGSI AKSI TOMBOL & MODAL INTERAKTIF
+  // =========================================================================
+
+  void _openProfileModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: _p.surfaceCard,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 38, height: 4, decoration: BoxDecoration(color: _p.textMuted.withOpacity(0.3), borderRadius: BorderRadius.circular(2)))),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Profil & Pengaturan', style: _tsUI(18, FontWeight.w800, _p.textPrimary)),
+                IconButton(onPressed: () => Navigator.pop(context), icon: Icon(AppIcons.x, size: 18, color: _p.textPrimary)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildActionModalTile(AppIcons.user, 'Akun Saya (Irwan Fuzi Saputra)', 'Kelola informasi pribadi & keamanan biometrik', () {}),
+            _buildActionModalTile(AppIcons.sliders, 'Pengaturan Limit Transaksi', 'Atur batas harian dan bulanan', () {}),
+            _buildActionModalTile(AppIcons.checkCircle2, 'Keamanan & Biometrik', 'Konfigurasi sidik jari & PIN', () {}),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Berhasil keluar akun', style: _tsUI(13, FontWeight.w600, Colors.white)), backgroundColor: _expenseRed));
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: _expenseRed, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
+                child: Text('Keluar Aplikasi', style: _tsUI(14, FontWeight.w700, Colors.white)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openNotificationModal() {
+    setState(() => _hasUnreadNotification = false);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: _p.surfaceCard,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 38, height: 4, decoration: BoxDecoration(color: _p.textMuted.withOpacity(0.3), borderRadius: BorderRadius.circular(2)))),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Pusat Notifikasi', style: _tsUI(18, FontWeight.w800, _p.textPrimary)),
+                IconButton(onPressed: () => Navigator.pop(context), icon: Icon(AppIcons.x, size: 18, color: _p.textPrimary)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildNotificationItem('Arus Kas Sehat', 'Pengeluaran Anda turun 18% minggu ini. Pertahankan!', 'Baru saja'),
+            _buildNotificationItem('Setoran Target Berhasil', 'Target tabungan rumah telah disetor sebesar Rp 1.500.000.', 'Kemarin'),
+            _buildNotificationItem('Pengingat Tagihan PLN', 'Tagihan listrik bulanan jatuh tempo dalam 2 hari.', '2 hari lalu'),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationItem(String title, String desc, String time) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _p.surfaceElevated,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _p.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(title, style: _tsUI(13, FontWeight.w700, _p.textPrimary)),
+              Text(time, style: _tsUI(10, FontWeight.w500, _p.textMuted)),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(desc, style: _tsUI(12, FontWeight.w500, _p.textSecondary)),
+        ],
+      ),
+    );
+  }
+
+  void _openTransferModal() {
+    _showActionDialog('Transfer Dana', 'Masukkan nomor rekening tujuan & nominal transfer.', 'Lanjutkan Transfer');
+  }
+
+  void _openTopUpModal() {
+    _showActionDialog('Top Up Saldo', 'Pilih e-wallet atau Virtual Account tujuan pengisian.', 'Top Up Sekarang');
+  }
+
+  void _openSetorTargetModal() {
+    _showActionDialog('Setor Target Finansial', 'Masukkan nominal setoran kilat untuk kantong target Anda.', 'Setor Tabungan');
+  }
+
+  void _showActionDialog(String title, String subtitle, String buttonText) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: _p.surfaceCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(title, style: _tsUI(16, FontWeight.w700, _p.textPrimary)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(subtitle, style: _tsUI(12, FontWeight.w500, _p.textSecondary)),
+            const SizedBox(height: 14),
+            TextField(
+              style: _tsNum(13, FontWeight.w600, _p.textPrimary),
+              decoration: InputDecoration(
+                labelText: 'Nominal (Rp)',
+                filled: true,
+                fillColor: _p.surfaceElevated,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text('Batal', style: _tsUI(13, FontWeight.w600, _p.textMuted))),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$title berhasil diproses!', style: _tsUI(13, FontWeight.w600, Colors.white)), backgroundColor: _incomeGreen));
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: _brandBlue, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+            child: Text(buttonText, style: _tsUI(13, FontWeight.w700, Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openInsightModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(color: _p.surfaceCard, borderRadius: const BorderRadius.vertical(top: Radius.circular(24))),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 38, height: 4, decoration: BoxDecoration(color: _p.textMuted.withOpacity(0.3), borderRadius: BorderRadius.circular(2)))),
+            const SizedBox(height: 16),
+            Text('Analisis My Insight ✨', style: _tsUI(18, FontWeight.w800, _p.textPrimary)),
+            const SizedBox(height: 12),
+            Text('Pengeluaran Anda minggu ini turun 18% dibanding minggu lalu. Penghematan terbesar terjadi pada kategori Kuliner & F&B dan Belanja Harian. Arus kas dalam kondisi sangat sehat.', style: _tsUI(13, FontWeight.w500, _p.textSecondary)),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openBudgetDetailModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(color: _p.surfaceCard, borderRadius: const BorderRadius.vertical(top: Radius.circular(24))),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 38, height: 4, decoration: BoxDecoration(color: _p.textMuted.withOpacity(0.3), borderRadius: BorderRadius.circular(2)))),
+            const SizedBox(height: 16),
+            Text('Detail Alokasi Sisa Budget', style: _tsUI(18, FontWeight.w800, _p.textPrimary)),
+            const SizedBox(height: 12),
+            Text('Limit Bulanan: Rp 8.000.000\nTerpakai: Rp 7.520.000\nSisa Budget: Rp 480.000 (94% terpakai)', style: _tsNum(13, FontWeight.w600, _p.textSecondary)),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openTargetDetailModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(color: _p.surfaceCard, borderRadius: const BorderRadius.vertical(top: Radius.circular(24))),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 38, height: 4, decoration: BoxDecoration(color: _p.textMuted.withOpacity(0.3), borderRadius: BorderRadius.circular(2)))),
+            const SizedBox(height: 16),
+            Text('Detail Target Finansial', style: _tsUI(18, FontWeight.w800, _p.textPrimary)),
+            const SizedBox(height: 12),
+            Text('Target Utama: Rp 60.000.000\nTerkumpul: Rp 55.200.000 (92%)\nKurang: Rp 4.800.000 lagi untuk mencapai target.', style: _tsNum(13, FontWeight.w600, _p.textSecondary)),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openTransactionReceiptModal(Map item) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(color: _p.surfaceCard, borderRadius: const BorderRadius.vertical(top: Radius.circular(24))),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 38, height: 4, decoration: BoxDecoration(color: _p.textMuted.withOpacity(0.3), borderRadius: BorderRadius.circular(2)))),
+            const SizedBox(height: 16),
+            Text('Struk Digital Transaksi', style: _tsUI(18, FontWeight.w800, _p.textPrimary)),
+            const SizedBox(height: 16),
+            _buildReceiptRow('Judul Transaksi', item['judul']),
+            _buildReceiptRow('Kategori', item['kategori']),
+            _buildReceiptRow('Tanggal', item['tanggal']),
+            _buildReceiptRow('Sumber Dana', item['badge']),
+            _buildReceiptRow('Nominal', '${item['jenis'] == 'pemasukan' ? '+' : '-'}${_formatCurrency(item['nominal'])}'),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReceiptRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: _tsUI(12, FontWeight.w500, _p.textSecondary)),
+          Text(value, style: _tsUI(13, FontWeight.w700, _p.textPrimary)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionModalTile(IconData icon, String title, String subtitle, VoidCallback onTap) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(color: _p.surfaceElevated, borderRadius: BorderRadius.circular(14), border: Border.all(color: _p.border)),
+      child: ListTile(
+        onTap: onTap,
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(color: _op(_brandBlue, 0.15), borderRadius: BorderRadius.circular(10)),
+          child: Icon(icon, size: 18, color: _brandBlue),
+        ),
+        title: Text(title, style: _tsUI(13, FontWeight.w600, _p.textPrimary)),
+        subtitle: Text(subtitle, style: _tsUI(11, FontWeight.w500, _p.textSecondary)),
+        trailing: Icon(AppIcons.chevronRight, size: 16, color: _p.textMuted),
+      ),
+    );
+  }
+
   void _openTambahAkunModal(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width >= 1024;
-
     if (isDesktop) {
       showDialog(
         context: context,
         barrierDismissible: true,
         builder: (context) => Dialog(
           backgroundColor: Colors.transparent,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: const TambahAkunFormContent(),
-          ),
+          child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 480), child: const TambahAkunFormContent()),
         ),
       );
     } else {
@@ -141,9 +430,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
         builder: (context) => Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           child: const TambahAkunFormContent(),
         ),
       );
@@ -158,24 +445,12 @@ class _BerandaScreenState extends State<BerandaScreen> {
       builder: (context) {
         return Container(
           padding: const EdgeInsets.all(20.0),
-          decoration: BoxDecoration(
-            color: _p.surfaceCard,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          ),
+          decoration: BoxDecoration(color: _p.surfaceCard, borderRadius: const BorderRadius.vertical(top: Radius.circular(24))),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Container(
-                  width: 38,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: _p.textMuted.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
+              Center(child: Container(width: 38, height: 4, decoration: BoxDecoration(color: _p.textMuted.withOpacity(0.3), borderRadius: BorderRadius.circular(2)))),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -187,83 +462,19 @@ class _BerandaScreenState extends State<BerandaScreen> {
                       Text(namaKantong, style: _tsUI(12, FontWeight.w500, _p.textSecondary)),
                     ],
                   ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(AppIcons.x, size: 18, color: _p.textPrimary),
-                  ),
+                  IconButton(onPressed: () => Navigator.pop(context), icon: Icon(AppIcons.x, size: 18, color: _p.textPrimary)),
                 ],
               ),
               const SizedBox(height: 16),
-              _buildSettingTileItem(
-                context: context,
-                icon: AppIcons.pencil,
-                title: 'Ubah Nama & Kategori',
-                subtitle: 'Ganti nama, jenis, atau ikon kantong',
-                onTap: () => Navigator.pop(context),
-              ),
-              _buildSettingTileItem(
-                context: context,
-                icon: AppIcons.sliders,
-                title: 'Atur Limit Pengeluaran',
-                subtitle: 'Pasang batas budget bulanan kantong ini',
-                onTap: () => Navigator.pop(context),
-              ),
-              _buildSettingTileItem(
-                context: context,
-                icon: AppIcons.checkCircle2,
-                title: 'Jadikan Kantong Utama',
-                subtitle: 'Gunakan sebagai sumber dana default',
-                onTap: () => Navigator.pop(context),
-              ),
-              _buildSettingTileItem(
-                context: context,
-                icon: AppIcons.trash2,
-                title: 'Hapus Kantong',
-                subtitle: 'Keluarkan kantong ini dari daftar MyKas',
-                iconColor: _expenseRed,
-                textColor: _expenseRed,
-                onTap: () => Navigator.pop(context),
-              ),
+              _buildSettingTileItem(context: context, icon: AppIcons.pencil, title: 'Ubah Nama & Kategori', subtitle: 'Ganti nama, jenis, atau ikon kantong', onTap: () => Navigator.pop(context)),
+              _buildSettingTileItem(context: context, icon: AppIcons.sliders, title: 'Atur Limit Pengeluaran', subtitle: 'Pasang batas budget bulanan kantong ini', onTap: () => Navigator.pop(context)),
+              _buildSettingTileItem(context: context, icon: AppIcons.checkCircle2, title: 'Jadikan Kantong Utama', subtitle: 'Gunakan sebagai sumber dana default', onTap: () => Navigator.pop(context)),
+              _buildSettingTileItem(context: context, icon: AppIcons.trash2, title: 'Hapus Kantong', subtitle: 'Keluarkan kantong ini dari daftar MyKas', iconColor: _expenseRed, textColor: _expenseRed, onTap: () => Navigator.pop(context)),
               const SizedBox(height: 12),
             ],
           ),
         );
       },
-    );
-  }
-
-  Widget _buildSettingTileItem({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    Color iconColor = _brandBlue,
-    Color? textColor,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: _p.surfaceElevated,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _p.border),
-      ),
-      child: ListTile(
-        onTap: onTap,
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: _op(iconColor, 0.12),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, size: 18, color: iconColor),
-        ),
-        title: Text(title, style: _tsUI(13, FontWeight.w600, textColor ?? _p.textPrimary)),
-        subtitle: Text(subtitle, style: _tsUI(11, FontWeight.w500, _p.textSecondary)),
-        trailing: Icon(AppIcons.chevronRight, size: 16, color: _p.textMuted),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      ),
     );
   }
 
@@ -374,7 +585,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
               child: CustomScrollView(
                 physics: const ClampingScrollPhysics(),
                 slivers: [
-                  // Collapsing Header sesuai spesifikasi PRD v1.0 3-Fase
                   SliverPersistentHeader(
                     pinned: true,
                     delegate: _CollapsingHeaderDelegate(
@@ -386,10 +596,11 @@ class _BerandaScreenState extends State<BerandaScreen> {
                         });
                       },
                       palette: _p,
+                      onTapProfile: _openProfileModal,
+                      onTapNotification: _openNotificationModal,
+                      hasUnreadNotification: _hasUnreadNotification,
                     ),
                   ),
-
-                  // Main Curved Sheet Content (Lembaran Konten Utama)
                   SliverToBoxAdapter(
                     child: Container(
                       width: double.infinity,
@@ -448,9 +659,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
   }
 
-  // =============================================================================
-  // 1. PORTOFOLIO KAS
-  // =============================================================================
   Widget _buildPortofolioKasSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -501,61 +709,65 @@ class _BerandaScreenState extends State<BerandaScreen> {
   }
 
   Widget _buildPortofolioCard(String code, Color badgeColor, String title, String sub, String status, String amount, {Color? customBadgeColor}) {
-    return Container(
-      width: 215,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: _p.surfaceCard,
-        borderRadius: BorderRadius.circular(_kRadiusCard),
-        border: Border.all(color: _p.border, width: 1.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: badgeColor,
-                      borderRadius: BorderRadius.circular(8),
+    return InkWell(
+      onTap: () => _openPengaturanKantongBottomSheet(context, title),
+      borderRadius: BorderRadius.circular(_kRadiusCard),
+      child: Container(
+        width: 215,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: _p.surfaceCard,
+          borderRadius: BorderRadius.circular(_kRadiusCard),
+          border: Border.all(color: _p.border, width: 1.0),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: badgeColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(code, style: _tsUI(9, FontWeight.w800, badgeColor == const Color(0xFF0F172A) ? _honeyGold : Colors.white)),
                     ),
-                    alignment: Alignment.center,
-                    child: Text(code, style: _tsUI(9, FontWeight.w800, badgeColor == const Color(0xFF0F172A) ? _honeyGold : Colors.white)),
-                  ),
-                  const SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title, style: _tsUI(14, FontWeight.w600, _p.textPrimary)),
-                      Text(sub, style: _tsUI(12, FontWeight.w500, _p.textSecondary)),
-                    ],
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: status == 'Utama' ? _op(_brandBlue, 0.15) : _p.surfaceElevated,
-                  borderRadius: BorderRadius.circular(9999),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(title, style: _tsUI(14, FontWeight.w600, _p.textPrimary)),
+                        Text(sub, style: _tsUI(12, FontWeight.w500, _p.textSecondary)),
+                      ],
+                    ),
+                  ],
                 ),
-                child: Text(status, style: _tsUI(10, FontWeight.w700, status == 'Utama' ? _brandBlue : _p.textSecondary, ls: 0.02)),
-              ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Saldo Tersedia', style: _tsUI(12, FontWeight.w500, _p.textSecondary)),
-              Text(_isSaldoVisible ? 'Rp $amount' : 'Rp ••••••••', style: _tsNum(14, FontWeight.w700, _p.textPrimary, ls: -0.3)),
-            ],
-          ),
-        ],
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: status == 'Utama' ? _op(_brandBlue, 0.15) : _p.surfaceElevated,
+                    borderRadius: BorderRadius.circular(9999),
+                  ),
+                  child: Text(status, style: _tsUI(10, FontWeight.w700, status == 'Utama' ? _brandBlue : _p.textSecondary, ls: 0.02)),
+                ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Saldo Tersedia', style: _tsUI(12, FontWeight.w500, _p.textSecondary)),
+                Text(_isSaldoVisible ? 'Rp $amount' : 'Rp ••••••••', style: _tsNum(14, FontWeight.w700, _p.textPrimary, ls: -0.3)),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -591,9 +803,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
   }
 
-  // =============================================================================
-  // 2. AKSI CEPAT (QUICK ACTIONS)
-  // =============================================================================
   Widget _buildAksiCepatSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -629,10 +838,18 @@ class _BerandaScreenState extends State<BerandaScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildQuickActionItem('Transfer', AppIcons.arrowUpRight, _brandBlue),
-              _buildQuickActionItem('Top Up', AppIcons.plus, _incomeGreen),
-              _buildQuickActionItem('Setor Target', AppIcons.checkCircle2, _honeyGold),
-              _buildQuickActionItem('Lainnya', AppIcons.sliders, _accentPurple),
+              _buildQuickActionItem('Transfer', AppIcons.arrowUpRight, _brandBlue, _openTransferModal),
+              _buildQuickActionItem('Top Up', AppIcons.plus, _incomeGreen, _openTopUpModal),
+              _buildQuickActionItem('Setor Target', AppIcons.checkCircle2, _honeyGold, _openSetorTargetModal),
+              _buildQuickActionItem('Lainnya', AppIcons.sliders, _accentPurple, () {
+                CustomizeQuickActionsSheet.show(
+                  context,
+                  currentItems: _userQuickActions,
+                  onSave: (updatedList) {
+                    setState(() => _userQuickActions = updatedList);
+                  },
+                );
+              }),
             ],
           ),
         ),
@@ -640,9 +857,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
   }
 
-  Widget _buildQuickActionItem(String title, IconData icon, Color color) {
+  Widget _buildQuickActionItem(String title, IconData icon, Color color, VoidCallback onTap) {
     return InkWell(
-      onTap: () {},
+      onTap: onTap,
       borderRadius: BorderRadius.circular(_kRadiusAction),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -663,211 +880,215 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
   }
 
-  // =============================================================================
-  // 3. MY INSIGHT CARD
-  // =============================================================================
   Widget _buildMyInsightCard() {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: _p.isDark
-              ? const [Color(0xFF1E2433), Color(0xFF171B26)]
-              : const [Color(0xFF1E3A8A), Color(0xFF2563EB)],
-        ),
-        borderRadius: BorderRadius.circular(_kRadiusCard),
-        border: Border.all(color: _p.border, width: 1.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 20,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    alignment: Alignment.center,
-                    child: const Icon(AppIcons.sparkles, color: _honeyGold, size: 12),
-                  ),
-                  const SizedBox(width: 6),
-                  Text('MY INSIGHT ✨', style: _tsUI(11, FontWeight.w800, Colors.white, ls: 0.02)),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(9999),
-                ),
-                child: Text('Pekan Ini', style: _tsUI(10, FontWeight.w600, Colors.white)),
-              ),
-            ],
+    return InkWell(
+      onTap: _openInsightModal,
+      borderRadius: BorderRadius.circular(_kRadiusCard),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: _p.isDark
+                ? const [Color(0xFF1E2433), Color(0xFF171B26)]
+                : const [Color(0xFF1E3A8A), Color(0xFF2563EB)],
           ),
-          const SizedBox(height: 8),
-          RichText(
-            text: TextSpan(
-              style: _tsUI(12, FontWeight.w500, Colors.white.withOpacity(0.95), height: 1.3),
+          borderRadius: BorderRadius.circular(_kRadiusCard),
+          border: Border.all(color: _p.border, width: 1.0),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const TextSpan(text: 'Pengeluaran turun '),
-                TextSpan(text: '18%', style: _tsNum(12, FontWeight.w700, _honeyGold)),
-                const TextSpan(text: ' minggu ini. Arus kas dalam kondisi '),
-                TextSpan(text: 'sangat sehat', style: _tsUI(12, FontWeight.w700, Colors.white)),
-                const TextSpan(text: '.'),
+                Row(
+                  children: [
+                    Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(AppIcons.sparkles, color: _honeyGold, size: 12),
+                    ),
+                    const SizedBox(width: 6),
+                    Text('MY INSIGHT ✨', style: _tsUI(11, FontWeight.w800, Colors.white, ls: 0.02)),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(9999),
+                  ),
+                  child: Text('Pekan Ini', style: _tsUI(10, FontWeight.w600, Colors.white)),
+                ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            RichText(
+              text: TextSpan(
+                style: _tsUI(12, FontWeight.w500, Colors.white.withOpacity(0.95), height: 1.3),
+                children: [
+                  const TextSpan(text: 'Pengeluaran turun '),
+                  TextSpan(text: '18%', style: _tsNum(12, FontWeight.w700, _honeyGold)),
+                  const TextSpan(text: ' minggu ini. Arus kas dalam kondisi '),
+                  TextSpan(text: 'sangat sehat', style: _tsUI(12, FontWeight.w700, Colors.white)),
+                  const TextSpan(text: '.'),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  // =============================================================================
-  // 4. RENCANA FINANSIAL / KEUANGAN (BERDAMPINGAN)
-  // =============================================================================
   Widget _buildRencanaKeuanganSection() {
     return Row(
       children: [
-        // Card Sisa Budget
         Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(_kPadCard),
-            decoration: BoxDecoration(
-              color: _p.surfaceCard,
-              borderRadius: BorderRadius.circular(_kRadiusCard),
-              border: Border.all(color: _p.border, width: 1.0),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: _expenseRed,
-                            shape: BoxShape.circle,
+          child: InkWell(
+            onTap: _openBudgetDetailModal,
+            borderRadius: BorderRadius.circular(_kRadiusCard),
+            child: Container(
+              padding: const EdgeInsets.all(_kPadCard),
+              decoration: BoxDecoration(
+                color: _p.surfaceCard,
+                borderRadius: BorderRadius.circular(_kRadiusCard),
+                border: Border.all(color: _p.border, width: 1.0),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: _expenseRed,
+                              shape: BoxShape.circle,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text('Sisa Budget', style: _tsUI(12, FontWeight.w600, _p.textPrimary)),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: _op(_expenseRed, 0.15),
-                        borderRadius: BorderRadius.circular(9999),
+                          const SizedBox(width: 6),
+                          Text('Sisa Budget', style: _tsUI(12, FontWeight.w600, _p.textPrimary)),
+                        ],
                       ),
-                      child: Text('94%', style: _tsNum(10, FontWeight.w700, _expenseRed)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  _isSaldoVisible ? 'Rp 480.000' : 'Rp ••••••••',
-                  style: _tsNum(18, FontWeight.w700, _p.textPrimary, ls: -0.3),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: 0.94,
-                    backgroundColor: _p.track,
-                    valueColor: const AlwaysStoppedAnimation<Color>(_expenseRed),
-                    minHeight: 6,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _op(_expenseRed, 0.15),
+                          borderRadius: BorderRadius.circular(9999),
+                        ),
+                        child: Text('94%', style: _tsNum(10, FontWeight.w700, _expenseRed)),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Terpakai 7,52 Jt', style: _tsUI(12, FontWeight.w500, _p.textSecondary)),
-                    Text('Limit 8 Jt', style: _tsUI(12, FontWeight.w600, _p.textSecondary)),
-                  ],
-                ),
-              ],
+                  const SizedBox(height: 6),
+                  Text(
+                    _isSaldoVisible ? 'Rp 480.000' : 'Rp ••••••••',
+                    style: _tsNum(18, FontWeight.w700, _p.textPrimary, ls: -0.3),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: 0.94,
+                      backgroundColor: _p.track,
+                      valueColor: const AlwaysStoppedAnimation<Color>(_expenseRed),
+                      minHeight: 6,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Terpakai 7,52 Jt', style: _tsUI(12, FontWeight.w500, _p.textSecondary)),
+                      Text('Limit 8 Jt', style: _tsUI(12, FontWeight.w600, _p.textSecondary)),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
         const SizedBox(width: 12),
-        // Card Target Finansial
         Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(_kPadCard),
-            decoration: BoxDecoration(
-              color: _p.surfaceCard,
-              borderRadius: BorderRadius.circular(_kRadiusCard),
-              border: Border.all(color: _p.border, width: 1.0),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: _incomeGreen,
-                            shape: BoxShape.circle,
+          child: InkWell(
+            onTap: _openTargetDetailModal,
+            borderRadius: BorderRadius.circular(_kRadiusCard),
+            child: Container(
+              padding: const EdgeInsets.all(_kPadCard),
+              decoration: BoxDecoration(
+                color: _p.surfaceCard,
+                borderRadius: BorderRadius.circular(_kRadiusCard),
+                border: Border.all(color: _p.border, width: 1.0),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: _incomeGreen,
+                              shape: BoxShape.circle,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text('Target Finansial', style: _tsUI(12, FontWeight.w600, _p.textPrimary)),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: _op(_incomeGreen, 0.15),
-                        borderRadius: BorderRadius.circular(9999),
+                          const SizedBox(width: 6),
+                          Text('Target Finansial', style: _tsUI(12, FontWeight.w600, _p.textPrimary)),
+                        ],
                       ),
-                      child: Text('92%', style: _tsNum(10, FontWeight.w700, _incomeGreen)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  _isSaldoVisible ? 'Rp 55.200.000' : 'Rp ••••••••',
-                  style: _tsNum(18, FontWeight.w700, _p.textPrimary, ls: -0.3),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: 0.92,
-                    backgroundColor: _p.track,
-                    valueColor: const AlwaysStoppedAnimation<Color>(_incomeGreen),
-                    minHeight: 6,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _op(_incomeGreen, 0.15),
+                          borderRadius: BorderRadius.circular(9999),
+                        ),
+                        child: Text('92%', style: _tsNum(10, FontWeight.w700, _incomeGreen)),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Hampir Finish!', style: _tsUI(12, FontWeight.w500, _p.textSecondary)),
-                    Text('Target 60 Jt', style: _tsUI(12, FontWeight.w600, _p.textSecondary)),
-                  ],
-                ),
-              ],
+                  const SizedBox(height: 6),
+                  Text(
+                    _isSaldoVisible ? 'Rp 55.200.000' : 'Rp ••••••••',
+                    style: _tsNum(18, FontWeight.w700, _p.textPrimary, ls: -0.3),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: 0.92,
+                      backgroundColor: _p.track,
+                      valueColor: const AlwaysStoppedAnimation<Color>(_incomeGreen),
+                      minHeight: 6,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Hampir Finish!', style: _tsUI(12, FontWeight.w500, _p.textSecondary)),
+                      Text('Target 60 Jt', style: _tsUI(12, FontWeight.w600, _p.textSecondary)),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -875,9 +1096,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
   }
 
-  // =============================================================================
-  // 5. AKTIVITAS TERBARU
-  // =============================================================================
   Widget _buildRecentTransactionsSection(List recentTransactions) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -907,6 +1125,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
               final formattedNominal = _formatCurrency(item['nominal']);
 
               return ListTile(
+                onTap: () => _openTransactionReceiptModal(item),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                 leading: Container(
                   padding: const EdgeInsets.all(8),
@@ -1047,23 +1266,29 @@ class _BerandaScreenState extends State<BerandaScreen> {
 }
 
 // =============================================================================
-// COLLAPSING HEADER DELEGATE (3-PHASE INTERACTIVE PARALLAX & SMOOTH MORPH)
+// COLLAPSING HEADER DELEGATE
 // =============================================================================
 class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
   final bool isSaldoVisible;
   final String rawSaldo;
   final VoidCallback onToggleSaldo;
   final _Palette palette;
+  final VoidCallback onTapProfile;
+  final VoidCallback onTapNotification;
+  final bool hasUnreadNotification;
 
   const _CollapsingHeaderDelegate({
     required this.isSaldoVisible,
     required this.rawSaldo,
     required this.onToggleSaldo,
     required this.palette,
+    required this.onTapProfile,
+    required this.onTapNotification,
+    required this.hasUnreadNotification,
   });
 
   @override
-  double get minExtent => 56.0; // Top Bar Height Clamped (48px - 56px)
+  double get minExtent => 56.0;
 
   @override
   double get maxExtent => 175.0;
@@ -1072,10 +1297,9 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     final double progress = (shrinkOffset / (maxExtent - minExtent)).clamp(0.0, 1.0);
 
-    // Smooth cubic-bezier cubic scale & opacity curve
     final double expandedOpacity = (1.0 - (progress * 2.2)).clamp(0.0, 1.0);
     final double collapsedOpacity = ((progress - 0.25) * 1.8).clamp(0.0, 1.0);
-    final double iconScale = 1.0 - (progress * 0.12); // scale(1.0) -> scale(0.88)
+    final double iconScale = 1.0 - (progress * 0.12);
 
     return Container(
       decoration: BoxDecoration(
@@ -1086,12 +1310,11 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
       ),
       child: Stack(
         children: [
-          // FASE 0 & 1: Tampilan Utama Awal (Hero Balance 32px & TopBar)
           Positioned.fill(
             child: Opacity(
               opacity: expandedOpacity,
               child: Transform.translate(
-                offset: Offset(0, -shrinkOffset * 0.5), // Paralaks 0.5x meluncur naik
+                offset: Offset(0, -shrinkOffset * 0.5),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(18, 10, 18, 16),
                   child: Column(
@@ -1100,54 +1323,60 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Avatar Pengguna Kiri (36x36px menyusut ke 0.88x)
-                          Transform.scale(
-                            scale: iconScale,
-                            child: Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                shape: BoxShape.circle,
+                          InkWell(
+                            onTap: onTapProfile,
+                            borderRadius: BorderRadius.circular(18),
+                            child: Transform.scale(
+                              scale: iconScale,
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(AppIcons.user, color: Colors.white, size: 18),
                               ),
-                              child: const Icon(AppIcons.user, color: Colors.white, size: 18),
                             ),
                           ),
-                          // Judul Tengah MyKas
                           Text(
                             'MyKas',
                             style: _tsUI(18, FontWeight.w800, Colors.white, ls: -0.01),
                           ),
-                          // Lonceng Notifikasi Kanan dengan Badge Honey Gold Terkunci
-                          Transform.scale(
-                            scale: iconScale,
-                            child: Stack(
-                              clipBehavior: Clip.none,
-                              alignment: Alignment.center,
-                              children: [
-                                Container(
-                                  width: 36,
-                                  height: 36,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.15),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(AppIcons.bell, color: Colors.white, size: 18),
-                                ),
-                                Positioned(
-                                  right: 7,
-                                  top: 7,
-                                  child: Container(
-                                    width: 7,
-                                    height: 7,
+                          InkWell(
+                            onTap: onTapNotification,
+                            borderRadius: BorderRadius.circular(18),
+                            child: Transform.scale(
+                              scale: iconScale,
+                              child: Stack(
+                                clipBehavior: Clip.none,
+                                alignment: Alignment.center,
+                                children: [
+                                  Container(
+                                    width: 36,
+                                    height: 36,
                                     decoration: BoxDecoration(
-                                      color: _honeyGold,
+                                      color: Colors.white.withOpacity(0.15),
                                       shape: BoxShape.circle,
-                                      border: Border.all(color: _brandBlue, width: 1.2),
                                     ),
+                                    child: const Icon(AppIcons.bell, color: Colors.white, size: 18),
                                   ),
-                                ),
-                              ],
+                                  if (hasUnreadNotification)
+                                    Positioned(
+                                      right: 7,
+                                      top: 7,
+                                      child: Container(
+                                        width: 7,
+                                        height: 7,
+                                        decoration: BoxDecoration(
+                                          color: _honeyGold,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: _brandBlue, width: 1.2),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
@@ -1175,7 +1404,6 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
                         ],
                       ),
                       const SizedBox(height: 2),
-                      // Hero Balance (32px / 800 ExtraBold)
                       Text(
                         isSaldoVisible ? rawSaldo : 'Rp ••••••••',
                         style: _tsNum(32, FontWeight.w800, Colors.white, ls: -0.02),
@@ -1191,8 +1419,6 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
               ),
             ),
           ),
-
-          // FASE 2: Sticky State Terkunci (Scroll >= 120px)
           Positioned.fill(
             child: Opacity(
               opacity: collapsedOpacity,
@@ -1202,40 +1428,41 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Sisi Kiri: Sapaan Ringkas "Halo, Budi" muncul dari arah avatar
-                    Transform.translate(
-                      offset: Offset(18 * (1.0 - collapsedOpacity), 0),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              shape: BoxShape.circle,
+                    InkWell(
+                      onTap: onTapProfile,
+                      borderRadius: BorderRadius.circular(18),
+                      child: Transform.translate(
+                        offset: Offset(18 * (1.0 - collapsedOpacity), 0),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(AppIcons.user, color: Colors.white, size: 18),
                             ),
-                            child: const Icon(AppIcons.user, color: Colors.white, size: 18),
-                          ),
-                          const SizedBox(width: 10),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Halo,',
-                                style: _tsUI(12, FontWeight.w500, Colors.white.withOpacity(0.8)),
-                              ),
-                              Text(
-                                'Irwan',
-                                style: _tsUI(14, FontWeight.w600, Colors.white),
-                              ),
-                            ],
-                          ),
-                        ],
+                            const SizedBox(width: 10),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Halo,',
+                                  style: _tsUI(12, FontWeight.w500, Colors.white.withOpacity(0.8)),
+                                ),
+                                Text(
+                                  'Irwan',
+                                  style: _tsUI(14, FontWeight.w600, Colors.white),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-
-                    // Sisi Kanan: Dual-Tier Balance (Label 11px & Nilai 13px Tabular Bold)
                     Transform.translate(
                       offset: Offset(-18 * (1.0 - collapsedOpacity), 0),
                       child: Column(
@@ -1267,7 +1494,8 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(covariant _CollapsingHeaderDelegate oldDelegate) {
     return oldDelegate.isSaldoVisible != isSaldoVisible ||
         oldDelegate.rawSaldo != rawSaldo ||
-        oldDelegate.palette != palette;
+        oldDelegate.palette != palette ||
+        oldDelegate.hasUnreadNotification != hasUnreadNotification;
   }
 }
 
