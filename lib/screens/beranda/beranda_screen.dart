@@ -358,6 +358,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
                   pinned: true,
                   delegate: _OvoStyleTopBarDelegate(),
                 ),
+                
+                // Hero Balance Section (Menyatu dalam latar belakang gradien biru)
                 SliverToBoxAdapter(
                   child: Container(
                     decoration: BoxDecoration(
@@ -369,7 +371,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                         end: Alignment.bottomRight,
                       ),
                     ),
-                    padding: const EdgeInsets.fromLTRB(18, 10, 18, 28),
+                    padding: const EdgeInsets.fromLTRB(18, 4, 18, 28),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
@@ -417,6 +419,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
                     ),
                   ),
                 ),
+
+                // Main Curved Sheet Content (Lembar putih melengkung menutupi bagian bawah)
                 SliverToBoxAdapter(
                   child: Container(
                     width: double.infinity,
@@ -447,7 +451,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             width: 36,
                             height: 4,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFCBD5E1), // Diperbaiki dari Colors.slate300
+                              color: const Color(0xFFCBD5E1),
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),
@@ -511,7 +515,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
             children: [
               _buildPortofolioCard('BCA', _brandBlue, 'Bank BCA', '•• 8291', 'Utama', '14.300.000'),
               const SizedBox(width: 10),
-              _buildPortofolioCard('MDR', const Color(0xFF0F172A), 'Bank Mandiri', '•• 3409', 'Operasional', '4.550.000', customBadgeColor: _honeyGold), // Diperbaiki dari Colors.slate900 & konflik parameter
+              _buildPortofolioCard('MDR', const Color(0xFF0F172A), 'Bank Mandiri', '•• 3409', 'Operasional', '4.550.000', customBadgeColor: _honeyGold),
               const SizedBox(width: 10),
               _buildPortofolioCard('GOPAY', const Color(0xFF00AED6), 'GoPay', 'e-Wallet', 'Harian', '2.800.000'),
               const SizedBox(width: 10),
@@ -523,7 +527,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
   }
 
-  // Perbaikan parameter: Menghindari duplikasi parameter 'badgeColor' dengan mengganti parameter opsional jadi 'customBadgeColor'
   Widget _buildPortofolioCard(String code, Color badgeColor, String title, String sub, String status, String amount, {Color? customBadgeColor}) {
     return Container(
       width: 215,
