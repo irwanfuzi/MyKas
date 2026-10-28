@@ -150,6 +150,35 @@ class _ProfilScreenState extends State<ProfilScreen> {
     widget.onPinStateChanged?.call(false, '');
   }
 
+  Future<void> _toggleBio(bool v) async {
+    final p = await SharedPreferences.getInstance();
+    if (v && !kIsWeb) {
+      try {
+        final auth = LocalAuthentication();
+        final can = await auth.canCheckBiometrics || await auth.isDeviceSupported();
+        if (!can) {
+          if (mounted) mkToast(context, 'Perangkat tidak mendukung biometrik', error: true);
+          return;
+        }
+        final ok = await auth.authenticate(
+          localizedReason: 'Konfirmasi sidik jari untuk mengaktifkan biometrik',
+          options: const AuthenticationOptions(stickyAuth: true, biometricOnly: false),
+        );
+        if (!ok) {
+          if (mounted) mkToast(context, 'Verifikasi biometrik dibatalkan', error: true);
+          return;
+        }
+      } catch (_) {
+        if (mounted) mkToast(context, 'Biometrik gagal diverifikasi', error: true);
+        return;
+      }
+    }
+    await p.setBool('fingerprint_enabled', v);
+    if (!mounted) return;
+    setState(() => _bioEnabled = v);
+    mkToast(context, v ? 'Biometrik diaktifkan' : 'Biometrik dinonaktifkan');
+  }
+
   bool get _isDark {
     switch (widget.currentThemeMode) {
       case ThemeMode.dark:
@@ -322,11 +351,18 @@ class _ProfilScreenState extends State<ProfilScreen> {
           _Item(
             leading: mkIconBox(Icons.lock_rounded, MkT.sky),
             title: 'Keamanan PIN',
-            subtitle: _pinEnabled ? 'PIN dan Biometrik aktif' : 'Proteksi akses aplikasi',
+            subtitle: _pinEnabled ? 'PIN Aktif' : 'Proteksi akses aplikasi',
             trailing: mkSwitch(_pinEnabled, (v) {
               v ? _pinCreateSheet(c) : _pinVerifySheet(c);
             }),
           ),
+          if (_pinEnabled)
+            _Item(
+              leading: mkIconBox(Icons.fingerprint_rounded, MkT.success),
+              title: 'Login Biometrik',
+              subtitle: 'Masuk dengan sidik jari / Face ID',
+              trailing: mkSwitch(_bioEnabled, (v) => _toggleBio(v)),
+            ),
           _Item(
             leading: mkIconBox(Icons.devices_rounded, MkT.success),
             title: 'Perangkat Sesi',
@@ -426,34 +462,45 @@ class _ProfilScreenState extends State<ProfilScreen> {
           ),
         ]),
 
-        // KELUAR AKUN & HAPUS AKUN (CARD TERPISAH YANG CLEAN & MODERN)
-        Container(
-          margin: const EdgeInsets.only(bottom: 20),
-          decoration: mkCardDeco(c),
+        // TOMBOL KELUAR AKUN & HAPUS AKUN
+        Padding(
+          padding: const EdgeInsets.only(bottom: 20),
           child: Column(
             children: [
-              ListTile(
-                onTap: _logout,
-                leading: mkIconBox(Icons.logout_rounded, MkT.danger),
-                title: Text('Keluar Akun',
-                    style: GoogleFonts.inter(
-                        fontSize: 13, fontWeight: FontWeight.w600, color: MkT.danger)),
-                subtitle: Text('Akhiri sesi aktif di perangkat ini',
-                    style: GoogleFonts.inter(fontSize: 11, color: c.muted)),
-                trailing: Icon(Icons.chevron_right_rounded, size: 18, color: c.muted),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: MkT.danger.withOpacity(0.12),
+                    foregroundColor: MkT.danger,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: _logout,
+                  icon: const Icon(Icons.logout_rounded, size: 18),
+                  label: Text(
+                    'Keluar Akun',
+                    style: GoogleFonts.inter(fontSize: 13.5, fontWeight: FontWeight.w600),
+                  ),
+                ),
               ),
-              Divider(height: 1, color: c.border),
-              ListTile(
-                onTap: _openDeleteAccount,
-                leading: mkIconBox(Icons.delete_forever_rounded, MkT.danger),
-                title: Text('Hapus Akun Permanen',
-                    style: GoogleFonts.inter(
-                        fontSize: 13, fontWeight: FontWeight.w600, color: MkT.danger)),
-                subtitle: Text('Hapus akun beserta seluruh data terkait',
-                    style: GoogleFonts.inter(fontSize: 11, color: c.muted)),
-                trailing: Icon(Icons.chevron_right_rounded, size: 18, color: c.muted),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: TextButton.icon(
+                  style: TextButton.styleFrom(
+                    foregroundColor: MkT.danger,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: _openDeleteAccount,
+                  icon: const Icon(Icons.delete_forever_rounded, size: 18),
+                  label: Text(
+                    'Hapus Akun Permanen',
+                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500),
+                  ),
+                ),
               ),
             ],
           ),
