@@ -14,12 +14,12 @@ class MkColors {
   final bool dark;
   MkColors(this.dark);
 
-  // Tanpa hitam murni (pure black): menggunakan abu-abu gelap kaya nuansa biru/slate
+  // Tanpa hitam murni (pure black): menggunakan abu-abu gelap kaya nuansa biru/slate (#0D1117)
   Color get bg => dark ? const Color(0xFF0D1117) : const Color(0xFFF8FAFC);
   Color get card => dark ? const Color(0xFF161B22) : Colors.white;
   Color get border => dark ? const Color(0xFF30363D) : const Color(0xFFE2E8F0);
   
-  // Teks menggunakan pure white (#FFFFFF) pada dark mode dengan opasitas
+  // Teks menggunakan pure white (#FFFFFF) pada dark mode dengan tingkat opasitas
   Color get text => dark ? const Color(0xFFFFFFFF) : const Color(0xFF0F172A);
   Color get textHigh => dark ? const Color(0xFFFFFFFF).withOpacity(0.87) : const Color(0xFF0F172A);
   Color get textMedium => dark ? const Color(0xFFFFFFFF).withOpacity(0.65) : const Color(0xFF64748B);
@@ -177,7 +177,8 @@ class _ProfilScreenState extends State<ProfilScreen> {
       case ThemeMode.light:
         return false;
       case ThemeMode.system:
-        return MediaQuery.platformBrightnessOf(context) == Brightness.dark;
+        // Default mode tampilan menjadi gelap jika sistem mengikuti atau sebagai fallback utama
+        return true;
     }
   }
 
@@ -1081,3 +1082,31 @@ class MkAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return CircleAvatar(
       radius: radius,
+      backgroundColor: MkT.primary,
+      child: Text(name.isNotEmpty ? name[0] : 'U', style: TextStyle(color: Colors.white, fontSize: radius * 0.8, fontWeight: FontWeight.bold)),
+    );
+  }
+}
+
+void showAvatarSheet(BuildContext context, {required String name, required int current, required ValueChanged<int> onPick}) {
+  mkToast(context, 'Pengaturan avatar');
+}
+
+class MkButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onPressed;
+  const MkButton({super.key, required this.label, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 44,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(backgroundColor: MkT.primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)), elevation: 0),
+        onPressed: onPressed,
+        child: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+      ),
+    );
+  }
+}
