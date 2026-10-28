@@ -5,7 +5,7 @@ import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // =============================================================================
-// DESIGN CONSTANTS & PALETTE
+// DESIGN CONSTANTS & PALETTE (FLAT & DEPTH CONSIDERED)
 // =============================================================================
 const String kAppVersion = '1.0.0';
 const String kDefaultName = 'Irwan Fuzi Saputra';
@@ -14,19 +14,22 @@ class MkColors {
   final bool dark;
   MkColors(this.dark);
 
-  Color get bg => dark ? const Color(0xFF0B132B) : const Color(0xFFF4F6F9);
-  Color get card => dark ? const Color(0xFF172554) : Colors.white;
-  Color get border => dark ? const Color(0xFF1E3A8A).withOpacity(0.4) : const Color(0xFFE2E8F0);
-  Color get text => dark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A);
-  Color get muted => dark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
-  Color get inputFill => dark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
+  // Tanpa hitam murni (pure black): menggunakan abu-abu gelap kaya nuansa biru/slate
+  Color get bg => dark ? const Color(0xFF0D1117) : const Color(0xFFF8FAFC);
+  Color get card => dark ? const Color(0xFF161B22) : Colors.white;
+  Color get border => dark ? const Color(0xFF30363D) : const Color(0xFFE2E8F0);
+  
+  // Teks menggunakan pure white (#FFFFFF) pada dark mode dengan opasitas
+  Color get text => dark ? const Color(0xFFFFFFFF) : const Color(0xFF0F172A);
+  Color get textHigh => dark ? const Color(0xFFFFFFFF).withOpacity(0.87) : const Color(0xFF0F172A);
+  Color get textMedium => dark ? const Color(0xFFFFFFFF).withOpacity(0.65) : const Color(0xFF64748B);
+  Color get textLow => dark ? const Color(0xFFFFFFFF).withOpacity(0.30) : const Color(0xFF94A3B8);
+  
+  Color get inputFill => dark ? const Color(0xFF21262D) : const Color(0xFFF1F5F9);
 }
 
 class MkT {
   static const primary = Color(0xFF2563EB);
-  static const primarySoft = Color(0xFF3B82F6);
-  static const indigo = Color(0xFF6366F1);
-  static const sky = Color(0xFF0EA5E9);
   static const success = Color(0xFF10B981);
   static const warning = Color(0xFFF59E0B);
   static const danger = Color(0xFFEF4444);
@@ -221,37 +224,26 @@ class _ProfilScreenState extends State<ProfilScreen> {
   Widget _header(MkColors c) {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1E3A8A), Color(0xFF2563EB), Color(0xFF3B82F6)],
-        ),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
+      decoration: BoxDecoration(
+        color: c.card,
+        border: Border(bottom: BorderSide(color: c.border, width: 1)),
       ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 48),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 36),
           child: Row(
             children: [
               Stack(
                 alignment: Alignment.bottomRight,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(3),
+                    padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.25),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                      border: Border.all(color: MkT.primary, width: 1.5),
                     ),
-                    child: MkAvatar(name: _name, colorIndex: _avatar, radius: 36),
+                    child: MkAvatar(name: _name, colorIndex: _avatar, radius: 34),
                   ),
                   GestureDetector(
                     onTap: () => showAvatarSheet(context,
@@ -259,16 +251,13 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         current: _avatar,
                         onPick: (i) => setState(() => _avatar = i)),
                     child: Container(
-                      padding: const EdgeInsets.all(5),
+                      padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: c.card,
                         shape: BoxShape.circle,
-                        border: Border.all(color: MkT.primary, width: 1.5),
-                        boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4),
-                        ],
+                        border: Border.all(color: c.border, width: 1),
                       ),
-                      child: const Icon(Icons.palette_rounded, size: 11, color: MkT.primary),
+                      child: Icon(Icons.palette_rounded, size: 11, color: c.textHigh),
                     ),
                   ),
                 ],
@@ -279,9 +268,9 @@ class _ProfilScreenState extends State<ProfilScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Selamat Datang,',
+                      'Selamat datang,',
                       style: GoogleFonts.inter(
-                        color: Colors.white.withOpacity(0.8),
+                        color: c.textMedium,
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
                       ),
@@ -290,7 +279,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                     Text(
                       _name,
                       style: GoogleFonts.inter(
-                        color: Colors.white,
+                        color: c.textHigh,
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.3,
@@ -299,19 +288,12 @@ class _ProfilScreenState extends State<ProfilScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        'Akun Terverifikasi',
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                        ),
+                    Text(
+                      'Akun terverifikasi',
+                      style: GoogleFonts.inter(
+                        color: c.textLow,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -328,45 +310,45 @@ class _ProfilScreenState extends State<ProfilScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // GRUP 1: AKUN
-        _section(c, 'AKUN', [
+        // GRUP 1: AKUN (Kapital hanya huruf pertama)
+        _section(c, 'Akun', [
           _Item(
-            leading: mkIconBox(Icons.person_rounded, MkT.primary),
-            title: 'Informasi Profil',
+            leading: mkIconBox(Icons.person_rounded, MkT.primary, c),
+            title: 'Informasi profil',
             onTap: () => _push(AkunInfoPage(email: _userEmail, name: _name)),
           ),
           _Item(
-            leading: mkIconBox(Icons.devices_rounded, MkT.success),
-            title: 'Perangkat Terhubung',
+            leading: mkIconBox(Icons.devices_rounded, MkT.success, c),
+            title: 'Perangkat terhubung',
             onTap: () => _push(PerangkatPage(onRevoke: widget.onRevokeSession)),
           ),
         ]),
 
         // GRUP 2: KEAMANAN
-        _section(c, 'KEAMANAN', [
+        _section(c, 'Keamanan', [
           _Item(
-            leading: mkIconBox(Icons.fingerprint_rounded, MkT.success),
+            leading: mkIconBox(Icons.fingerprint_rounded, MkT.success, c),
             title: 'Biometrik',
-            trailing: mkSwitch(_bioEnabled, (v) => _toggleBio(v)),
+            trailing: mkSwitch(_bioEnabled, (v) => _toggleBio(v), c),
           ),
           _Item(
-            leading: mkIconBox(Icons.lock_rounded, MkT.sky),
+            leading: mkIconBox(Icons.lock_rounded, MkT.warning, c),
             title: 'Pin',
             trailing: mkSwitch(_pinEnabled, (v) {
               v ? _pinCreateSheet(c) : _pinVerifySheet(c);
-            }),
+            }, c),
           ),
         ]),
 
         // GRUP 3: GENERAL
-        _section(c, 'GENERAL', [
+        _section(c, 'General', [
           _Item(
-            leading: mkIconBox(Icons.paid_rounded, MkT.success),
-            title: 'Mata Uang',
+            leading: mkIconBox(Icons.paid_rounded, MkT.success, c),
+            title: 'Mata uang',
             value: _currency.contains('Rupiah') ? 'IDR (Rp)' : 'USD (\$)',
             onTap: () => _optionSheet<String>(
               c,
-              title: 'Pilih Mata Uang',
+              title: 'Pilih mata uang',
               selected: _currency,
               options: [
                 ('Rupiah (IDR)', 'Rupiah (IDR)', const CurrencyIdr()),
@@ -383,8 +365,9 @@ class _ProfilScreenState extends State<ProfilScreen> {
             leading: mkIconBox(
               _isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
               MkT.warning,
+              c,
             ),
-            title: 'Mode Tampilan',
+            title: 'Mode tampilan',
             value: _isDark ? 'Gelap' : 'Terang',
             trailing: Switch.adaptive(
               value: _isDark,
@@ -395,12 +378,12 @@ class _ProfilScreenState extends State<ProfilScreen> {
             ),
           ),
           _Item(
-            leading: mkIconBox(Icons.language_rounded, MkT.primary),
+            leading: mkIconBox(Icons.language_rounded, MkT.primary, c),
             title: 'Bahasa',
             value: _language.contains('Indonesia') ? 'Indonesia' : 'English',
             onTap: () => _optionSheet<String>(
               c,
-              title: 'Pilih Bahasa',
+              title: 'Pilih bahasa',
               selected: _language,
               options: [
                 ('Bahasa Indonesia', 'Bahasa Indonesia', const FlagId()),
@@ -416,47 +399,48 @@ class _ProfilScreenState extends State<ProfilScreen> {
         ]),
 
         // GRUP 4: HELP AND SUPPORT
-        _section(c, 'HELP AND SUPPORT', [
+        _section(c, 'Help and support', [
           _Item(
-            leading: mkIconBox(Icons.help_rounded, MkT.primary),
-            title: 'Pusat Bantuan',
+            leading: mkIconBox(Icons.help_rounded, MkT.primary, c),
+            title: 'Pusat bantuan',
             onTap: () => _push(BantuanPage(onSendFeedback: widget.onSendFeedback)),
           ),
           _Item(
-            leading: mkIconBox(Icons.headset_mic_rounded, MkT.indigo),
-            title: 'Hubungi Kami',
+            leading: mkIconBox(Icons.headset_mic_rounded, MkT.warning, c),
+            title: 'Hubungi kami',
             onTap: () => _push(KontakPage(onSend: widget.onSendFeedback)),
           ),
         ]),
 
         // GRUP 5: TENTANG
-        _section(c, 'TENTANG', [
+        _section(c, 'Tentang', [
           _Item(
-            leading: mkIconBox(Icons.verified_user_rounded, MkT.success),
-            title: 'Kebijakan Privasi',
+            leading: mkIconBox(Icons.verified_user_rounded, MkT.success, c),
+            title: 'Kebijakan privasi',
             onTap: () => _push(const PrivasiPage()),
           ),
         ]),
 
-        // TOMBOL AKSI AKUN
+        // TOMBOL AKSI AKUN (FLAT DESIGN & DEPTH)
         Padding(
-          padding: const EdgeInsets.only(bottom: 20),
+          padding: const EdgeInsets.only(bottom: 24),
           child: Column(
             children: [
               SizedBox(
                 width: double.infinity,
                 height: 48,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: MkT.danger.withOpacity(0.12),
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
                     foregroundColor: MkT.danger,
-                    elevation: 0,
+                    side: BorderSide(color: MkT.danger.withOpacity(0.4), width: 1),
+                    backgroundColor: c.card,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
                   ),
                   onPressed: _logout,
                   icon: const Icon(Icons.logout_rounded, size: 18),
                   label: Text(
-                    'Keluar Akun',
+                    'Keluar akun',
                     style: GoogleFonts.inter(fontSize: 13.5, fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -467,14 +451,14 @@ class _ProfilScreenState extends State<ProfilScreen> {
                 height: 48,
                 child: TextButton.icon(
                   style: TextButton.styleFrom(
-                    foregroundColor: MkT.danger,
+                    foregroundColor: c.textMedium,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: _openDeleteAccount,
-                  icon: const Icon(Icons.delete_forever_rounded, size: 18),
+                  icon: const Icon(Icons.delete_forever_rounded, size: 18, color: MkT.danger),
                   label: Text(
-                    'Hapus Akun Permanen',
-                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500),
+                    'Hapus akun permanen',
+                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: MkT.danger),
                   ),
                 ),
               ),
@@ -486,7 +470,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
           child: Text(
             'MyKas v$kAppVersion • Own Your Money',
             style: GoogleFonts.inter(
-              color: c.muted,
+              color: c.textLow,
               fontSize: 10,
               fontWeight: FontWeight.w500,
               letterSpacing: 0.2,
@@ -502,7 +486,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
     final ok = await mkConfirm(context,
         title: 'Keluar dari MyKas?',
         message: 'Sesi Anda akan diakhiri. Masuk kembali untuk mengakses akun.',
-        confirm: 'Ya, Keluar',
+        confirm: 'Ya, keluar',
         danger: true);
     if (!ok || !mounted) return;
     if (widget.onLogout != null) {
@@ -581,7 +565,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
         obscureText: true,
         keyboardType: TextInputType.number,
         maxLength: 6,
-        style: TextStyle(color: c.text, letterSpacing: 8, fontSize: 18),
+        style: TextStyle(color: c.textHigh, letterSpacing: 8, fontSize: 18),
         decoration: mkInput(c, label).copyWith(counterText: ''),
       );
 
@@ -598,15 +582,15 @@ class _ProfilScreenState extends State<ProfilScreen> {
     String? err;
     mkSheet(
       context,
-      'Atur Pin',
+      'Atur pin',
       (ctx) => StatefulBuilder(
         builder: (ctx, setS) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Buat PIN 6-digit sebagai opsi cadangan jika biometrik gagal.',
-                style: mkText(c, size: 11.5, color: c.muted)),
+                style: mkText(c, size: 11.5, color: c.textMedium)),
             const SizedBox(height: 14),
-            _pinField(c, a, 'PIN Baru'),
+            _pinField(c, a, 'PIN baru'),
             const SizedBox(height: 10),
             _pinField(c, b, 'Konfirmasi PIN'),
             _err(c, err),
@@ -637,15 +621,15 @@ class _ProfilScreenState extends State<ProfilScreen> {
     String? err;
     mkSheet(
       context,
-      'Hapus Pin',
+      'Hapus pin',
       (ctx) => StatefulBuilder(
         builder: (ctx, setS) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Masukkan PIN saat ini untuk menonaktifkan PIN.',
-                style: mkText(c, size: 11.5, color: c.muted)),
+                style: mkText(c, size: 11.5, color: c.textMedium)),
             const SizedBox(height: 14),
-            _pinField(c, ctrl, 'PIN Saat Ini'),
+            _pinField(c, ctrl, 'PIN saat ini'),
             _err(c, err),
             const SizedBox(height: 16),
             MkButton(
@@ -788,33 +772,33 @@ class _AkunInfoPageState extends State<AkunInfoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Informasi Profil')),
+      appBar: AppBar(title: const Text('Informasi profil')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           TextField(
             controller: _nameCtrl,
-            decoration: const InputDecoration(labelText: 'Nama Lengkap', border: OutlineInputBorder()),
+            decoration: const InputDecoration(labelText: 'Nama lengkap', border: OutlineInputBorder()),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: TextEditingController(text: widget.email),
             readOnly: true,
-            decoration: const InputDecoration(labelText: 'Alamat Email', border: OutlineInputBorder()),
+            decoration: const InputDecoration(labelText: 'Alamat email', border: OutlineInputBorder()),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _phoneCtrl,
-            decoration: const InputDecoration(labelText: 'Nomor Telepon / WhatsApp', border: OutlineInputBorder()),
+            decoration: const InputDecoration(labelText: 'Nomor telepon / WhatsApp', border: OutlineInputBorder()),
           ),
           const SizedBox(height: 24),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: MkT.primary, minimumSize: const Size.fromHeight(48)),
+            style: ElevatedButton.styleFrom(backgroundColor: MkT.primary, minimumSize: const Size.fromHeight(48), elevation: 0),
             onPressed: () {
               mkToast(context, 'Perubahan profil berhasil disimpan');
               Navigator.pop(context);
             },
-            child: const Text('Simpan Perubahan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text('Simpan perubahan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -828,7 +812,7 @@ class PerangkatPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Perangkat Terhubung')),
+      appBar: AppBar(title: const Text('Perangkat terhubung')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -850,7 +834,7 @@ class HapusAkunPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Hapus Akun Permanen')),
+      appBar: AppBar(title: const Text('Hapus akun permanen')),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -862,12 +846,12 @@ class HapusAkunPage extends StatelessWidget {
             ),
             const Spacer(),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: MkT.danger, minimumSize: const Size.fromHeight(48)),
+              style: ElevatedButton.styleFrom(backgroundColor: MkT.danger, minimumSize: const Size.fromHeight(48), elevation: 0),
               onPressed: () async {
                 if (onDelete != null) await onDelete!();
                 if (context.mounted) Navigator.pop(context, true);
               },
-              child: const Text('Ya, Hapus Akun Saya', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              child: const Text('Ya, hapus akun saya', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -880,30 +864,30 @@ class BantuanPage extends StatelessWidget {
   final Future<void> Function(String kategori, String pesan)? onSendFeedback;
   const BantuanPage({super.key, this.onSendFeedback});
   @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Pusat Bantuan')), body: const Center(child: Text('FAQ dan Panduan Aplikasi')));
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Pusat bantuan')), body: const Center(child: Text('FAQ dan panduan aplikasi')));
 }
 
 class KontakPage extends StatelessWidget {
   final Future<void> Function(String kategori, String pesan)? onSend;
   const KontakPage({super.key, this.onSend});
   @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Hubungi Kami')), body: const Center(child: Text('Layanan Support MyKas')));
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Hubungi kami')), body: const Center(child: Text('Layanan support MyKas')));
 }
 
 class PrivasiPage extends StatelessWidget {
   const PrivasiPage({super.key});
   @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Kebijakan Privasi')), body: const Center(child: Text('Informasi Keamanan dan Privasi Data')));
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Kebijakan privasi')), body: const Center(child: Text('Informasi keamanan dan privasi data')));
 }
 
 // =============================================================================
-// HELPER UTILITIES & UI WIDGETS
+// HELPER UTILITIES & UI WIDGETS (FLAT & DEPTH)
 // =============================================================================
 TextStyle mkText(MkColors c, {double size = 13, FontWeight w = FontWeight.w400, Color? color, bool tnum = false}) {
   return GoogleFonts.inter(
     fontSize: size,
     fontWeight: w,
-    color: color ?? c.text,
+    color: color ?? c.textHigh,
     letterSpacing: -0.1,
     fontFeatures: tnum ? const [FontFeature.tabularFigures()] : null,
   );
@@ -912,15 +896,15 @@ TextStyle mkText(MkColors c, {double size = 13, FontWeight w = FontWeight.w400, 
 BoxDecoration mkCardDeco(MkColors c) {
   return BoxDecoration(
     color: c.card,
-    borderRadius: BorderRadius.circular(14),
-    border: Border.all(color: c.border, width: 1),
+    borderRadius: BorderRadius.circular(12),
+    border: Border.all(color: c.border, width: 1), // Depth & Flat border separation
   );
 }
 
 InputDecoration mkInput(MkColors c, String label) {
   return InputDecoration(
     labelText: label,
-    labelStyle: TextStyle(color: c.muted, fontSize: 12.5),
+    labelStyle: TextStyle(color: c.textMedium, fontSize: 12.5),
     filled: true,
     fillColor: c.inputFill,
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
@@ -931,12 +915,12 @@ Widget mkLabel(MkColors c, String text) {
   return Padding(
     padding: const EdgeInsets.only(left: 4, bottom: 6),
     child: Text(
-      text,
+      text, // Kapital hanya huruf pertama
       style: GoogleFonts.inter(
-        fontSize: 10,
-        fontWeight: FontWeight.w700,
-        color: c.muted,
-        letterSpacing: 0.8,
+        fontSize: 11.5,
+        fontWeight: FontWeight.w600,
+        color: c.textMedium,
+        letterSpacing: 0.2,
       ),
     ),
   );
@@ -970,27 +954,27 @@ Widget mkRow(
       title,
       style: GoogleFonts.inter(
         fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: c.text,
+        fontWeight: FontWeight.w500,
+        color: c.textHigh,
         letterSpacing: -0.2,
       ),
     ),
     trailing: trailing,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
     minLeadingWidth: 0,
   );
 }
 
-Widget mkIconBox(IconData icon, Color color) {
+Widget mkIconBox(IconData icon, Color color, MkColors c) {
   return Container(
-    width: 36,
-    height: 36,
+    width: 34,
+    height: 34,
     alignment: Alignment.center,
     decoration: BoxDecoration(
       color: color.withOpacity(0.12),
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(8),
     ),
-    child: Icon(icon, size: 18, color: color),
+    child: Icon(icon, size: 17, color: color),
   );
 }
 
@@ -1004,17 +988,17 @@ Widget mkChevron(MkColors c, {String? value}) {
           style: GoogleFonts.inter(
             fontSize: 11.5,
             fontWeight: FontWeight.w500,
-            color: c.muted,
+            color: c.textMedium,
           ),
         ),
         const SizedBox(width: 4),
       ],
-      Icon(Icons.chevron_right_rounded, size: 18, color: c.muted),
+      Icon(Icons.chevron_right_rounded, size: 18, color: c.textLow),
     ],
   );
 }
 
-Widget mkSwitch(bool value, ValueChanged<bool>? onChanged) {
+Widget mkSwitch(bool value, ValueChanged<bool>? onChanged, MkColors c) {
   return Switch.adaptive(value: value, onChanged: onChanged, activeColor: MkT.primary);
 }
 
@@ -1037,7 +1021,7 @@ Future<bool> mkConfirm(BuildContext context, {required String title, required St
       actions: [
         TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
         ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: danger ? MkT.danger : MkT.primary),
+          style: ElevatedButton.styleFrom(backgroundColor: danger ? MkT.danger : MkT.primary, elevation: 0),
           onPressed: () => Navigator.pop(ctx, true),
           child: Text(confirm, style: const TextStyle(color: Colors.white)),
         ),
@@ -1054,19 +1038,18 @@ void mkSheet(BuildContext context, String title, WidgetBuilder builder) {
     backgroundColor: Colors.transparent,
     builder: (ctx) {
       final isDark = Theme.of(ctx).brightness == Brightness.dark;
-      final bg = isDark ? const Color(0xFF1E293B) : Colors.white;
-      final textC = isDark ? Colors.white : const Color(0xFF0F172A);
+      final c = MkColors(isDark);
 
       return Container(
         padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(color: bg, borderRadius: const BorderRadius.vertical(top: Radius.circular(20))),
+        decoration: BoxDecoration(color: c.card, borderRadius: const BorderRadius.vertical(top: Radius.circular(20))),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(child: Container(width: 32, height: 3.5, decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2)))),
+            Center(child: Container(width: 32, height: 3.5, decoration: BoxDecoration(color: c.textLow, borderRadius: BorderRadius.circular(2)))),
             const SizedBox(height: 10),
-            Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: textC)),
+            Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: c.textHigh)),
             const SizedBox(height: 14),
             builder(ctx),
           ],
@@ -1080,7 +1063,7 @@ Widget mkSelectCard(MkColors c, {required Widget leading, required String title,
   return ListTile(
     onTap: onTap,
     leading: leading,
-    title: Text(title, style: mkText(c, size: 13, w: selected ? FontWeight.bold : FontWeight.normal)),
+    title: Text(title, style: mkText(c, size: 13, color: c.textHigh, w: selected ? FontWeight.bold : FontWeight.normal)),
     trailing: selected ? const Icon(Icons.check_circle_rounded, size: 18, color: MkT.primary) : null,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), side: BorderSide(color: selected ? MkT.primary : c.border)),
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
@@ -1098,31 +1081,3 @@ class MkAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return CircleAvatar(
       radius: radius,
-      backgroundColor: MkT.primary,
-      child: Text(name.isNotEmpty ? name[0] : 'U', style: TextStyle(color: Colors.white, fontSize: radius * 0.8, fontWeight: FontWeight.bold)),
-    );
-  }
-}
-
-void showAvatarSheet(BuildContext context, {required String name, required int current, required ValueChanged<int> onPick}) {
-  mkToast(context, 'Pengaturan Avatar');
-}
-
-class MkButton extends StatelessWidget {
-  final String label;
-  final VoidCallback onPressed;
-  const MkButton({super.key, required this.label, required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 44,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(backgroundColor: MkT.primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-        onPressed: onPressed,
-        child: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-      ),
-    );
-  }
-}
