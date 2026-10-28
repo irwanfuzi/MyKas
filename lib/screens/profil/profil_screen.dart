@@ -83,9 +83,9 @@ class _ProfilScreenState extends State<ProfilScreen> {
   String _name = kDefaultName;
   int _avatar = 0;
 
+  bool _bioEnabled = false;
   bool _pinEnabled = false;
   String _savedPin = '';
-  bool _bioEnabled = false;
 
   String _language = 'Bahasa Indonesia';
   String _currency = 'Rupiah (IDR)';
@@ -108,9 +108,10 @@ class _ProfilScreenState extends State<ProfilScreen> {
     setState(() {
       _name = p.getString('user_name') ?? kDefaultName;
       _avatar = p.getInt('avatar_color') ?? 0;
+      // Diset false secara default jika belum pernah diatur
+      _bioEnabled = p.getBool('fingerprint_enabled') ?? false;
       _pinEnabled = p.getBool('pin_enabled') ?? false;
       _savedPin = p.getString('user_pin') ?? '';
-      _bioEnabled = _pinEnabled && (p.getBool('fingerprint_enabled') ?? false);
       _language = p.getString('app_language') ?? _language;
       _currency = p.getString('app_currency') ?? _currency;
       for (final k in _notif.keys.toList()) {
@@ -134,17 +135,16 @@ class _ProfilScreenState extends State<ProfilScreen> {
       _pinEnabled = true;
     });
     widget.onPinStateChanged?.call(true, pin);
+    mkToast(context, 'PIN cadangan berhasil disimpan');
   }
 
   Future<void> _removePin() async {
     final p = await SharedPreferences.getInstance();
     await p.setBool('pin_enabled', false);
     await p.remove('user_pin');
-    await p.setBool('fingerprint_enabled', false);
     if (!mounted) return;
     setState(() {
       _pinEnabled = false;
-      _bioEnabled = false;
       _savedPin = '';
     });
     widget.onPinStateChanged?.call(false, '');
@@ -161,7 +161,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
           return;
         }
         final ok = await auth.authenticate(
-          localizedReason: 'Konfirmasi sidik jari untuk mengaktifkan biometrik',
+          localizedReason: 'Verifikasi sidik jari/Face ID untuk mengaktifkan biometrik',
           options: const AuthenticationOptions(stickyAuth: true, biometricOnly: false),
         );
         if (!ok) {
@@ -176,7 +176,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
     await p.setBool('fingerprint_enabled', v);
     if (!mounted) return;
     setState(() => _bioEnabled = v);
-    mkToast(context, v ? 'Biometrik diaktifkan' : 'Biometrik dinonaktifkan');
+    mkToast(context, v ? 'Login Biometrik diaktifkan' : 'Login Biometrik dinonaktifkan');
   }
 
   bool get _isDark {
@@ -349,20 +349,19 @@ class _ProfilScreenState extends State<ProfilScreen> {
             onTap: () => _push(AkunInfoPage(email: _userEmail, name: _name)),
           ),
           _Item(
+            leading: mkIconBox(Icons.fingerprint_rounded, MkT.success),
+            title: 'Login Biometrik',
+            subtitle: _bioEnabled ? 'Utama • Sidik Jari Aktif' : 'Aktifkan login sidik jari/Face ID',
+            trailing: mkSwitch(_bioEnabled, (v) => _toggleBio(v)),
+          ),
+          _Item(
             leading: mkIconBox(Icons.lock_rounded, MkT.sky),
-            title: 'Keamanan PIN',
-            subtitle: _pinEnabled ? 'PIN Aktif' : 'Proteksi akses aplikasi',
+            title: 'PIN Cadangan',
+            subtitle: _pinEnabled ? 'PIN Aktif (Opsi pengganti)' : 'Atur PIN jika biometrik gagal',
             trailing: mkSwitch(_pinEnabled, (v) {
               v ? _pinCreateSheet(c) : _pinVerifySheet(c);
             }),
           ),
-          if (_pinEnabled)
-            _Item(
-              leading: mkIconBox(Icons.fingerprint_rounded, MkT.success),
-              title: 'Login Biometrik',
-              subtitle: 'Masuk dengan sidik jari / Face ID',
-              trailing: mkSwitch(_bioEnabled, (v) => _toggleBio(v)),
-            ),
           _Item(
             leading: mkIconBox(Icons.devices_rounded, MkT.success),
             title: 'Perangkat Sesi',
@@ -656,12 +655,12 @@ class _ProfilScreenState extends State<ProfilScreen> {
     String? err;
     mkSheet(
       context,
-      'Aktivasi Kunci PIN',
+      'Atur PIN Cadangan',
       (ctx) => StatefulBuilder(
         builder: (ctx, setS) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Buat PIN 6-digit untuk mengamankan data transaksi Anda.',
+            Text('Buat PIN 6-digit sebagai opsi cadangan jika biometrik gagal.',
                 style: mkText(c, size: 11.5, color: c.muted)),
             const SizedBox(height: 14),
             _pinField(c, a, 'PIN Baru'),
@@ -670,7 +669,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
             _err(c, err),
             const SizedBox(height: 16),
             MkButton(
-              label: 'Simpan & Aktifkan',
+              label: 'Simpan PIN Cadangan',
               onPressed: () async {
                 if (a.text.length != 6) {
                   setS(() => err = 'PIN harus 6 digit angka');
@@ -682,7 +681,6 @@ class _ProfilScreenState extends State<ProfilScreen> {
                 }
                 await _savePin(a.text);
                 if (ctx.mounted) Navigator.pop(ctx);
-                if (mounted) mkToast(context, 'Kunci PIN berhasil diaktifkan');
               },
             ),
           ],
@@ -696,12 +694,12 @@ class _ProfilScreenState extends State<ProfilScreen> {
     String? err;
     mkSheet(
       context,
-      'Matikan Kunci PIN',
+      'Hapus PIN Cadangan',
       (ctx) => StatefulBuilder(
         builder: (ctx, setS) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Masukkan PIN saat ini untuk menonaktifkan keamanan.',
+            Text('Masukkan PIN saat ini untuk menonaktifkan PIN cadangan.',
                 style: mkText(c, size: 11.5, color: c.muted)),
             const SizedBox(height: 14),
             _pinField(c, ctrl, 'PIN Saat Ini'),
@@ -716,7 +714,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                 }
                 await _removePin();
                 if (ctx.mounted) Navigator.pop(ctx);
-                if (mounted) mkToast(context, 'Kunci PIN dinonaktifkan');
+                if (mounted) mkToast(context, 'PIN cadangan dinonaktifkan');
               },
             ),
           ],
