@@ -118,10 +118,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
     return 'Rp $buffer';
   }
 
-  // =========================================================================
-  // FUNGSI AKSI TOMBOL & MODAL INTERAKTIF
-  // =========================================================================
-
   void _openProfileModal() {
     showModalBottomSheet(
       context: context,
@@ -437,7 +433,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
     }
   }
 
-  // Method helper _buildSettingTileItem yang sebelumnya missing
   Widget _buildSettingTileItem({
     required BuildContext context,
     required IconData icon,
@@ -1346,6 +1341,7 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
       ),
       child: Stack(
         children: [
+          // Expanded State (Awal sebelum di-scroll)
           Positioned.fill(
             child: Opacity(
               opacity: expandedOpacity,
@@ -1455,6 +1451,8 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
               ),
             ),
           ),
+          
+          // Collapsed State (Saat digulir, mempertahankan Ikon Notifikasi di kanan & transisi mulus)
           Positioned.fill(
             child: Opacity(
               opacity: collapsedOpacity,
@@ -1464,6 +1462,7 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    // Kiri: Sapaan Halo Irwan bergeser halus dari profil
                     InkWell(
                       onTap: onTapProfile,
                       borderRadius: BorderRadius.circular(18),
@@ -1499,22 +1498,62 @@ class _CollapsingHeaderDelegate extends SliverPersistentHeaderDelegate {
                         ),
                       ),
                     ),
-                    Transform.translate(
-                      offset: Offset(-18 * (1.0 - collapsedOpacity), 0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            'Total Saldo',
-                            style: _tsUI(11, FontWeight.w500, Colors.white.withOpacity(0.8)),
+
+                    // Kanan: Dual-Tier Saldo berdampingan dengan Ikon Notifikasi aktif
+                    Row(
+                      children: [
+                        Transform.translate(
+                          offset: Offset(-18 * (1.0 - collapsedOpacity), 0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                'Total Saldo',
+                                style: _tsUI(11, FontWeight.w500, Colors.white.withOpacity(0.8)),
+                              ),
+                              Text(
+                                isSaldoVisible ? rawSaldo : 'Rp ••••••',
+                                style: _tsNum(13, FontWeight.w700, Colors.white),
+                              ),
+                            ],
                           ),
-                          Text(
-                            isSaldoVisible ? rawSaldo : 'Rp ••••••',
-                            style: _tsNum(13, FontWeight.w700, Colors.white),
+                        ),
+                        const SizedBox(width: 12),
+                        InkWell(
+                          onTap: onTapNotification,
+                          borderRadius: BorderRadius.circular(18),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            alignment: Alignment.center,
+                            children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.15),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(AppIcons.bell, color: Colors.white, size: 18),
+                              ),
+                              if (hasUnreadNotification)
+                                Positioned(
+                                  right: 7,
+                                  top: 7,
+                                  child: Container(
+                                    width: 7,
+                                    height: 7,
+                                    decoration: BoxDecoration(
+                                      color: _honeyGold,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: _brandBlue, width: 1.2),
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
