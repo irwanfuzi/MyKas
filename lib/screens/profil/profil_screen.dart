@@ -87,12 +87,6 @@ class _ProfilScreenState extends State<ProfilScreen> {
 
   String _language = 'Bahasa Indonesia';
   String _currency = 'Rupiah (IDR)';
-  final Map<String, bool> _notif = {
-    'notif_reminder': true,
-    'notif_budget': true,
-    'notif_weekly': true,
-    'notif_insight': false,
-  };
 
   @override
   void initState() {
@@ -111,9 +105,6 @@ class _ProfilScreenState extends State<ProfilScreen> {
       _savedPin = p.getString('user_pin') ?? '';
       _language = p.getString('app_language') ?? _language;
       _currency = p.getString('app_currency') ?? _currency;
-      for (final k in _notif.keys.toList()) {
-        _notif[k] = p.getBool(k) ?? _notif[k]!;
-      }
     });
   }
 
@@ -132,7 +123,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
       _pinEnabled = true;
     });
     widget.onPinStateChanged?.call(true, pin);
-    mkToast(context, 'PIN cadangan berhasil disimpan');
+    mkToast(context, 'PIN berhasil disimpan');
   }
 
   Future<void> _removePin() async {
@@ -173,7 +164,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
     await p.setBool('fingerprint_enabled', v);
     if (!mounted) return;
     setState(() => _bioEnabled = v);
-    mkToast(context, v ? 'Login Biometrik diaktifkan' : 'Login Biometrik dinonaktifkan');
+    mkToast(context, v ? 'Biometrik diaktifkan' : 'Biometrik dinonaktifkan');
   }
 
   bool get _isDark {
@@ -337,34 +328,57 @@ class _ProfilScreenState extends State<ProfilScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // GRUP 1: PENGATURAN AKUN
-        _section(c, 'PENGATURAN AKUN', [
+        // GRUP 1: AKUN
+        _section(c, 'AKUN', [
           _Item(
             leading: mkIconBox(Icons.person_rounded, MkT.primary),
             title: 'Informasi Profil',
             onTap: () => _push(AkunInfoPage(email: _userEmail, name: _name)),
           ),
           _Item(
-            leading: mkIconBox(Icons.fingerprint_rounded, MkT.success),
-            title: 'Login Biometrik',
-            trailing: mkSwitch(_bioEnabled, (v) => _toggleBio(v)),
-          ),
-          _Item(
-            leading: mkIconBox(Icons.lock_rounded, MkT.sky),
-            title: 'PIN Cadangan',
-            trailing: mkSwitch(_pinEnabled, (v) {
-              v ? _pinCreateSheet(c) : _pinVerifySheet(c);
-            }),
-          ),
-          _Item(
             leading: mkIconBox(Icons.devices_rounded, MkT.success),
-            title: 'Perangkat Sesi',
+            title: 'Perangkat Terhubung',
             onTap: () => _push(PerangkatPage(onRevoke: widget.onRevokeSession)),
           ),
         ]),
 
-        // GRUP 2: TAMPILAN
-        _section(c, 'TAMPILAN', [
+        // GRUP 2: KEAMANAN
+        _section(c, 'KEAMANAN', [
+          _Item(
+            leading: mkIconBox(Icons.fingerprint_rounded, MkT.success),
+            title: 'Biometrik',
+            trailing: mkSwitch(_bioEnabled, (v) => _toggleBio(v)),
+          ),
+          _Item(
+            leading: mkIconBox(Icons.lock_rounded, MkT.sky),
+            title: 'Pin',
+            trailing: mkSwitch(_pinEnabled, (v) {
+              v ? _pinCreateSheet(c) : _pinVerifySheet(c);
+            }),
+          ),
+        ]),
+
+        // GRUP 3: GENERAL
+        _section(c, 'GENERAL', [
+          _Item(
+            leading: mkIconBox(Icons.paid_rounded, MkT.success),
+            title: 'Mata Uang',
+            value: _currency.contains('Rupiah') ? 'IDR (Rp)' : 'USD (\$)',
+            onTap: () => _optionSheet<String>(
+              c,
+              title: 'Pilih Mata Uang',
+              selected: _currency,
+              options: [
+                ('Rupiah (IDR)', 'Rupiah (IDR)', const CurrencyIdr()),
+                ('Dolar AS (USD)', 'Dolar AS (USD)', const CurrencyUsd()),
+              ],
+              onSelect: (v) async {
+                final p = await SharedPreferences.getInstance();
+                await p.setString('app_currency', v);
+                if (mounted) setState(() => _currency = v);
+              },
+            ),
+          ),
           _Item(
             leading: mkIconBox(
               _isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
@@ -399,34 +413,10 @@ class _ProfilScreenState extends State<ProfilScreen> {
               },
             ),
           ),
-          _Item(
-            leading: mkIconBox(Icons.paid_rounded, MkT.success),
-            title: 'Mata Uang',
-            value: _currency.contains('Rupiah') ? 'IDR (Rp)' : 'USD (\$)',
-            onTap: () => _optionSheet<String>(
-              c,
-              title: 'Pilih Mata Uang',
-              selected: _currency,
-              options: [
-                ('Rupiah (IDR)', 'Rupiah (IDR)', const CurrencyIdr()),
-                ('Dolar AS (USD)', 'Dolar AS (USD)', const CurrencyUsd()),
-              ],
-              onSelect: (v) async {
-                final p = await SharedPreferences.getInstance();
-                await p.setString('app_currency', v);
-                if (mounted) setState(() => _currency = v);
-              },
-            ),
-          ),
-          _Item(
-            leading: mkIconBox(Icons.notifications_rounded, MkT.indigo),
-            title: 'Notifikasi',
-            onTap: () => _notifSheet(c),
-          ),
         ]),
 
-        // GRUP 3: BANTUAN INFORMASI
-        _section(c, 'BANTUAN INFORMASI', [
+        // GRUP 4: HELP AND SUPPORT
+        _section(c, 'HELP AND SUPPORT', [
           _Item(
             leading: mkIconBox(Icons.help_rounded, MkT.primary),
             title: 'Pusat Bantuan',
@@ -437,20 +427,18 @@ class _ProfilScreenState extends State<ProfilScreen> {
             title: 'Hubungi Kami',
             onTap: () => _push(KontakPage(onSend: widget.onSendFeedback)),
           ),
+        ]),
+
+        // GRUP 5: TENTANG
+        _section(c, 'TENTANG', [
           _Item(
             leading: mkIconBox(Icons.verified_user_rounded, MkT.success),
             title: 'Kebijakan Privasi',
             onTap: () => _push(const PrivasiPage()),
           ),
-          _Item(
-            leading: mkIconBox(Icons.info_rounded, MkT.sky),
-            title: 'Tentang Aplikasi',
-            value: 'v$kAppVersion',
-            onTap: () => _push(const TentangPage()),
-          ),
         ]),
 
-        // TOMBOL KELUAR AKUN & HAPUS AKUN
+        // TOMBOL AKSI AKUN
         Padding(
           padding: const EdgeInsets.only(bottom: 20),
           child: Column(
@@ -588,39 +576,6 @@ class _ProfilScreenState extends State<ProfilScreen> {
     );
   }
 
-  void _notifSheet(MkColors c) {
-    const rows = [
-      ('notif_reminder', 'Pengingat Harian', 'Notifikasi dorongan catat transaksi'),
-      ('notif_budget', 'Limit Anggaran', 'Peringatan saat mendekati batas budget'),
-      ('notif_weekly', 'Laporan Mingguan', 'Ringkasan analisis arus kas berkala'),
-      ('notif_insight', 'Rekomendasi AI', 'Saran cerdas pengelolaan aset'),
-    ];
-    mkSheet(
-      context,
-      'Pengaturan Notifikasi',
-      (ctx) => StatefulBuilder(
-        builder: (ctx, setModal) => Column(
-          children: [
-            for (final r in rows)
-              SwitchListTile.adaptive(
-                contentPadding: EdgeInsets.zero,
-                activeColor: MkT.primary,
-                title: Text(r.$2, style: mkText(c, w: FontWeight.w600)),
-                subtitle: Text(r.$3, style: mkText(c, size: 11, color: c.muted)),
-                value: _notif[r.$1]!,
-                onChanged: (v) async {
-                  final p = await SharedPreferences.getInstance();
-                  await p.setBool(r.$1, v);
-                  setModal(() => _notif[r.$1] = v);
-                  if (mounted) setState(() {});
-                },
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _pinField(MkColors c, TextEditingController ctrl, String label) => TextField(
         controller: ctrl,
         obscureText: true,
@@ -643,7 +598,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
     String? err;
     mkSheet(
       context,
-      'Atur PIN Cadangan',
+      'Atur Pin',
       (ctx) => StatefulBuilder(
         builder: (ctx, setS) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -657,7 +612,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
             _err(c, err),
             const SizedBox(height: 16),
             MkButton(
-              label: 'Simpan PIN Cadangan',
+              label: 'Simpan PIN',
               onPressed: () async {
                 if (a.text.length != 6) {
                   setS(() => err = 'PIN harus 6 digit angka');
@@ -682,12 +637,12 @@ class _ProfilScreenState extends State<ProfilScreen> {
     String? err;
     mkSheet(
       context,
-      'Hapus PIN Cadangan',
+      'Hapus Pin',
       (ctx) => StatefulBuilder(
         builder: (ctx, setS) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Masukkan PIN saat ini untuk menonaktifkan PIN cadangan.',
+            Text('Masukkan PIN saat ini untuk menonaktifkan PIN.',
                 style: mkText(c, size: 11.5, color: c.muted)),
             const SizedBox(height: 14),
             _pinField(c, ctrl, 'PIN Saat Ini'),
@@ -702,7 +657,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                 }
                 await _removePin();
                 if (ctx.mounted) Navigator.pop(ctx);
-                if (mounted) mkToast(context, 'PIN cadangan dinonaktifkan');
+                if (mounted) mkToast(context, 'PIN dinonaktifkan');
               },
             ),
           ],
@@ -873,7 +828,7 @@ class PerangkatPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Perangkat Sesi')),
+      appBar: AppBar(title: const Text('Perangkat Terhubung')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -939,12 +894,6 @@ class PrivasiPage extends StatelessWidget {
   const PrivasiPage({super.key});
   @override
   Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Kebijakan Privasi')), body: const Center(child: Text('Informasi Keamanan dan Privasi Data')));
-}
-
-class TentangPage extends StatelessWidget {
-  const TentangPage({super.key});
-  @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Tentang Aplikasi')), body: const Center(child: Text('MyKas - Own Your Money v1.0.0')));
 }
 
 // =============================================================================
