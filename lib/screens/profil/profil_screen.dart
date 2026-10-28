@@ -35,14 +35,12 @@ class MkT {
 class _Item {
   final Widget leading;
   final String title;
-  final String? subtitle;
   final String? value;
   final Widget? trailing;
   final VoidCallback? onTap;
   const _Item({
     required this.leading,
     required this.title,
-    this.subtitle,
     this.value,
     this.trailing,
     this.onTap,
@@ -108,7 +106,6 @@ class _ProfilScreenState extends State<ProfilScreen> {
     setState(() {
       _name = p.getString('user_name') ?? kDefaultName;
       _avatar = p.getInt('avatar_color') ?? 0;
-      // Diset false secara default jika belum pernah diatur
       _bioEnabled = p.getBool('fingerprint_enabled') ?? false;
       _pinEnabled = p.getBool('pin_enabled') ?? false;
       _savedPin = p.getString('user_pin') ?? '';
@@ -345,19 +342,16 @@ class _ProfilScreenState extends State<ProfilScreen> {
           _Item(
             leading: mkIconBox(Icons.person_rounded, MkT.primary),
             title: 'Informasi Profil',
-            subtitle: 'Nama dan data pribadi',
             onTap: () => _push(AkunInfoPage(email: _userEmail, name: _name)),
           ),
           _Item(
             leading: mkIconBox(Icons.fingerprint_rounded, MkT.success),
             title: 'Login Biometrik',
-            subtitle: _bioEnabled ? 'Utama • Sidik Jari Aktif' : 'Aktifkan login sidik jari/Face ID',
             trailing: mkSwitch(_bioEnabled, (v) => _toggleBio(v)),
           ),
           _Item(
             leading: mkIconBox(Icons.lock_rounded, MkT.sky),
             title: 'PIN Cadangan',
-            subtitle: _pinEnabled ? 'PIN Aktif (Opsi pengganti)' : 'Atur PIN jika biometrik gagal',
             trailing: mkSwitch(_pinEnabled, (v) {
               v ? _pinCreateSheet(c) : _pinVerifySheet(c);
             }),
@@ -365,7 +359,6 @@ class _ProfilScreenState extends State<ProfilScreen> {
           _Item(
             leading: mkIconBox(Icons.devices_rounded, MkT.success),
             title: 'Perangkat Sesi',
-            subtitle: 'Sesi masuk terhubung',
             onTap: () => _push(PerangkatPage(onRevoke: widget.onRevokeSession)),
           ),
         ]),
@@ -378,7 +371,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
               MkT.warning,
             ),
             title: 'Mode Tampilan',
-            subtitle: _isDark ? 'Mode Gelap Aktif' : 'Mode Terang Aktif',
+            value: _isDark ? 'Gelap' : 'Terang',
             trailing: Switch.adaptive(
               value: _isDark,
               activeColor: MkT.primary,
@@ -428,7 +421,6 @@ class _ProfilScreenState extends State<ProfilScreen> {
           _Item(
             leading: mkIconBox(Icons.notifications_rounded, MkT.indigo),
             title: 'Notifikasi',
-            subtitle: 'Pengingat harian dan laporan',
             onTap: () => _notifSheet(c),
           ),
         ]),
@@ -438,19 +430,16 @@ class _ProfilScreenState extends State<ProfilScreen> {
           _Item(
             leading: mkIconBox(Icons.help_rounded, MkT.primary),
             title: 'Pusat Bantuan',
-            subtitle: 'Panduan penggunaan',
             onTap: () => _push(BantuanPage(onSendFeedback: widget.onSendFeedback)),
           ),
           _Item(
             leading: mkIconBox(Icons.headset_mic_rounded, MkT.indigo),
             title: 'Hubungi Kami',
-            subtitle: 'Bantuan layanan',
             onTap: () => _push(KontakPage(onSend: widget.onSendFeedback)),
           ),
           _Item(
             leading: mkIconBox(Icons.verified_user_rounded, MkT.success),
             title: 'Kebijakan Privasi',
-            subtitle: 'Ketentuan layanan',
             onTap: () => _push(const PrivasiPage()),
           ),
           _Item(
@@ -562,7 +551,6 @@ class _ProfilScreenState extends State<ProfilScreen> {
                 c,
                 leading: it.leading,
                 title: it.title,
-                subtitle: it.subtitle,
                 trailing: it.trailing ?? (it.onTap == null ? null : mkChevron(c, value: it.value)),
                 onTap: it.onTap,
               ),
@@ -1023,7 +1011,6 @@ Widget mkRow(
   MkColors c, {
   required Widget leading,
   required String title,
-  String? subtitle,
   Widget? trailing,
   VoidCallback? onTap,
 }) {
@@ -1039,16 +1026,6 @@ Widget mkRow(
         letterSpacing: -0.2,
       ),
     ),
-    subtitle: subtitle != null
-        ? Text(
-            subtitle,
-            style: GoogleFonts.inter(
-              fontSize: 11,
-              fontWeight: FontWeight.w400,
-              color: c.muted,
-            ),
-          )
-        : null,
     trailing: trailing,
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
     minLeadingWidth: 0,
