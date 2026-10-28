@@ -4,10 +4,92 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'profil_common.dart';
-import 'profil_pages_akun.dart';
-import 'profil_pages_keuangan.dart';
+// =============================================================================
+// DESIGN CONSTANTS & PALETTE (EMBEDDED)
+// =============================================================================
+const String kAppVersion = '1.0.0';
+const String kDefaultName = 'Irwan Fuzi Saputra';
 
+class MkColors {
+  final bool dark;
+  MkColors(this.dark);
+
+  Color get bg => dark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+  Color get card => dark ? const Color(0xFF1E293B) : Colors.white;
+  Color get border => dark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+  Color get text => dark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A);
+  Color get muted => dark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+  Color get inputFill => dark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
+}
+
+class MkT {
+  static const primary = Color(0xFF2563EB);
+  static const primarySoft = Color(0xFF3B82F6);
+  static const indigo = Color(0xFF6366F1);
+  static const sky = Color(0xFF0EA5E9);
+  static const success = Color(0xFF10B981);
+  static const warning = Color(0xFFF59E0B);
+  static const danger = Color(0xFFEF4444);
+}
+
+// =============================================================================
+// MOCK MODELS & STORAGE STUBS
+// =============================================================================
+class Rekening {
+  final String id;
+  final String nama;
+  final String jenis;
+  final double saldo;
+  Rekening({required this.id, required this.nama, required this.jenis, required this.saldo});
+
+  factory Rekening.fromJson(Map<String, dynamic> json) => Rekening(
+        id: json['id'] ?? '',
+        nama: json['nama'] ?? '',
+        jenis: json['jenis'] ?? '',
+        saldo: (json['saldo'] ?? 0).toDouble(),
+      );
+}
+
+class Target {
+  final String id;
+  final String nama;
+  final double terkumpul;
+  final double target;
+  Target({required this.id, required this.nama, required this.terkumpul, required this.target});
+
+  factory Target.fromJson(Map<String, dynamic> json) => Target(
+        id: json['id'] ?? '',
+        nama: json['nama'] ?? '',
+        terkumpul: (json['terkumpul'] ?? 0).toDouble(),
+        target: (json['target'] ?? 0).toDouble(),
+      );
+}
+
+List<Map<String, dynamic>> seedRekening() => [
+      {'id': '1', 'nama': 'Bank BCA', 'jenis': 'Bank', 'saldo': 14300000},
+      {'id': '2', 'nama': 'Bank Mandiri', 'jenis': 'Bank', 'saldo': 4550000},
+      {'id': '3', 'nama': 'GoPay', 'jenis': 'E-Wallet', 'saldo': 2800000},
+    ];
+
+List<Map<String, dynamic>> seedTarget() => [
+      {'id': '1', 'nama': 'Dana Darurat 6 Bulan', 'terkumpul': 55200000, 'target': 60000000},
+    ];
+
+class MkStore {
+  static Future<List<T>> load<T>(
+    String key,
+    List<Map<String, dynamic>> seed,
+    T Function(Map<String, dynamic>) fromJson,
+  ) async {
+    return seed.map((e) => fromJson(e)).toList();
+  }
+
+  static Future<int> budgetPercent() async => 94;
+}
+
+// =============================================================================
+// ITEM MODEL
+// =============================================================================
 class _Item {
   final IconData icon;
   final Color color;
@@ -27,6 +109,9 @@ class _Item {
   });
 }
 
+// =============================================================================
+// MAIN PROFIL SCREEN
+// =============================================================================
 class ProfilScreen extends StatefulWidget {
   final ThemeMode currentThemeMode;
   final ValueChanged<ThemeMode> onThemeModeChanged;
@@ -93,8 +178,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
 
   Future<void> _loadAll() async {
     final p = await SharedPreferences.getInstance();
-    final rek =
-        await MkStore.load('mk_rekening', seedRekening(), Rekening.fromJson);
+    final rek = await MkStore.load('mk_rekening', seedRekening(), Rekening.fromJson);
     final tar = await MkStore.load('mk_target', seedTarget(), Target.fromJson);
     final pct = await MkStore.budgetPercent();
     if (!mounted) return;
@@ -161,8 +245,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
         }
         final ok = await auth.authenticate(
           localizedReason: 'Konfirmasi identitas Anda untuk mengaktifkan biometrik',
-          options: const AuthenticationOptions(
-              stickyAuth: true, biometricOnly: false),
+          options: const AuthenticationOptions(stickyAuth: true, biometricOnly: false),
         );
         if (!ok) {
           if (mounted) mkToast(context, 'Verifikasi dibatalkan', error: true);
@@ -170,8 +253,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
         }
       } catch (_) {
         if (mounted) {
-          mkToast(context, 'Biometrik tidak dapat digunakan saat ini',
-              error: true);
+          mkToast(context, 'Biometrik tidak dapat digunakan saat ini', error: true);
         }
         return;
       }
@@ -222,8 +304,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
               child: Container(
                 decoration: BoxDecoration(
                   color: c.bg,
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(28)),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
                 ),
                 child: Center(
                   child: ConstrainedBox(
@@ -260,9 +341,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
             children: [
               Text('Profil',
                   style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700)),
+                      color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
               const SizedBox(height: 20),
               Stack(
                 alignment: Alignment.bottomRight,
@@ -287,8 +366,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         shape: BoxShape.circle,
                         border: Border.all(color: MkT.primary, width: 1.5),
                       ),
-                      child: const Icon(Icons.palette_outlined,
-                          size: 13, color: MkT.primary),
+                      child: const Icon(Icons.palette_outlined, size: 13, color: MkT.primary),
                     ),
                   ),
                 ],
@@ -306,8 +384,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                       color: Colors.white.withOpacity(0.8), fontSize: 13)),
               const SizedBox(height: 12),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.18),
                   borderRadius: BorderRadius.circular(999),
@@ -316,8 +393,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.badge_outlined,
-                        size: 14, color: Colors.white),
+                    const Icon(Icons.badge_outlined, size: 14, color: Colors.white),
                     const SizedBox(width: 6),
                     Text(_userRole,
                         style: GoogleFonts.inter(
@@ -348,8 +424,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
             color: MkT.primary,
             title: 'Informasi Akun',
             subtitle: 'Nama, email, dan nomor HP',
-            onTap: () => _push(const AkunInfoPage(
-                email: _userEmail, role: _userRole)),
+            onTap: () => _push(const AkunInfoPage(email: _userEmail, role: _userRole)),
           ),
           _Item(
             icon: Icons.account_balance_wallet_outlined,
@@ -406,9 +481,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
             icon: Icons.lock_outline_rounded,
             color: MkT.indigo,
             title: 'Kunci PIN Aplikasi',
-            subtitle: _pinEnabled
-                ? 'PIN 6-digit aktif'
-                : 'Minta PIN saat aplikasi dibuka',
+            subtitle: _pinEnabled ? 'PIN 6-digit aktif' : 'Minta PIN saat aplikasi dibuka',
             trailing: mkSwitch(_pinEnabled, (v) {
               v ? _pinCreateSheet(c) : _pinVerifySheet(c);
             }),
@@ -536,8 +609,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
             color: MkT.primary,
             title: 'Pusat Bantuan',
             subtitle: 'Panduan dan pertanyaan umum',
-            onTap: () =>
-                _push(BantuanPage(onSendFeedback: widget.onSendFeedback)),
+            onTap: () => _push(BantuanPage(onSendFeedback: widget.onSendFeedback)),
           ),
           _Item(
             icon: Icons.support_agent_rounded,
@@ -570,14 +642,12 @@ class _ProfilScreenState extends State<ProfilScreen> {
               foregroundColor: MkT.danger,
               side: const BorderSide(color: MkT.danger, width: 1.2),
               backgroundColor: c.dark ? Colors.transparent : Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
             onPressed: _logout,
             icon: const Icon(Icons.logout_rounded, size: 18),
             label: Text('Keluar Akun',
-                style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w700, fontSize: 14)),
+                style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14)),
           ),
         ),
         const SizedBox(height: 8),
@@ -606,8 +676,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
   Future<void> _logout() async {
     final ok = await mkConfirm(context,
         title: 'Keluar dari MyKas?',
-        message:
-            'Data kas Anda tersimpan aman. Anda perlu masuk kembali untuk mengakses akun.',
+        message: 'Data kas Anda tersimpan aman. Anda perlu masuk kembali untuk mengakses akun.',
         confirm: 'Ya, Keluar',
         danger: true);
     if (!ok || !mounted) return;
@@ -637,8 +706,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
           child: Column(
             children: [
               Text(value,
-                  style: mkText(c,
-                      size: 20, w: FontWeight.w700, color: color, tnum: true)),
+                  style: mkText(c, size: 20, w: FontWeight.w700, color: color, tnum: true)),
               const SizedBox(height: 2),
               Text(label, style: mkText(c, size: 11.5, color: c.muted)),
             ],
@@ -680,8 +748,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                 leading: mkIconBox(it.icon, it.color),
                 title: it.title,
                 subtitle: it.subtitle,
-                trailing: it.trailing ??
-                    (it.onTap == null ? null : mkChevron(c, value: it.value)),
+                trailing: it.trailing ?? (it.onTap == null ? null : mkChevron(c, value: it.value)),
                 onTap: it.onTap,
               ),
           ]),
@@ -751,8 +818,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
     );
   }
 
-  Widget _pinField(MkColors c, TextEditingController ctrl, String label) =>
-      TextField(
+  Widget _pinField(MkColors c, TextEditingController ctrl, String label) => TextField(
         controller: ctrl,
         obscureText: true,
         keyboardType: TextInputType.number,
@@ -883,4 +949,319 @@ class _ProfilScreenState extends State<ProfilScreen> {
       ),
     );
   }
+}
+
+// =============================================================================
+// HELPER UTILITIES & UI WIDGETS
+// =============================================================================
+String lastBackupLabel(String? date) => date == null ? 'Belum pernah dicadangkan' : 'Terakhir: $date';
+
+TextStyle mkText(MkColors c, {double size = 14, FontWeight w = FontWeight.w400, Color? color, bool tnum = false}) {
+  return GoogleFonts.inter(
+    fontSize: size,
+    fontWeight: w,
+    color: color ?? c.text,
+    fontFeatures: tnum ? const [FontFeature.tabularFigures()] : null,
+  );
+}
+
+BoxDecoration mkCardDeco(MkColors c) {
+  return BoxDecoration(
+    color: c.card,
+    borderRadius: BorderRadius.circular(16),
+    border: Border.all(color: c.border),
+  );
+}
+
+InputDecoration mkInput(MkColors c, String label) {
+  return InputDecoration(
+    labelText: label,
+    labelStyle: TextStyle(color: c.muted, fontSize: 13),
+    filled: true,
+    fillColor: c.inputFill,
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+  );
+}
+
+Widget mkLabel(MkColors c, String text) {
+  return Padding(
+    padding: const EdgeInsets.only(left: 4, bottom: 8),
+    child: Text(
+      text,
+      style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: c.muted, letterSpacing: 0.8),
+    ),
+  );
+}
+
+Widget mkGroup(MkColors c, List<Widget> children) {
+  return Container(
+    decoration: mkCardDeco(c),
+    child: Column(
+      children: [
+        for (int i = 0; i < children.length; i++) ...[
+          children[i],
+          if (i < children.length - 1) Divider(height: 1, color: c.border),
+        ],
+      ],
+    ),
+  );
+}
+
+Widget mkRow(
+  MkColors c, {
+  required Widget leading,
+  required String title,
+  String? subtitle,
+  Widget? trailing,
+  VoidCallback? onTap,
+}) {
+  return ListTile(
+    onTap: onTap,
+    leading: leading,
+    title: Text(title, style: mkText(c, size: 13, w: FontWeight.w600)),
+    subtitle: subtitle != null ? Text(subtitle, style: mkText(c, size: 11.5, color: c.muted)) : null,
+    trailing: trailing,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+  );
+}
+
+Widget mkIconBox(IconData icon, Color color) {
+  return Container(
+    padding: const EdgeInsets.all(8),
+    decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
+    child: Icon(icon, size: 18, color: color),
+  );
+}
+
+Widget mkChevron(MkColors c, {String? value}) {
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      if (value != null) ...[
+        Text(value, style: mkText(c, size: 12, color: c.muted, w: FontWeight.w500)),
+        const SizedBox(width: 4),
+      ],
+      Icon(Icons.chevron_right_rounded, size: 18, color: c.muted),
+    ],
+  );
+}
+
+Widget mkSwitch(bool value, ValueChanged<bool>? onChanged) {
+  return Switch.adaptive(value: value, onChanged: onChanged, activeColor: MkT.primary);
+}
+
+void mkToast(BuildContext context, String msg, {bool error = false}) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(msg, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
+      backgroundColor: error ? MkT.danger : MkT.success,
+      duration: const Duration(seconds: 2),
+    ),
+  );
+}
+
+Future<bool> mkConfirm(BuildContext context, {required String title, required String message, required String confirm, bool danger = false}) async {
+  final res = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      content: Text(message, style: const TextStyle(fontSize: 13)),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: danger ? MkT.danger : MkT.primary),
+          onPressed: () => Navigator.pop(ctx, true),
+          child: Text(confirm, style: const TextStyle(color: Colors.white)),
+        ),
+      ],
+    ),
+  );
+  return res ?? false;
+}
+
+void mkSheet(BuildContext context, String title, WidgetBuilder builder) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (ctx) {
+      final isDark = Theme.of(ctx).brightness == Brightness.dark;
+      final bg = isDark ? const Color(0xFF1E293B) : Colors.white;
+      final textC = isDark ? Colors.white : const Color(0xFF0F172A);
+
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(color: bg, borderRadius: const BorderRadius.vertical(top: Radius.circular(24))),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 36, height: 4, decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2)))),
+            const SizedBox(height: 12),
+            Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textC)),
+            const SizedBox(height: 16),
+            builder(ctx),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+Widget mkSelectCard(MkColors c, {required IconData icon, required String title, required bool selected, required VoidCallback onTap}) {
+  return ListTile(
+    onTap: onTap,
+    leading: Icon(icon, color: selected ? MkT.primary : c.muted),
+    title: Text(title, style: mkText(c, w: selected ? FontWeight.bold : FontWeight.normal)),
+    trailing: selected ? const Icon(Icons.check_circle_rounded, color: MkT.primary) : null,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: selected ? MkT.primary : c.border)),
+  );
+}
+
+class MkAvatar extends StatelessWidget {
+  final String name;
+  final int colorIndex;
+  final double radius;
+  const MkAvatar({super.key, required this.name, required this.colorIndex, required this.radius});
+
+  @override
+  Widget build(BuildContext context) {
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: MkT.primary,
+      child: Text(name.isNotEmpty ? name[0] : 'U', style: TextStyle(color: Colors.white, fontSize: radius * 0.8, fontWeight: FontWeight.bold)),
+    );
+  }
+}
+
+void showAvatarSheet(BuildContext context, {required String name, required int current, required ValueChanged<int> onPick}) {
+  mkToast(context, 'Pengaturan Avatar');
+}
+
+class MkButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onPressed;
+  const MkButton({super.key, required this.label, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(backgroundColor: MkT.primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+        onPressed: onPressed,
+        child: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// SUB-PAGE STUBS (EMBEDDED)
+// =============================================================================
+class AkunInfoPage extends StatelessWidget {
+  final String email;
+  final String role;
+  const AkunInfoPage({super.key, required this.email, required this.role});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Informasi Akun')));
+}
+
+class RekeningPage extends StatelessWidget {
+  const RekeningPage({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Rekening & Dompet')));
+}
+
+class TerhubungPage extends StatelessWidget {
+  final Future<bool> Function(String provider, bool connect)? onToggle;
+  const TerhubungPage({super.key, this.onToggle});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Akun Terhubung')));
+}
+
+class PerangkatPage extends StatelessWidget {
+  final Future<void> Function(String deviceId)? onRevoke;
+  const PerangkatPage({super.key, this.onRevoke});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Perangkat & Sesi')));
+}
+
+class HapusAkunPage extends StatelessWidget {
+  final Future<void> Function()? onDelete;
+  const HapusAkunPage({super.key, this.onDelete});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Hapus Akun')));
+}
+
+class KategoriPage extends StatelessWidget {
+  const KategoriPage({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Kategori Transaksi')));
+}
+
+class AnggaranPage extends StatelessWidget {
+  const AnggaranPage({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Anggaran & Limit')));
+}
+
+class TargetPage extends StatelessWidget {
+  const TargetPage({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Target Finansial')));
+}
+
+class BerulangPage extends StatelessWidget {
+  const BerulangPage({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Transaksi Berulang')));
+}
+
+class BackupPage extends StatelessWidget {
+  final Future<void> Function(String json)? onUpload;
+  const BackupPage({super.key, this.onUpload});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Pencadangan Cloud')));
+}
+
+class ExportPage extends StatelessWidget {
+  final Future<void> Function(DateTimeRange range, String format)? onExport;
+  const ExportPage({super.key, this.onExport});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Ekspor Laporan')));
+}
+
+class ImporPage extends StatelessWidget {
+  final Future<void> Function(List<Map<String, dynamic>> rows)? onImport;
+  const ImporPage({super.key, this.onImport});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Impor Data')));
+}
+
+class BantuanPage extends StatelessWidget {
+  final Future<void> Function(String kategori, String pesan)? onSendFeedback;
+  const BantuanPage({super.key, this.onSendFeedback});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Pusat Bantuan')));
+}
+
+class KontakPage extends StatelessWidget {
+  final Future<void> Function(String kategori, String pesan)? onSend;
+  const KontakPage({super.key, this.onSend});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Hubungi Kami')));
+}
+
+class PrivasiPage extends StatelessWidget {
+  const PrivasiPage({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Kebijakan Privasi')));
+}
+
+class TentangPage extends StatelessWidget {
+  const TentangPage({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Tentang MyKas')));
 }
