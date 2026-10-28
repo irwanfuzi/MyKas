@@ -33,26 +33,12 @@ class ProfilScreen extends StatefulWidget {
   final VoidCallback? onLogout;
   final Function(bool enabled, String newPin)? onPinStateChanged;
 
-  // ── Hook ke backend / layanan Anda (semua opsional) ──
-  /// Hapus akun di server. Data lokal otomatis dibersihkan setelahnya.
   final Future<void> Function()? onDeleteAccount;
-
-  /// Unggah JSON cadangan ke cloud. Jika null, cadangan disalin ke clipboard.
   final Future<void> Function(String json)? onCloudBackup;
-
-  /// Buat berkas laporan (pdf / xlsx / csv) dari data transaksi.
   final Future<void> Function(DateTimeRange range, String format)? onExport;
-
-  /// Terima baris hasil impor CSV.
   final Future<void> Function(List<Map<String, dynamic>> rows)? onImport;
-
-  /// Kirim masukan ke helpdesk/backend.
   final Future<void> Function(String kategori, String pesan)? onSendFeedback;
-
-  /// Tautkan / putuskan penyedia login: 'google' | 'apple' | 'facebook'.
   final Future<bool> Function(String provider, bool connect)? onToggleProvider;
-
-  /// Cabut sesi perangkat lain di server.
   final Future<void> Function(String deviceId)? onRevokeSession;
 
   const ProfilScreen({
@@ -81,18 +67,15 @@ class _ProfilScreenState extends State<ProfilScreen> {
   String _name = kDefaultName;
   int _avatar = 0;
 
-  // Ringkasan
   int _jumlahRekening = 0;
   int _jumlahTarget = 0;
   int _budgetPct = 0;
   String? _lastBackup;
 
-  // Keamanan
   bool _pinEnabled = false;
   String _savedPin = '';
   bool _bioEnabled = false;
 
-  // Preferensi
   String _language = 'Bahasa Indonesia';
   String _currency = 'Rupiah (IDR)';
   final Map<String, bool> _notif = {
@@ -138,7 +121,6 @@ class _ProfilScreenState extends State<ProfilScreen> {
     if (mounted) _loadAll();
   }
 
-  // ── PIN ──
   Future<void> _savePin(String pin) async {
     final p = await SharedPreferences.getInstance();
     await p.setString('user_pin', pin);
@@ -222,7 +204,6 @@ class _ProfilScreenState extends State<ProfilScreen> {
     }
   }
 
-  // ───────────────────────── BUILD ─────────────────────────
   @override
   Widget build(BuildContext context) {
     final c = MkColors(_isDark);
@@ -261,7 +242,6 @@ class _ProfilScreenState extends State<ProfilScreen> {
     );
   }
 
-  // ───────────────────────── HEADER ─────────────────────────
   Widget _header(MkColors c) {
     return Container(
       width: double.infinity,
@@ -355,7 +335,6 @@ class _ProfilScreenState extends State<ProfilScreen> {
     );
   }
 
-  // ───────────────────────── KONTEN ─────────────────────────
   Widget _content(MkColors c) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -624,7 +603,6 @@ class _ProfilScreenState extends State<ProfilScreen> {
     );
   }
 
-  // ───────────────────────── AKSI ─────────────────────────
   Future<void> _logout() async {
     final ok = await mkConfirm(context,
         title: 'Keluar dari MyKas?',
@@ -654,7 +632,6 @@ class _ProfilScreenState extends State<ProfilScreen> {
     if (deleted == true && mounted) widget.onLogout?.call();
   }
 
-  // ───────────────────────── KOMPONEN ─────────────────────────
   Widget _statsCard(MkColors c) {
     Widget stat(String value, String label, Color color) => Expanded(
           child: Column(
@@ -713,7 +690,6 @@ class _ProfilScreenState extends State<ProfilScreen> {
     );
   }
 
-  // ───────────────────────── SHEET ─────────────────────────
   void _optionSheet<T>(
     MkColors c, {
     required String title,
@@ -850,11 +826,10 @@ class _ProfilScreenState extends State<ProfilScreen> {
             _err(c, err),
             const SizedBox(height: 20),
             MkButton(
-              label: 'Matikan PIN',
-              danger: true,
+              label: 'Konfirmasi',
               onPressed: () async {
                 if (ctrl.text != _savedPin) {
-                  setS(() => err = 'PIN yang dimasukkan salah');
+                  setS(() => err = 'PIN salah');
                   return;
                 }
                 await _removePin();
@@ -869,8 +844,8 @@ class _ProfilScreenState extends State<ProfilScreen> {
   }
 
   void _pinChangeSheet(MkColors c) {
-    final oldC = TextEditingController();
-    final newC = TextEditingController();
+    final oldCtrl = TextEditingController();
+    final newCtrl = TextEditingController();
     String? err;
     mkSheet(
       context,
@@ -879,23 +854,26 @@ class _ProfilScreenState extends State<ProfilScreen> {
         builder: (ctx, setS) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _pinField(c, oldC, 'PIN Lama'),
+            Text('Masukkan PIN lama dan PIN baru Anda.',
+                style: mkText(c, size: 12.5, color: c.muted)),
+            const SizedBox(height: 16),
+            _pinField(c, oldCtrl, 'PIN Lama'),
             const SizedBox(height: 12),
-            _pinField(c, newC, 'PIN Baru (6 digit)'),
+            _pinField(c, newCtrl, 'PIN Baru (6 Digit)'),
             _err(c, err),
             const SizedBox(height: 20),
             MkButton(
-              label: 'Simpan PIN Baru',
+              label: 'Perbarui PIN',
               onPressed: () async {
-                if (oldC.text != _savedPin) {
-                  setS(() => err = 'PIN lama tidak sesuai');
+                if (oldCtrl.text != _savedPin) {
+                  setS(() => err = 'PIN lama salah');
                   return;
                 }
-                if (newC.text.length != 6) {
+                if (newCtrl.text.length != 6) {
                   setS(() => err = 'PIN baru harus 6 digit angka');
                   return;
                 }
-                await _savePin(newC.text);
+                await _savePin(newCtrl.text);
                 if (ctx.mounted) Navigator.pop(ctx);
                 if (mounted) mkToast(context, 'PIN berhasil diperbarui');
               },
