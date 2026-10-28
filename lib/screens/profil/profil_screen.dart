@@ -14,9 +14,9 @@ class MkColors {
   final bool dark;
   MkColors(this.dark);
 
-  Color get bg => dark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
-  Color get card => dark ? const Color(0xFF1E293B) : Colors.white;
-  Color get border => dark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+  Color get bg => dark ? const Color(0xFF0B132B) : const Color(0xFFF4F6F9);
+  Color get card => dark ? const Color(0xFF172554) : Colors.white;
+  Color get border => dark ? const Color(0xFF1E3A8A).withOpacity(0.4) : const Color(0xFFE2E8F0);
   Color get text => dark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A);
   Color get muted => dark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
   Color get inputFill => dark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
@@ -177,7 +177,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
             children: [
               _header(c),
               Transform.translate(
-                offset: const Offset(0, -20),
+                offset: const Offset(0, -28),
                 child: Container(
                   decoration: BoxDecoration(
                     color: c.bg,
@@ -208,14 +208,15 @@ class _ProfilScreenState extends State<ProfilScreen> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF1E3A8A), Color(0xFF2563EB)],
+          colors: [Color(0xFF1E3A8A), Color(0xFF2563EB), Color(0xFF3B82F6)],
         ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
       ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 36),
-          child: Column(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 48),
+          child: Row(
             children: [
               Stack(
                 alignment: Alignment.bottomRight,
@@ -224,16 +225,16 @@ class _ProfilScreenState extends State<ProfilScreen> {
                     padding: const EdgeInsets.all(3),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withOpacity(0.25),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.15),
-                          blurRadius: 12,
+                          blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    child: MkAvatar(name: _name, colorIndex: _avatar, radius: 40),
+                    child: MkAvatar(name: _name, colorIndex: _avatar, radius: 36),
                   ),
                   GestureDetector(
                     onTap: () => showAvatarSheet(context,
@@ -241,31 +242,62 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         current: _avatar,
                         onPick: (i) => setState(() => _avatar = i)),
                     child: Container(
-                      padding: const EdgeInsets.all(6),
+                      padding: const EdgeInsets.all(5),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
                         border: Border.all(color: MkT.primary, width: 1.5),
                         boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 4,
-                          ),
+                          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4),
                         ],
                       ),
-                      child: const Icon(Icons.palette_rounded, size: 13, color: MkT.primary),
+                      child: const Icon(Icons.palette_rounded, size: 11, color: MkT.primary),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Text(
-                _name,
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.2,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Selamat Datang,',
+                      style: GoogleFonts.inter(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _name,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.3,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'Akun Terverifikasi',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -321,16 +353,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
             ),
           ),
           _Item(
-            leading: Container(
-              width: 36,
-              height: 36,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: MkT.primary.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: _language.contains('Indonesia') ? const FlagId() : const FlagUs(),
-            ),
+            leading: mkIconBox(Icons.language_rounded, MkT.primary),
             title: 'Bahasa',
             value: _language.contains('Indonesia') ? 'Indonesia' : 'English',
             onTap: () => _optionSheet<String>(
@@ -357,8 +380,8 @@ class _ProfilScreenState extends State<ProfilScreen> {
               title: 'Pilih Mata Uang',
               selected: _currency,
               options: [
-                ('Rupiah (IDR)', 'Rupiah (IDR)', mkIconBox(Icons.paid_rounded, MkT.success)),
-                ('Dolar AS (USD)', 'Dolar AS (USD)', mkIconBox(Icons.attach_money_rounded, MkT.success)),
+                ('Rupiah (IDR)', 'Rupiah (IDR)', const CurrencyIdr()),
+                ('Dolar AS (USD)', 'Dolar AS (USD)', const CurrencyUsd()),
               ],
               onSelect: (v) async {
                 final p = await SharedPreferences.getInstance();
@@ -403,48 +426,45 @@ class _ProfilScreenState extends State<ProfilScreen> {
           ),
         ]),
 
-        const SizedBox(height: 6),
-        SizedBox(
-          width: double.infinity,
-          height: 44,
-          child: OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(
-              foregroundColor: MkT.danger,
-              side: const BorderSide(color: MkT.danger, width: 1.1),
-              backgroundColor: _isDark ? Colors.transparent : Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            onPressed: _logout,
-            icon: const Icon(Icons.logout_rounded, size: 16),
-            label: Text(
-              'Keluar Akun',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 12.5),
-            ),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Center(
-          child: TextButton(
-            style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(0, 0)),
-            onPressed: _openDeleteAccount,
-            child: Text(
-              'Hapus Akun Permanen',
-              style: GoogleFonts.inter(
-                color: c.muted,
-                fontSize: 10.5,
-                fontWeight: FontWeight.w500,
-                decoration: TextDecoration.underline,
+        // KELUAR AKUN & HAPUS AKUN (CARD TERPISAH YANG CLEAN & MODERN)
+        Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          decoration: mkCardDeco(c),
+          child: Column(
+            children: [
+              ListTile(
+                onTap: _logout,
+                leading: mkIconBox(Icons.logout_rounded, MkT.danger),
+                title: Text('Keluar Akun',
+                    style: GoogleFonts.inter(
+                        fontSize: 13, fontWeight: FontWeight.w600, color: MkT.danger)),
+                subtitle: Text('Akhiri sesi aktif di perangkat ini',
+                    style: GoogleFonts.inter(fontSize: 11, color: c.muted)),
+                trailing: Icon(Icons.chevron_right_rounded, size: 18, color: c.muted),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               ),
-            ),
+              Divider(height: 1, color: c.border),
+              ListTile(
+                onTap: _openDeleteAccount,
+                leading: mkIconBox(Icons.delete_forever_rounded, MkT.danger),
+                title: Text('Hapus Akun Permanen',
+                    style: GoogleFonts.inter(
+                        fontSize: 13, fontWeight: FontWeight.w600, color: MkT.danger)),
+                subtitle: Text('Hapus akun beserta seluruh data terkait',
+                    style: GoogleFonts.inter(fontSize: 11, color: c.muted)),
+                trailing: Icon(Icons.chevron_right_rounded, size: 18, color: c.muted),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 4),
+
         Center(
           child: Text(
             'MyKas v$kAppVersion • Own Your Money',
             style: GoogleFonts.inter(
               color: c.muted,
-              fontSize: 9.5,
+              fontSize: 10,
               fontWeight: FontWeight.w500,
               letterSpacing: 0.2,
             ),
@@ -660,7 +680,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
 }
 
 // =============================================================================
-// FLAG ICONS (CUSTOM SVG/VECTOR-LIKE DRAWINGS)
+// CUSTOM FLAG & CURRENCY WIDGETS
 // =============================================================================
 class FlagId extends StatelessWidget {
   const FlagId({super.key});
@@ -668,10 +688,10 @@ class FlagId extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 22,
-      height: 15,
+      width: 24,
+      height: 16,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: Colors.black.withOpacity(0.12), width: 0.8),
       ),
       child: Column(
@@ -690,10 +710,10 @@ class FlagUs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 22,
-      height: 15,
+      width: 24,
+      height: 16,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: Colors.black.withOpacity(0.12), width: 0.8),
         color: const Color(0xFFB91C1C),
       ),
@@ -708,12 +728,48 @@ class FlagUs extends StatelessWidget {
             ),
           ),
           Container(
-            width: 10,
+            width: 11,
             height: 8,
             color: const Color(0xFF1E3A8A),
           ),
         ],
       ),
+    );
+  }
+}
+
+class CurrencyIdr extends StatelessWidget {
+  const CurrencyIdr({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 32,
+      height: 32,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: MkT.success.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Text('Rp', style: TextStyle(color: MkT.success, fontSize: 12, fontWeight: FontWeight.bold)),
+    );
+  }
+}
+
+class CurrencyUsd extends StatelessWidget {
+  const CurrencyUsd({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 32,
+      height: 32,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: MkT.primary.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Text('\$', style: TextStyle(color: MkT.primary, fontSize: 13, fontWeight: FontWeight.bold)),
     );
   }
 }
